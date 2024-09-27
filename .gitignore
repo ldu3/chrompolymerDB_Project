@@ -1,3 +1,5 @@
 .DS_Store
 .node_modules
+/Backend/venv
+/Backend/__pycache__
 /output
