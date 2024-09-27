@@ -20,6 +20,7 @@ export const Heatmap = () => {
                 d.i1 = +d.i1;
                 d.j1 = +d.j1;
                 d.fq = +d.fq;
+                d.fdr = +d.fdr;
             });
 
             const i1Values = Array.from(new Set(data.map(d => d.i1)));
@@ -54,17 +55,18 @@ export const Heatmap = () => {
             const fqMap = new Map();
 
             data.forEach(d => {
-                fqMap.set(`x:${d.i1}, y:${d.j1}`, d.fq);
-                fqMap.set(`X:${d.j1}, y:${d.i1}`, d.fq);
-            });
+                fqMap.set(`x:${d.i1}, y:${d.j1}`, { fq: d.fq, fdr: d.fdr });
+                fqMap.set(`X:${d.j1}, y:${d.i1}`, { fq: d.fq, fdr: d.fdr });
+            });            
 
             svg.selectAll()
                 .data(i1Values.flatMap(i1 => j1Values.map(j1 => {
-                    const value = fqMap.get(`X:${i1}, y:${j1}`) || fqMap.get(`X:${j1}, y:${i1}`) || 0;
+                    const value = fqMap.get(`X:${i1}, y:${j1}`) || fqMap.get(`X:${j1}, y:${i1}`) || { fq: 0, fdr: 0 };
                     return {
                         i1,
                         j1,
-                        fq: value
+                        fq: value.fq,
+                        fdr: value.fdr
                     };
                 })))
                 .enter()
@@ -73,7 +75,7 @@ export const Heatmap = () => {
                 .attr('y', d => yScale(d.i1))
                 .attr('width', xScale.bandwidth())
                 .attr('height', yScale.bandwidth())
-                .style('fill', d => d.j1 <= d.i1 ? (d.fq < 0.07 ? 'white' : colorScale(d.fq)) : colorScale(d.fq))
+                .style('fill', d => d.j1 <= d.i1 ? (d.fdr > 0.05 ? 'white' : colorScale(d.fq)) : colorScale(d.fq))
                 .style('stroke', 'black')
                 .style('stroke-width', 0.01);
 
@@ -82,7 +84,7 @@ export const Heatmap = () => {
                 .attr('y', -20)
                 .attr('text-anchor', 'middle')
                 .style('font-size', '16px')
-                .text('Heatmap of Frequency Quality (fq)');
+                .text('Heatmap of FQ values');
         });
     }, []);
 
