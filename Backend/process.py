@@ -13,7 +13,7 @@ def chromosomes_list(data_path):
     for folder_name in os.listdir(data_path):
         full_path = os.path.join(data_path, folder_name)
         if os.path.isdir(full_path):
-            # Extract the chromosome part (e.g., 'chr1', 'chr4', 'chrX')
+            # Extract the chromosome Name
             chrom_part = folder_name.split('.')[0]
             chromosomes.add(chrom_part)
 
