@@ -21,6 +21,7 @@ function App() {
   }, []);
 
   const chromosomeChange = value => {
+    setChromosomeName(value);
     fetch("/getChromosSeq", {
       method: 'POST',
       headers: {

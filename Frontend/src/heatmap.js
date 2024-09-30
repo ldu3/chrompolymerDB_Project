@@ -7,6 +7,7 @@ export const Heatmap = ({ chromosomeData }) => {
         const width = 700 - margin.left - margin.right;
         const height = 700 - margin.top - margin.bottom;
 
+        d3.select('#heatmap').selectAll('*').remove();
         const svg = d3.select('#heatmap')
             .append('svg')
             .attr('width', width + margin.left + margin.right)
@@ -84,7 +85,7 @@ export const Heatmap = ({ chromosomeData }) => {
                 .attr('text-anchor', 'middle')
                 .style('font-size', '16px')
                 .text('Heatmap of FQ values');
-    }, []);
+    }, [chromosomeData]);
 
     return <div id="heatmap" />;
 };

@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import re
+import glob
 
 
 """
@@ -52,7 +53,42 @@ def chromosome_sequences(data_path, chromosome_name):
     
     return result
 
-def chromosome_data(chromosome_name, chromosomeSequence):
-    chromosome_data_path = f"../Data/{chromosome_name}.{chromosomeSequence['start']}.{chromosomeSequence['end']}/hic.clean.1/hic.clean.csv.gz"
-    chromosome_data_df = pd.read_csv(chromosome_data_path)
+
+"""
+Returns the concated dataframe of the chromosome data in the given chromosome name and sequence start and end
+"""
+def matched_chromosome_data(data_dir, chromosome_name, chromosomeSequence):
+    start = int(chromosomeSequence['start'])
+    end = int(chromosomeSequence['end'])
+
+    file_pattern = f"{data_dir}/{chromosome_name}.*.*"
+    matching_files = glob.glob(file_pattern)
+
+    selected_files = []
+    for file in matching_files:
+        dir_name = os.path.basename(file)
+        dir_parts = dir_name.split(".")
+
+        if len(dir_parts) == 3:
+            try:
+                file_start = int(dir_parts[1])
+                file_end = int(dir_parts[2])
+            except ValueError:
+                print(f"Skipping file due to invalid format: {file}")
+                continue
+
+            # Check if the file is within the provided range
+            if file_start >= start and file_end <= end:
+                folder_path = os.path.join(file, 'hic.clean.1', 'hic.clean.csv.gz')
+                selected_files.append(folder_path)
+        else:
+            print(f"Skipping file due to insufficient parts: {file}")
+
+    data_frames = [pd.read_csv(file) for file in selected_files]
+    
+    if data_frames:
+        chromosome_data_df = pd.concat(data_frames, ignore_index=True)
+    else:
+        chromosome_data_df = pd.DataFrame()
+    
     return chromosome_data_df
