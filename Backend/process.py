@@ -51,3 +51,8 @@ def chromosome_sequences(data_path, chromosome_name):
             })
     
     return result
+
+def chromosome_data(chromosome_name, chromosomeSequence):
+    chromosome_data_path = f"../Data/{chromosome_name}.{chromosomeSequence['start']}.{chromosomeSequence['end']}/hic.clean.1/hic.clean.csv.gz"
+    chromosome_data_df = pd.read_csv(chromosome_data_path)
+    return chromosome_data_df

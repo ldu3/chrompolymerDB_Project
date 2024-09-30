@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import * as d3 from 'd3';
 
-export const Heatmap = () => {
+export const Heatmap = ({ chromosomeData }) => {
     useEffect(() => {
         const margin = { top: 50, right: 30, bottom: 50, left: 50 };
         const width = 700 - margin.left - margin.right;
@@ -14,23 +14,22 @@ export const Heatmap = () => {
             .append('g')
             .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-        d3.csv('/hic.clean.csv').then(data => {
             // Convert to numbers
-            data.forEach(d => {
+            chromosomeData.forEach(d => {
                 d.i1 = +d.i1;
                 d.j1 = +d.j1;
                 d.fq = +d.fq;
                 d.fdr = +d.fdr;
             });
 
-            const i1Values = Array.from(new Set(data.map(d => d.i1)));
-            const j1Values = Array.from(new Set(data.map(d => d.j1)));
+            const i1Values = Array.from(new Set(chromosomeData.map(d => d.i1)));
+            const j1Values = Array.from(new Set(chromosomeData.map(d => d.j1)));
 
             i1Values.sort((a, b) => a - b);
             j1Values.sort((a, b) => a - b);
 
             const colorScale = d3.scaleSequential(d3.interpolateYlOrBr)
-                .domain([0, d3.max(data, d => d.fq)]);
+                .domain([0, d3.max(chromosomeData, d => d.fq)]);
 
             const xScale = d3.scaleBand()
                 .domain(j1Values)
@@ -54,7 +53,7 @@ export const Heatmap = () => {
             // Create a mapping to account for symmetry
             const fqMap = new Map();
 
-            data.forEach(d => {
+            chromosomeData.forEach(d => {
                 fqMap.set(`x:${d.i1}, y:${d.j1}`, { fq: d.fq, fdr: d.fdr });
                 fqMap.set(`X:${d.j1}, y:${d.i1}`, { fq: d.fq, fdr: d.fdr });
             });            
@@ -85,7 +84,6 @@ export const Heatmap = () => {
                 .attr('text-anchor', 'middle')
                 .style('font-size', '16px')
                 .text('Heatmap of FQ values');
-        });
     }, []);
 
     return <div id="heatmap" />;
