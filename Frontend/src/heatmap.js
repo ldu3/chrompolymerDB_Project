@@ -17,65 +17,65 @@ export const Heatmap = ({ chromosomeData }) => {
 
             // Convert to numbers
             chromosomeData.forEach(d => {
-                d.i1 = +d.i1;
-                d.j1 = +d.j1;
+                d.ibp = +d.ibp;
+                d.jbp = +d.jbp;
                 d.fq = +d.fq;
                 d.fdr = +d.fdr;
             });
 
-            const i1Values = Array.from(new Set(chromosomeData.map(d => d.i1)));
-            const j1Values = Array.from(new Set(chromosomeData.map(d => d.j1)));
+            const ibpValues = Array.from(new Set(chromosomeData.map(d => d.ibp)));
+            const jbpValues = Array.from(new Set(chromosomeData.map(d => d.jbp)));
 
-            i1Values.sort((a, b) => a - b);
-            j1Values.sort((a, b) => a - b);
+            ibpValues.sort((a, b) => a - b);
+            jbpValues.sort((a, b) => a - b);
 
             const colorScale = d3.scaleSequential(d3.interpolateYlOrBr)
                 .domain([0, d3.max(chromosomeData, d => d.fq)]);
 
             const xScale = d3.scaleBand()
-                .domain(j1Values)
+                .domain(jbpValues)
                 .range([0, width])
                 .padding(0.1);
 
             const yScale = d3.scaleBand()
-                .domain(i1Values)
+                .domain(ibpValues)
                 .range([height, 0])
                 .padding(0.1);
 
             svg.append('g')
                 .attr('transform', `translate(0, ${height})`)
                 .call(d3.axisBottom(xScale)
-                    .tickValues(j1Values.filter((_, i) => i % 5 === 0)));
+                    .tickValues(jbpValues.filter((_, i) => i % 5 === 0)));
 
             svg.append('g')
                 .call(d3.axisLeft(yScale)
-                    .tickValues(i1Values.filter((_, i) => i % 5 === 0)));
+                    .tickValues(ibpValues.filter((_, i) => i % 5 === 0)));
 
             // Create a mapping to account for symmetry
             const fqMap = new Map();
 
             chromosomeData.forEach(d => {
-                fqMap.set(`x:${d.i1}, y:${d.j1}`, { fq: d.fq, fdr: d.fdr });
-                fqMap.set(`X:${d.j1}, y:${d.i1}`, { fq: d.fq, fdr: d.fdr });
+                fqMap.set(`x:${d.ibp}, y:${d.jbp}`, { fq: d.fq, fdr: d.fdr });
+                fqMap.set(`X:${d.jbp}, y:${d.ibp}`, { fq: d.fq, fdr: d.fdr });
             });            
 
             svg.selectAll()
-                .data(i1Values.flatMap(i1 => j1Values.map(j1 => {
-                    const value = fqMap.get(`X:${i1}, y:${j1}`) || fqMap.get(`X:${j1}, y:${i1}`) || { fq: 0, fdr: 0 };
+                .data(ibpValues.flatMap(ibp => jbpValues.map(jbp => {
+                    const value = fqMap.get(`X:${ibp}, y:${jbp}`) || fqMap.get(`X:${jbp}, y:${ibp}`) || { fq: 0, fdr: 0 };
                     return {
-                        i1,
-                        j1,
+                        ibp,
+                        jbp,
                         fq: value.fq,
                         fdr: value.fdr
                     };
                 })))
                 .enter()
                 .append('rect')
-                .attr('x', d => xScale(d.j1))
-                .attr('y', d => yScale(d.i1))
+                .attr('x', d => xScale(d.jbp))
+                .attr('y', d => yScale(d.ibp))
                 .attr('width', xScale.bandwidth())
                 .attr('height', yScale.bandwidth())
-                .style('fill', d => d.j1 <= d.i1 ? (d.fdr > 0.05 ? 'white' : colorScale(d.fq)) : colorScale(d.fq))
+                .style('fill', d => d.jbp <= d.ibp ? (d.fdr > 0.05 ? 'white' : colorScale(d.fq)) : colorScale(d.fq))
                 .style('stroke', 'black')
                 .style('stroke-width', 0.01);
 
