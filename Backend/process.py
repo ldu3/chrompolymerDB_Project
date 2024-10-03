@@ -58,8 +58,8 @@ def chromosome_sequences(data_path, chromosome_name):
 Returns the concated dataframe of the chromosome data in the given chromosome name and sequence start and end
 """
 def matched_chromosome_data(data_dir, chromosome_name, chromosomeSequence):
-    start = int(chromosomeSequence['start'])
-    end = int(chromosomeSequence['end'])
+    start = chromosomeSequence['start']
+    end = chromosomeSequence['end']
 
     file_pattern = f"{data_dir}/{chromosome_name}.*.*"
     matching_files = glob.glob(file_pattern)

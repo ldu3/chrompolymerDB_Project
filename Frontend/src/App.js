@@ -37,9 +37,9 @@ function App() {
 
   const chromosomeSequenceChange = (position, value) => {
     if (position === 'start') {
-      setChromosomeSequence({ ...chromosomeSequence, start: value.target.value });
+      setChromosomeSequence({ ...chromosomeSequence, start: Number(value.target.value) });
     } else {
-      setChromosomeSequence({ ...chromosomeSequence, end: value.target.value });
+      setChromosomeSequence({ ...chromosomeSequence, end: Number(value.target.value) });
     }
   };
 
@@ -72,7 +72,11 @@ function App() {
       <Input placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} />
       <Input placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} />
       <Button type="primary" onClick={submit}>Submit</Button>
-      {chromosomeData.length > 0 && (<Heatmap chromosomeData={chromosomeData} />)}
+      {chromosomeData.length > 0 && (
+        <Heatmap
+          chromosomeData={chromosomeData}
+          chromosomeSequence={chromosomeSequence}
+        />)}
     </div>
   );
 }
