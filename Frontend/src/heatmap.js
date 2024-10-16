@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ chromosomeData }) => {
+export const Heatmap = ({ chromosomeData, chromosomeSequence }) => {
     useEffect(() => {
         const margin = { top: 50, right: 30, bottom: 50, left: 50 };
         const width = 700 - margin.left - margin.right;
@@ -85,7 +85,7 @@ export const Heatmap = ({ chromosomeData }) => {
                 .attr('text-anchor', 'middle')
                 .style('font-size', '16px')
                 .text('Heatmap of FQ values');
-    }, [chromosomeData]);
+    }, [chromosomeData, chromosomeSequence]);
 
     return <div id="heatmap" />;
 };

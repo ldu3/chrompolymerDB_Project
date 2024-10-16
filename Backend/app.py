@@ -1,6 +1,7 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from process import ( chromosomes_list, chromosome_sequences, matched_chromosome_data )
-
+import os
+import psycopg2
 
 app = Flask(__name__)
 

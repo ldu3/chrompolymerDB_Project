@@ -19,5 +19,5 @@ Web Tools for High-Resolution Ensemble Models of 3D Single-Cell Chromatin Confor
 
 4. Run the Flask Application
    ```
-   python server.py
+   python app.py
    ```
