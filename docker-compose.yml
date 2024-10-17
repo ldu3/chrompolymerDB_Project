@@ -8,7 +8,9 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./Data:/chromosome/Data
+    ports:
+      - "5432:5432"
     networks:
       - example
 
@@ -22,6 +24,8 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./Data:/chromosome/Data
     ports:
       - "5000:5000"
     depends_on:
@@ -39,8 +43,24 @@ services:
     networks:
       - example
 
-volumes:
-  postgres_data:
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgAdmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - example
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
 networks:
   example:
+
+volumes:
+  pgadmin_data:
