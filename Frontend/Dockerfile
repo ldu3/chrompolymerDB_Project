@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:23.0.0-slim
 
 WORKDIR /chromosome/frontend
 
@@ -8,6 +8,6 @@ COPY . .
 # RUN npm run build
 # RUN npm install -g serve
 # EXPOSE 3000
-# CMD ["serve", "-s", "build"]
+# CMD ["npx", "serve", "-s", "build"]
 EXPOSE 3000
 CMD ["npm", "start"]

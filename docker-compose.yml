@@ -16,9 +16,6 @@ services:
 
   backend:
     container_name: backend
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
     restart: always
     environment:
       DB_HOST: db
@@ -28,21 +25,26 @@ services:
     volumes:
       - ./backend:/chromosome/backend
       - ./Data:/chromosome/Data
-    ports:
-      - "5000:5000"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     depends_on:
       - db
+    ports:
+      - "5000:5000"
     networks:
       - example
 
   frontend:
     container_name: frontend
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
     restart: always
     volumes:
       - ./frontend:/chromosome/frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
     ports:
       - "3000:3000"
     networks:
@@ -55,14 +57,14 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - "8080:80"
     depends_on:
       - db
-    networks:
-      - example
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "8080:80"
+    networks:
+      - example
 
 networks:
   example:
