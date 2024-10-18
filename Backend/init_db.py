@@ -136,7 +136,6 @@ def process_non_random_hic_data(cur, folder_path, chromosome_name):
         # Read the CSV file
         df = pd.read_csv(csv_path, compression="gzip")
         df["chrID"] = chromosome_name
-
         # Prepare for batch insert
         query = """
         INSERT INTO non_random_HiC (chrID, i1, j1, fq, pval, fdr, bon, ibp, jbp, rawc)
@@ -154,7 +153,9 @@ def insert_data():
 
     # Insert chromosome data
     file_path = "../Data/chromosome_sizes.txt"
+    print("Inserting chromosome data...")
     process_chromosome_data(cur, file_path)
+    print("Chromosome data inserted successfully.")
 
     # Insert non-random Hi-C data
     chromosome_dir = "../Data/chromosomes"
@@ -162,7 +163,9 @@ def insert_data():
         folder_path = os.path.join(chromosome_dir, folder_name)
         if os.path.isdir(folder_path):
             chromosome_name = folder_name.split(".")[0]
+            print(f"Inserting non-random Hi-C data for chromosome {chromosome_name}...")
             process_non_random_hic_data(cur, folder_path, chromosome_name)
+            print(f"Non-random Hi-C data for chromosome {chromosome_name} inserted successfully.")
 
     # Commit and close connection
     conn.commit()

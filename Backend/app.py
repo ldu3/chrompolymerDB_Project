@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, render_template
-from process import chromosomes_list, getChromosData
+from process import chromosomes_list
 from flask_cors import CORS
 
 app = Flask(__name__)
