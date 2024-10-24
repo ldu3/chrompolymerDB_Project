@@ -1,13 +1,14 @@
-#!/bin/bash
+#!/bin/sh
 
 ##parameters
-chrlensfile="./chromosome_sizes.txt"
-outfolder="../output"
+chrlensfile="../Data/chromosome_sizes.txt"
 res=5000
 threads=20
-EXE_PATH="../../sBIF/bin/sBIF"
+EXE_PATH="../sBIF/bin/sBIF"
 
-for interfile in ../folding_input/*.txt; do
+chmod +x "$EXE_PATH"
+
+for interfile in ../Data/folding_input/*.txt; do
 
     filename=$(basename "$interfile")
     
@@ -19,9 +20,10 @@ for interfile in ../folding_input/*.txt; do
     end=$(echo "$filename" | cut -d'.' -f3 | sed 's/.txt//')
 
     ##command
-    cmd="$EXE_PATH -i $interfile -c $chrom -l $chrlensfile -s $start -e $end -o $outfolder -r $res -j $job_prefix -p $threads"
+    cmd="$EXE_PATH -i $interfile -c $chrom -l $chrlensfile -s $start -e $end -r $res -j $job_prefix -p $threads"
     
     echo "Running command: $cmd"
+    
     $cmd 
 done
 
