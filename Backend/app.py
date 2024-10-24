@@ -5,7 +5,6 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-data_path = '../Data'
 @app.route('/')
 def index():
     return 'Hello, World!'

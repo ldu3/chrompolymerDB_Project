@@ -1,7 +1,7 @@
 services:
   db:
-    image: postgres:latest
-    container_name: DB
+    image: postgres:17.0-bookworm
+    container_name: db
     restart: always
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -9,6 +9,11 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./Data:/chromosome/Data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 5s      
+      timeout: 5s         
+      retries: 5      
     ports:
       - "5432:5432"
     networks:
@@ -18,7 +23,7 @@ services:
     container_name: backend
     restart: always
     environment:
-      DB_HOST: db
+      DB_HOST: ${DB_HOST}
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -29,7 +34,9 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+        restart: true
     ports:
       - "5000:5000"
     networks:
@@ -39,12 +46,11 @@ services:
     container_name: frontend
     restart: always
     volumes:
-      - ./frontend:/chromosome/frontend
+      - ./frontend:/chromosome/frontend:cached
+      - /chromosome/frontend/node_modules
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    depends_on:
-      - backend
     ports:
       - "3000:3000"
     networks:

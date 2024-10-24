@@ -24,27 +24,27 @@ def get_db_connection(database=None):
 
 def initialize_database():
     """Initialize the database and create tables."""
-    conn = psycopg2.connect(
-        host=DB_HOST,
-        user=DB_USERNAME,
-        password=DB_PASSWORD,
-        database="postgres"
-    )
-    conn.autocommit = True
-    cur = conn.cursor()
+    # conn = psycopg2.connect(
+    #     host=DB_HOST,
+    #     user=DB_USERNAME,
+    #     password=DB_PASSWORD,
+    #     database="postgres"
+    # )
+    # conn.autocommit = True
+    # cur = conn.cursor()
 
-    print("Starting database initialization...")
+    # print("Starting database initialization...")
 
-    # Create database if it doesn't exist
-    try:
-        cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(DB_NAME)))
-        print(f"Database '{DB_NAME}' created successfully.")
-    except psycopg2.errors.DuplicateDatabase:
-        print(f"Database '{DB_NAME}' already exists.")
+    # # Create database if it doesn't exist
+    # try:
+    #     cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(DB_NAME)))
+    #     print(f"Database '{DB_NAME}' created successfully.")
+    # except psycopg2.errors.DuplicateDatabase:
+    #     print(f"Database '{DB_NAME}' already exists.")
 
-    # Close the connection to the current database
-    cur.close()
-    conn.close()
+    # # Close the connection to the current database
+    # cur.close()
+    # conn.close()
 
     # Connect to the newly created database to create tables
     conn = get_db_connection(database=DB_NAME)

@@ -4,4 +4,5 @@
 /Backend/venv
 /Backend/__pycache__
 /output
+/Folding_input
 .env
