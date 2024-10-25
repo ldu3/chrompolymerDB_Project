@@ -3,9 +3,12 @@
 ##parameters
 chrlensfile="../Data/chromosome_sizes.txt"
 res=5000
-threads=1
+threads=50
 EXE_PATH="../sBIF/bin/sBIF"
 FLAG_FILE="/chromosome/backend/.position_inserted"
+
+total_files=$(find ../data/folding_input -name "*.txt" | wc -l | xargs)
+count=1
 
 # Check if the position table has already been inserted
 if [ -f "$FLAG_FILE" ]; then
@@ -26,10 +29,13 @@ for interfile in ../Data/folding_input/*.txt; do
     ##command
     cmd="$EXE_PATH -i $interfile -c $chrom -l $chrlensfile -s $start -e $end -r $res -j $job_prefix -p $threads"
     
+    echo "Processing file $count of $total_files: $filename"
     echo "Running command: $cmd"
     
-    $cmd 
+    $cmd
+    count=$((count + 1))  
 done
+
 
 # Mark the position table as inserted
 touch "$FLAG_FILE"
