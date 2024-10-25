@@ -3,7 +3,7 @@
 ##parameters
 chrlensfile="../Data/chromosome_sizes.txt"
 res=5000
-threads=20
+threads=1
 EXE_PATH="../sBIF/bin/sBIF"
 
 
