@@ -22,6 +22,21 @@ def get_db_connection(database=None):
     )
 
 
+def table_exists(cur, table_name):
+    """Check if a table exists in the database."""
+    cur.execute(
+        sql.SQL("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = %s);"),
+        [table_name]
+    )
+    return cur.fetchone()[0]
+
+
+def data_exists(cur, table_name):
+    """Check if a table has data."""
+    cur.execute(sql.SQL("SELECT EXISTS (SELECT 1 FROM {} LIMIT 1);").format(sql.Identifier(table_name)))
+    return cur.fetchone()[0]
+
+
 def initialize_tables():
     """Create tables."""
     
@@ -29,56 +44,59 @@ def initialize_tables():
     conn = get_db_connection(database=DB_NAME)
     cur = conn.cursor()
 
-    # Drop tables if they exist
-    cur.execute("DROP TABLE IF EXISTS position, non_random_HiC, chromosome;")
+    # Check if tables already exist
+    if not table_exists(cur, 'chromosome'):
+        print("Creating chromosome table...")
+        cur.execute(
+            "CREATE TABLE chromosome ("
+                "chrID varchar(50) PRIMARY KEY,"
+                "size INT NOT NULL DEFAULT 0"
+            ");"
+        )
+        print("chromosome table created successfully.")
+    else:
+        print("chromosome table already exists, skipping creation.")
 
-    # Create the chromosome table
-    print("Creating chromosome table...")
-    cur.execute(
-        "CREATE TABLE chromosome ("
-            "chrID varchar(50) PRIMARY KEY,"
-            "size INT NOT NULL DEFAULT 0"
-        ");"
-    )
-    print("chromosome table created successfully.")
+    if not table_exists(cur, 'non_random_HiC'):
+            print("Creating non_random_HiC table...")
+            cur.execute(
+                "CREATE TABLE non_random_HiC ("
+                    "hID serial PRIMARY KEY,"
+                    "chrID VARCHAR(50) NOT NULL,"
+                    "i1 INT NOT NULL DEFAULT 0,"
+                    "j1 INT NOT NULL DEFAULT 0,"
+                    "fq FLOAT NOT NULL DEFAULT 0.0,"
+                    "pval FLOAT NOT NULL DEFAULT 0.0,"
+                    "fdr FLOAT NOT NULL DEFAULT 0.0,"
+                    "bon FLOAT NOT NULL DEFAULT 0.0,"
+                    "ibp BIGINT NOT NULL DEFAULT 0,"
+                    "jbp BIGINT NOT NULL DEFAULT 0,"
+                    "rawc FLOAT NOT NULL DEFAULT 0.0,"
+                    "CONSTRAINT fk_non_random_HiC_chrID FOREIGN KEY (chrID) REFERENCES chromosome(chrID) ON DELETE CASCADE ON UPDATE CASCADE"
+                ");"
+            )
+            print("non_random_HiC table created successfully.")
+    else:
+        print("non_random_HiC table already exists, skipping creation.")
 
-    # Create other tables...
-    print("Creating non_random_HiC table...")
-    cur.execute(
-        "CREATE TABLE non_random_HiC ("
-            "hID serial PRIMARY KEY,"
-            "chrID VARCHAR(50) NOT NULL,"
-            "i1 INT NOT NULL DEFAULT 0,"
-            "j1 INT NOT NULL DEFAULT 0,"
-            "fq FLOAT NOT NULL DEFAULT 0.0,"
-            "pval FLOAT NOT NULL DEFAULT 0.0,"
-            "fdr FLOAT NOT NULL DEFAULT 0.0,"
-            "bon FLOAT NOT NULL DEFAULT 0.0,"
-            "ibp BIGINT NOT NULL DEFAULT 0,"
-            "jbp BIGINT NOT NULL DEFAULT 0,"
-            "rawc FLOAT NOT NULL DEFAULT 0.0,"
-            "CONSTRAINT fk_non_random_HiC_chrID FOREIGN KEY (chrID) REFERENCES chromosome(chrID) ON DELETE CASCADE ON UPDATE CASCADE"
-        ");"
-    )
-    print("non_random_HiC table created successfully.")
+    if not table_exists(cur, 'position'):
+        print("Creating position table...")
+        cur.execute(
+            "CREATE TABLE position ("
+                "pID serial PRIMARY KEY,"
+                "chrID VARCHAR(50) NOT NULL,"
+                "sampleID INT NOT NULL DEFAULT 0,"
+                "start_value BIGINT NOT NULL DEFAULT 0,"
+                "end_value BIGINT NOT NULL DEFAULT 0,"
+                "X FLOAT NOT NULL DEFAULT 0.0,"
+                "Y FLOAT NOT NULL DEFAULT 0.0,"
+                "Z FLOAT NOT NULL DEFAULT 0.0"
+            ");"
+        )
+        print("position table created successfully.")
+    else:
+        print("position table already exists, skipping creation.")
 
-    # Create the position table
-    print("Creating position table...")
-    cur.execute(
-        "CREATE TABLE position ("
-            "pID serial PRIMARY KEY,"
-            "chrID VARCHAR(50) NOT NULL,"
-            "sampleID INT NOT NULL DEFAULT 0,"
-            "start_value BIGINT NOT NULL DEFAULT 0,"
-            "end_value BIGINT NOT NULL DEFAULT 0,"
-            "X FLOAT NOT NULL DEFAULT 0.0,"
-            "Y FLOAT NOT NULL DEFAULT 0.0,"
-            "Z FLOAT NOT NULL DEFAULT 0.0"
-        ");"
-    )
-    print("position table created successfully.")
-    print("Tables creation completed successfully.")
-    
     # Commit and close connection
     conn.commit()
     cur.close()
@@ -116,27 +134,32 @@ def process_non_random_hic_data(cur, folder_path, chromosome_name):
 
 
 def insert_data():
-    """Insert data into the database."""
+    """Insert data into the database if not already present."""
     conn = get_db_connection(database=DB_NAME)
     cur = conn.cursor()
 
-    # Insert chromosome data
-    file_path = "../Data/chromosome_sizes.txt"
-    print("Inserting chromosome data...")
-    process_chromosome_data(cur, file_path)
-    print("Chromosome data inserted successfully.")
+    # Insert chromosome data only if the table is empty
+    if not data_exists(cur, 'chromosome'):
+        file_path = "../Data/chromosome_sizes.txt"
+        print("Inserting chromosome data...")
+        process_chromosome_data(cur, file_path)
+        print("Chromosome data inserted successfully.")
+    else:
+        print("Chromosome data already exists, skipping insertion.")
 
-    # Insert non-random Hi-C data
-    chromosome_dir = "../Data/chromosomes"
-    for folder_name in os.listdir(chromosome_dir):
-        folder_path = os.path.join(chromosome_dir, folder_name)
-        if os.path.isdir(folder_path):
-            chromosome_name = folder_name.split(".")[0]
-            print_name = folder_name.split(".")
-            print_name = ".".join(print_name)
-            print(f"Inserting non-random Hi-C data for chromosome {print_name}...")
-            process_non_random_hic_data(cur, folder_path, chromosome_name)
-            print(f"Non-random Hi-C data for chromosome {print_name} inserted successfully.")
+    # Insert non-random Hi-C data only if the table is empty
+    if not data_exists(cur, 'non_random_HiC'):
+        chromosome_dir = "../Data/chromosomes"
+        for folder_name in os.listdir(chromosome_dir):
+            folder_path = os.path.join(chromosome_dir, folder_name)
+            if os.path.isdir(folder_path):
+                chromosome_name = folder_name.split(".")[0]
+                print_name = ".".join(folder_name.split("."))
+                print(f"Inserting non-random Hi-C data for chromosome {print_name}...")
+                process_non_random_hic_data(cur, folder_path, chromosome_name)
+                print(f"Non-random Hi-C data for chromosome {print_name} inserted successfully.")
+    else:
+        print("Non-random Hi-C data already exists, skipping insertion.")
 
     # Commit and close connection
     conn.commit()
