@@ -6,7 +6,6 @@ res=5000
 threads=20
 EXE_PATH="../sBIF/bin/sBIF"
 
-chmod +x "$EXE_PATH"
 
 for interfile in ../Data/folding_input/*.txt; do
 

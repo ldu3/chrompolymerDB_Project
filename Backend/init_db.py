@@ -30,17 +30,17 @@ def initialize_tables():
     cur = conn.cursor()
 
     # Drop tables if they exist
-    cur.execute("DROP TABLE IF EXISTS position, non_random_HiC, chormosome;")
+    cur.execute("DROP TABLE IF EXISTS position, non_random_HiC, chromosome;")
 
-    # Create the chormosome table
-    print("Creating chormosome table...")
+    # Create the chromosome table
+    print("Creating chromosome table...")
     cur.execute(
-        "CREATE TABLE chormosome ("
+        "CREATE TABLE chromosome ("
             "chrID varchar(50) PRIMARY KEY,"
             "size INT NOT NULL DEFAULT 0"
         ");"
     )
-    print("chormosome table created successfully.")
+    print("chromosome table created successfully.")
 
     # Create other tables...
     print("Creating non_random_HiC table...")
@@ -57,7 +57,7 @@ def initialize_tables():
             "ibp BIGINT NOT NULL DEFAULT 0,"
             "jbp BIGINT NOT NULL DEFAULT 0,"
             "rawc FLOAT NOT NULL DEFAULT 0.0,"
-            "CONSTRAINT fk_non_random_HiC_chrID FOREIGN KEY (chrID) REFERENCES chormosome(chrID) ON DELETE CASCADE ON UPDATE CASCADE"
+            "CONSTRAINT fk_non_random_HiC_chrID FOREIGN KEY (chrID) REFERENCES chromosome(chrID) ON DELETE CASCADE ON UPDATE CASCADE"
         ");"
     )
     print("non_random_HiC table created successfully.")
@@ -89,7 +89,7 @@ def process_chromosome_data(cur, file_path):
     """Process and insert chromosome data from the specified file."""
     with open(file_path, "r") as f:
         data_to_insert = []
-        query = "INSERT INTO chormosome (chrID, size) VALUES (%s, %s);"
+        query = "INSERT INTO chromosome (chrID, size) VALUES (%s, %s);"
         for line in f:
             # Split each line by tab and strip extra spaces/newlines
             data = line.strip().split("\t")
