@@ -7,7 +7,7 @@ threads=50
 EXE_PATH="../sBIF/bin/sBIF"
 FLAG_FILE="/chromosome/backend/.position_inserted"
 
-total_files=$(find ../data/folding_input -name "*.txt" | wc -l | xargs)
+total_files=$(find ../Data/Folding_input -name "*.txt" | wc -l | xargs)
 count=1
 
 # Check if the position table has already been inserted
@@ -17,7 +17,7 @@ if [ -f "$FLAG_FILE" ]; then
 fi
 
 
-for interfile in ../Data/folding_input/*.txt; do
+for interfile in ../Data/Folding_input/*.txt; do
     filename=$(basename "$interfile")
 
     chrom=$(echo "$filename" | cut -d'.' -f1)
