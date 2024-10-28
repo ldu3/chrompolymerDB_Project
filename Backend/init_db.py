@@ -60,6 +60,7 @@ def initialize_tables():
         print("chromosome table created successfully.")
     else:
         print("chromosome table already exists, skipping creation.")
+        return
 
     if not table_exists(cur, "non_random_hic"):
         print("Creating non_random_hic table...")
@@ -83,6 +84,7 @@ def initialize_tables():
         print("non_random_hic table created successfully.")
     else:
         print("non_random_hic table already exists, skipping creation.")
+        return
 
     if not table_exists(cur, "position"):
         print("Creating position table...")
@@ -106,6 +108,7 @@ def initialize_tables():
     # Close connection
     cur.close()
     conn.close()
+    return
 
 
 def process_chromosome_data(cur, file_path):
@@ -174,6 +177,7 @@ def insert_data():
     conn.commit()
     cur.close()
     conn.close()
+    return
 
 
 initialize_tables()

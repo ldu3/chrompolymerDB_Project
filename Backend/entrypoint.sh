@@ -5,9 +5,8 @@ chrlensfile="../Data/chromosome_sizes.txt"
 res=5000
 threads=50
 EXE_PATH="../sBIF/bin/sBIF"
-FLAG_FILE="/chromosome/backend/.position_inserted"
+FLAG_FILE="/chromosome/backend/flags/.position_inserted"
 
-total_files=$(find ../Data/Folding_input -name "*.txt" | wc -l | xargs)
 count=1
 
 # Check if the position table has already been inserted

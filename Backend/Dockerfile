@@ -24,4 +24,4 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 5000
-CMD ["sh", "-c", "python init_db.py && /usr/local/bin/entrypoint.sh python app.py"]
+CMD ["sh", "-c", "python init_db.py && /usr/local/bin/entrypoint.sh && python app.py"]

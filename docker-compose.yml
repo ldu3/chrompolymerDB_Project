@@ -2,13 +2,14 @@ services:
   db:
     image: postgres:17.0-bookworm
     container_name: db
-    restart: always
+    restart: on-failure
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./Data:/chromosome/Data
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
       interval: 5s      
@@ -21,7 +22,7 @@ services:
 
   backend:
     container_name: backend
-    restart: always
+    restart: on-failure
     environment:
       DB_HOST: ${DB_HOST}
       DB_NAME: ${DB_NAME}
@@ -30,6 +31,7 @@ services:
     volumes:
       - ./backend:/chromosome/backend
       - ./Data:/chromosome/Data
+      - backend_flag_data:/chromosome/backend/flags
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -44,7 +46,7 @@ services:
 
   frontend:
     container_name: frontend
-    restart: always
+    restart: on-failure
     volumes:
       - ./frontend:/chromosome/frontend:cached
       - /chromosome/frontend/node_modules
@@ -59,7 +61,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgAdmin
-    restart: always
+    restart: on-failure
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -78,3 +80,5 @@ networks:
 
 volumes:
   pgadmin_data:
+  pgdata:
+  backend_flag_data:
