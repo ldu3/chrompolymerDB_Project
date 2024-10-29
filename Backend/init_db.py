@@ -1,4 +1,5 @@
 import os
+import re
 from psycopg2 import sql
 import psycopg2.extras
 import pandas as pd
@@ -77,6 +78,8 @@ def initialize_tables():
             "ibp BIGINT NOT NULL DEFAULT 0,"
             "jbp BIGINT NOT NULL DEFAULT 0,"
             "rawc FLOAT NOT NULL DEFAULT 0.0,"
+            "start_value BIGINT NOT NULL DEFAULT 0,"
+            "end_value BIGINT NOT NULL DEFAULT 0,"
             "CONSTRAINT fk_non_random_hic_chrID FOREIGN KEY (chrID) REFERENCES chromosome(chrID) ON DELETE CASCADE ON UPDATE CASCADE"
             ");"
         )
@@ -124,20 +127,21 @@ def process_chromosome_data(cur, file_path):
         psycopg2.extras.execute_batch(cur, query, data_to_insert)
 
 
-def process_non_random_hic_data(cur, folder_path, chromosome_name):
-    """Process and insert Hi-C data from the specified folder."""
+def process_non_random_hic_data(cur, folder_path, start_value, end_value, chromosome_name):
+    """Process and insert Hi-C data from the specified folder."""        
     csv_path = os.path.join(folder_path, "hic.clean.1/hic.clean.csv.gz")
     if os.path.exists(csv_path):
-        # Read the CSV file
         df = pd.read_csv(csv_path, compression="gzip")
         df["chrID"] = chromosome_name
-        # Prepare for batch insert
+        df["start_value"] = start_value
+        df["end_value"] = end_value
+
         query = """
-        INSERT INTO non_random_hic (chrID, i1, j1, fq, pval, fdr, bon, ibp, jbp, rawc)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+        INSERT INTO non_random_hic (chrID, i1, j1, fq, pval, fdr, bon, ibp, jbp, rawc, start_value, end_value)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
         """
         data_to_insert = df[
-            ["chrID", "i1", "j1", "fq", "pval", "fdr", "bon", "ibp", "jbp", "rawc"]
+            ["chrID", "i1", "j1", "fq", "pval", "fdr", "bon", "ibp", "jbp", "rawc", "start_value", "end_value"]
         ].values.tolist()
 
         psycopg2.extras.execute_batch(cur, query, data_to_insert)
@@ -164,11 +168,12 @@ def insert_data():
             folder_path = os.path.join(chromosome_dir, folder_name)
             if os.path.isdir(folder_path):
                 chromosome_name = folder_name.split(".")[0]
-                print_name = ".".join(folder_name.split("."))
-                print(f"Inserting non-random Hi-C data for chromosome {print_name}...")
-                process_non_random_hic_data(cur, folder_path, chromosome_name)
+                start_value = folder_name.split(".")[1]
+                end_value = folder_name.split(".")[2]
+                print(f"Inserting non-random Hi-C data for chromosome {folder_name}...")
+                process_non_random_hic_data(cur, folder_path, start_value, end_value, chromosome_name)
                 print(
-                    f"Non-random Hi-C data for chromosome {print_name} inserted successfully."
+                    f"Non-random Hi-C data for chromosome {folder_name} inserted successfully."
                 )
     else:
         print("Non-random Hi-C data already exists, skipping insertion.")
