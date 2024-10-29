@@ -65,7 +65,9 @@ def matched_chromosome_data(chromosome_name, chromosomeSequence):
         WHERE chrID = %s
         AND ibp >= %s
         AND ibp <= %s
-    """, (chromosome_name, chromosomeSequence["start"], chromosomeSequence["end"]))
+        AND jbp >= %s
+        AND jbp <= %s
+    """, (chromosome_name, chromosomeSequence["start"], chromosomeSequence["end"], chromosomeSequence["start"], chromosomeSequence["end"]))
     chromosome_data = cur.fetchall()
     conn.close()
     return pd.DataFrame(chromosome_data)

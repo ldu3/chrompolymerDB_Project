@@ -3,4 +3,5 @@
 /Data
 /Backend/venv
 /Backend/__pycache__
+/Backend/flags
 .env
