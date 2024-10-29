@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ chromosomeData, chromosomeSequence }) => {
+export const Heatmap = ({ chromosomeData, selectedChromosomeSequence }) => {
     useEffect(() => {
         const margin = { top: 10, right: 10, bottom: 50, left: 60 };
         const width = 700 - margin.left - margin.right;
@@ -24,7 +24,7 @@ export const Heatmap = ({ chromosomeData, chromosomeSequence }) => {
         });
 
         // Define scales based on chromosomeSequence length and step size
-        const { start, end } = chromosomeSequence;
+        const { start, end } = selectedChromosomeSequence;
         const range = end - start;
         const factor = 0.001;
         const step = Math.max(5000, Math.floor(range * factor));

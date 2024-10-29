@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, render_template
-from process import chromosomes_list, matched_chromosome_data
+from process import chromosomes_list, matched_chromosome_data, chromosome_sequence
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -18,9 +18,13 @@ def get_ChromosList():
 @app.route('/getChromosData', methods=['POST'])
 def get_ChromosData():
     chromosome_name = request.json['chromosome_name']
-    chromosomeSequence = request.json['chromosomeSequence']
+    chromosomeSequence = request.json['selectedChromosomeSequence']
     return jsonify(matched_chromosome_data(chromosome_name, chromosomeSequence).to_dict(orient='records'))
 
+@app.route('/getChromosSequence', methods=['POST'])
+def get_ChromosSequence():
+    chromosome_name = request.json['chromosome_name']
+    return jsonify(chromosome_sequence(chromosome_name))
 
 
 if __name__ == "__main__":

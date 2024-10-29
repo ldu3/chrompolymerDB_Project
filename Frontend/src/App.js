@@ -6,8 +6,9 @@ import { Heatmap } from './heatmap.js';
 function App() {
   const [chromosList, setChromosList] = useState([]);
   const [chromosomeName, setChromosomeName] = useState(null);
-  const [chromosomeSequence, setChromosomeSequence] = useState({ start: null, end: null });
+  const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: null, end: null });
   const [chromosomeData, setChromosomeData] = useState([]);
+  const [chromosomeSequenceDatabyChromosName, setChromosomeSequenceDatabyChromosName] = useState([]);
 
   useEffect(() => {
     fetch('/getChromosList')
@@ -18,7 +19,26 @@ function App() {
           setChromosomeName(data[0].value);
         }
       });
+    fetchChromosSequnceByChromosName(chromosomeName);
   }, []);
+
+  useEffect(() => {
+    fetchChromosSequnceByChromosName(chromosomeName);
+  }, [chromosomeName]);
+
+  const fetchChromosSequnceByChromosName = (chromosomeName) => {
+    fetch('/getChromosSequence', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ chromosome_name: chromosomeName })
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+      });
+  }
 
   const chromosomeChange = value => {
     setChromosomeName(value);
@@ -26,9 +46,9 @@ function App() {
 
   const chromosomeSequenceChange = (position, value) => {
     if (position === 'start') {
-      setChromosomeSequence({ ...chromosomeSequence, start: Number(value.target.value) });
+      setSelectedChromosomeSequence({ ...selectedChromosomeSequence, start: Number(value.target.value) });
     } else {
-      setChromosomeSequence({ ...chromosomeSequence, end: Number(value.target.value) });
+      setSelectedChromosomeSequence({ ...selectedChromosomeSequence, end: Number(value.target.value) });
     }
   };
 
@@ -38,7 +58,7 @@ function App() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ chromosome_name: chromosomeName, chromosomeSequence: chromosomeSequence })
+      body: JSON.stringify({ chromosome_name: chromosomeName, selectedChromosomeSequence: selectedChromosomeSequence })
     })
       .then(res => res.json())
       .then(data => {
@@ -92,7 +112,7 @@ function App() {
       {chromosomeData.length > 0 && (
         <Heatmap
           chromosomeData={chromosomeData}
-          chromosomeSequence={chromosomeSequence}
+          selectedChromosomeSequence={selectedChromosomeSequence}
         />)}
     </div>
   );

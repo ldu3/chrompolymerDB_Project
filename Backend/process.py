@@ -71,3 +71,30 @@ def matched_chromosome_data(chromosome_name, chromosomeSequence):
     chromosome_data = cur.fetchall()
     conn.close()
     return pd.DataFrame(chromosome_data)
+
+"""
+Returns the existing chromosome sequence data in the given chromosome name
+"""
+def chromosome_sequence(chromosome_name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT MIN(start_value) as min_start, MAX(end_value) as max_end
+        FROM non_random_hic
+        WHERE chrID = %s
+        GROUP BY start_value, end_value
+    """, (chromosome_name,))
+    chromosome_sequence = cur.fetchall()
+    conn.close()
+
+    print(chromosome_sequence)
+    min_start = min(row['min_start'] for row in chromosome_sequence)
+    max_end = max(row['max_end'] for row in chromosome_sequence)
+    
+    
+    chromosome_sequence_result = {
+        "seqs": chromosome_sequence,
+        "min_start": min_start,
+        "max_end": max_end
+    }
+    return chromosome_sequence_result
