@@ -48,19 +48,47 @@ function App() {
 
   return (
     <div className="App">
-      {chromosList.length > 0 && (
+      <div className="controlGroup">
+        {/* TODO: WITH MORE TISSUE TYPES */}
         <Select
-          defaultValue={chromosomeName}
+          defaultValue="Lung"
+          size="small"
           style={{
             width: 120,
+            marginRight: 20
           }}
-          onChange={chromosomeChange}
-          options={chromosList}
+          options={[
+            {
+              value: 'Lung',
+              label: 'Lung',
+            },
+            {
+              value: 'Breast',
+              label: 'Breast',
+            },
+            {
+              value: 'Liver',
+              label: 'Liver',
+            }
+          ]}
         />
-      )}
-      <Input placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} />
-      <Input placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} />
-      <Button type="primary" onClick={submit}>Submit</Button>
+        {chromosList.length > 0 && (
+          <Select
+            defaultValue={chromosomeName}
+            size="small"
+            style={{
+              width: 120,
+              marginRight: 20
+            }}
+            onChange={chromosomeChange}
+            options={chromosList}
+          />
+        )}
+        <Input size="small" style={{ width: 200, marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} />
+        <span style={{ marginRight: 10 }}>~</span>
+        <Input size="small" style={{ width: 200, marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} />
+        <Button size="small" type="primary" onClick={submit}>Submit</Button>
+      </div>
       {chromosomeData.length > 0 && (
         <Heatmap
           chromosomeData={chromosomeData}

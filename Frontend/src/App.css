@@ -12,3 +12,10 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+.controlGroup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px;
+}
