@@ -2,43 +2,43 @@ import React, { useState, useEffect } from 'react';
 import { Select, Input, Button } from 'antd';
 import './App.css';
 import { Heatmap } from './heatmap.js';
+import { ChromosomeBar } from './chromosomeBar.js';
 
 function App() {
   const [chromosList, setChromosList] = useState([]);
   const [chromosomeName, setChromosomeName] = useState(null);
   const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: null, end: null });
   const [chromosomeData, setChromosomeData] = useState([]);
-  const [chromosomeSequenceDatabyChromosName, setChromosomeSequenceDatabyChromosName] = useState([]);
+  const [chromosomeSequenceDatabyChromosName, setChromosomeSequenceDatabyChromosName] = useState({});
 
   useEffect(() => {
     fetch('/getChromosList')
       .then(res => res.json())
       .then(data => {
-        setChromosList(data)
-        if (data.length > 0) {
-          setChromosomeName(data[0].value);
-        }
+        setChromosList(data);
+        setChromosomeName(data[0].value);
       });
-    fetchChromosSequnceByChromosName(chromosomeName);
   }, []);
 
   useEffect(() => {
-    fetchChromosSequnceByChromosName(chromosomeName);
+    if (chromosomeName) {
+      fetch('/getChromosSequence', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chromosome_name: chromosomeName })
+      })
+        .then(res => res.json())
+        .then(data => {
+          setChromosomeSequenceDatabyChromosName(data);
+        });
+    }
   }, [chromosomeName]);
 
-  const fetchChromosSequnceByChromosName = (chromosomeName) => {
-    fetch('/getChromosSequence', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ chromosome_name: chromosomeName })
-    })
-      .then(res => res.json())
-      .then(data => {
-        console.log(data);
-      });
-  }
+  useEffect(() => {
+    console.log(chromosomeSequenceDatabyChromosName, 'here');
+  }, [chromosomeSequenceDatabyChromosName]);
 
   const chromosomeChange = value => {
     setChromosomeName(value);
@@ -109,6 +109,9 @@ function App() {
         <Input size="small" style={{ width: 200, marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} />
         <Button size="small" type="primary" onClick={submit}>Submit</Button>
       </div>
+      {Object.keys(chromosomeSequenceDatabyChromosName).length > 0 && (
+        <ChromosomeBar setSelectedChromosomeSequence={setSelectedChromosomeSequence} chromosomeSequenceDatabyChromosName={chromosomeSequenceDatabyChromosName} />
+      )}
       {chromosomeData.length > 0 && (
         <Heatmap
           chromosomeData={chromosomeData}

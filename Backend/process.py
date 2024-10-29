@@ -87,13 +87,22 @@ def chromosome_sequence(chromosome_name):
     chromosome_sequence = cur.fetchall()
     conn.close()
 
-    print(chromosome_sequence)
-    min_start = min(row['min_start'] for row in chromosome_sequence)
-    max_end = max(row['max_end'] for row in chromosome_sequence)
-    
-    
+    merged_sequences = []
+    for seq in sorted(chromosome_sequence, key=lambda x: x['min_start']):
+        if not merged_sequences:
+            merged_sequences.append(seq)
+        else:
+            last = merged_sequences[-1]
+            if seq['min_start'] <= last['max_end']:
+                last['max_end'] = max(last['max_end'], seq['max_end'])
+            else:
+                merged_sequences.append(seq)
+
+    min_start = min(seq['min_start'] for seq in merged_sequences)
+    max_end = max(seq['max_end'] for seq in merged_sequences)
+
     chromosome_sequence_result = {
-        "seqs": chromosome_sequence,
+        "seqs": merged_sequences,
         "min_start": min_start,
         "max_end": max_end
     }
