@@ -81,28 +81,6 @@ export const ChromosomeBar = ({ setSelectedChromosomeSequence, chromosomeSequenc
             .attr('text-anchor', 'end')
             .attr('font-size', '12px')
             .text(max_end);
-
-        // Brush setup
-        const brush = d3.brushX()
-            .extent([[0, height / 4], [width, height / 4 + height / 2]])
-            .on('start brush end', (event) => {
-                const selection = event.selection;
-                if (selection) {
-                    const [x0, x1] = selection.map(xScale.invert).map(Math.round);
-                    console.log('Brushed range:', x0, x1);
-                }
-            });
-
-        // Add brush group
-        const brushGroup = svg.append('g')
-            .attr('class', 'brush')
-            .attr('transform', `translate(0, 0)`)
-            .call(brush);
-
-        brushGroup.selectAll('rect.bg')
-            .attr('height', height / 2)
-            .attr('y', height / 4);
-
     }, [chromosomeSequenceDatabyChromosName]);
 
     return (
