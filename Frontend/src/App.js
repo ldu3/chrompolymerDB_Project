@@ -70,6 +70,7 @@ function App() {
     <div className="App">
       <div className="controlGroup">
         {/* TODO: WITH MORE TISSUE TYPES */}
+        <span className="controlGroupText">Organ:</span>
         <Select
           defaultValue="Lung"
           size="small"
@@ -93,21 +94,25 @@ function App() {
           ]}
         />
         {chromosList.length > 0 && (
-          <Select
-            defaultValue={chromosomeName}
-            size="small"
-            style={{
-              width: 120,
-              marginRight: 20
-            }}
-            onChange={chromosomeChange}
-            options={chromosList}
-          />
+          <>
+            <span className="controlGroupText">Chromosome:</span>
+            <Select
+              defaultValue={chromosomeName}
+              size="small"
+              style={{
+                width: 120,
+                marginRight: 20
+              }}
+              onChange={chromosomeChange}
+              options={chromosList}
+            />
+          </>
         )}
-        <Input size="small" style={{ width: 200, marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} value={selectedChromosomeSequence.start}/>
-        <span style={{ marginRight: 10 }}>~</span>
-        <Input size="small" style={{ width: 200, marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} value={selectedChromosomeSequence.end}/>
-        <Button size="small" type="primary" onClick={submit}>Submit</Button>
+        <span className="controlGroupText">Sequences:</span>
+        <Input size="small" style={{ width: 200, marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} value={selectedChromosomeSequence.start} />
+        <span className="controlGroupText">~</span>
+        <Input size="small" style={{ width: 200, marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} value={selectedChromosomeSequence.end} />
+        <Button size="small" color="primary" variant="outlined" onClick={submit}>Submit</Button>
       </div>
       {Object.keys(chromosomeSequenceDatabyChromosName).length > 0 && (
         <ChromosomeBar
