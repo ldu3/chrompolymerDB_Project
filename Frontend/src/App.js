@@ -37,7 +37,7 @@ function App() {
   }, [chromosomeName]);
 
   useEffect(() => {
-    console.log(chromosomeSequenceDatabyChromosName, 'here');
+    setSelectedChromosomeSequence({ start: chromosomeSequenceDatabyChromosName.min_start, end: chromosomeSequenceDatabyChromosName.min_start });
   }, [chromosomeSequenceDatabyChromosName]);
 
   const chromosomeChange = value => {
