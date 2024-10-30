@@ -63,11 +63,19 @@ export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosom
                     d3.select(event.currentTarget)
                         .attr('stroke', '#333')
                         .attr('stroke-width', 1);
+                        
+                    const tooltipWidth = 150;
+                    const tooltipX = event.pageX + 5;
+                    
+                    const adjustedLeft = tooltipX + tooltipWidth > window.innerWidth
+                        ? window.innerWidth - tooltipWidth - 10
+                        : tooltipX;
+                
                     setTooltip({
                         visible: true,
                         minStart: seq.min_start,
                         maxEnd: seq.max_end,
-                        left: event.pageX + 5,
+                        left: adjustedLeft,
                         top: event.pageY - 28
                     });
                 })
