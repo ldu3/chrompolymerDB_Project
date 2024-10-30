@@ -7,7 +7,7 @@ import { ChromosomeBar } from './chromosomeBar.js';
 function App() {
   const [chromosList, setChromosList] = useState([]);
   const [chromosomeName, setChromosomeName] = useState(null);
-  const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: null, end: null });
+  const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: 0, end: 0 });
   const [chromosomeData, setChromosomeData] = useState([]);
   const [chromosomeSequenceDatabyChromosName, setChromosomeSequenceDatabyChromosName] = useState({});
 
@@ -104,13 +104,17 @@ function App() {
             options={chromosList}
           />
         )}
-        <Input size="small" style={{ width: 200, marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} />
+        <Input size="small" style={{ width: 200, marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} value={selectedChromosomeSequence.start}/>
         <span style={{ marginRight: 10 }}>~</span>
-        <Input size="small" style={{ width: 200, marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} />
+        <Input size="small" style={{ width: 200, marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} value={selectedChromosomeSequence.end}/>
         <Button size="small" type="primary" onClick={submit}>Submit</Button>
       </div>
       {Object.keys(chromosomeSequenceDatabyChromosName).length > 0 && (
-        <ChromosomeBar setSelectedChromosomeSequence={setSelectedChromosomeSequence} chromosomeSequenceDatabyChromosName={chromosomeSequenceDatabyChromosName} />
+        <ChromosomeBar
+          selectedChromosomeSequence={selectedChromosomeSequence}
+          setSelectedChromosomeSequence={setSelectedChromosomeSequence}
+          chromosomeSequenceDatabyChromosName={chromosomeSequenceDatabyChromosName}
+        />
       )}
       {chromosomeData.length > 0 && (
         <Heatmap

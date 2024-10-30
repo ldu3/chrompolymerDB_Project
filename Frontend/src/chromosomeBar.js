@@ -2,16 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import "./Styles/chromosomeBar.css";
 
-export const ChromosomeBar = ({ setSelectedChromosomeSequence, chromosomeSequenceDatabyChromosName }) => {
+export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosomeSequence, chromosomeSequenceDatabyChromosName }) => {
     const svgRef = useRef();
     const parentRef = useRef();
     const [tooltip, setTooltip] = useState({ visible: false, minStart: 0, maxEnd: 0, left: 0, top: 0 });
-    const [selection, setSelection] = useState({ start: 0, end: 0 });
+
 
     useEffect(() => {
         const { min_start, max_end, seqs } = chromosomeSequenceDatabyChromosName;
         const height = 50;
-        const margin = { top: 10, bottom: 10, left: 10, right: 10 };
+        const margin = { top: 10, bottom: 5, left: 10, right: 10 };
         const width = parentRef.current ? parentRef.current.clientWidth - margin.left - margin.right : 0;
 
         const xScale = d3.scaleLinear()
@@ -24,30 +24,40 @@ export const ChromosomeBar = ({ setSelectedChromosomeSequence, chromosomeSequenc
 
         svg.selectAll('*').remove();
 
-        // Background
+        // Background rect
+        const backgroundY = margin.top + height / 4;
+        const backgroundHeight = height / 2;
+
         svg.append('rect')
             .attr('x', margin.left)
-            .attr('y', margin.top + height / 4)
+            .attr('y', backgroundY)
             .attr('width', width)
-            .attr('height', height / 2)
+            .attr('height', backgroundHeight)
             .attr('fill', '#F5F5F5');
+
+        // Highlighted selection area
+        svg.append('rect')
+            .attr('x', xScale(selectedChromosomeSequence.start))
+            .attr('y', backgroundY)
+            .attr('width', xScale(selectedChromosomeSequence.end) - xScale(selectedChromosomeSequence.start))
+            .attr('height', backgroundHeight)
+            .attr('fill', '#FFE0B2');
 
         // Seqs rects
         seqs.forEach((seq) => {
             svg.append('rect')
                 .attr('class', 'rect')
                 .attr('x', xScale(seq.min_start))
-                .attr('y', margin.top + height / 4)
+                .attr('y', backgroundY)
                 .attr('width', xScale(seq.max_end) - xScale(seq.min_start))
-                .attr('height', height / 2)
-                .attr('fill', selection.start < seq.max_end && selection.end > seq.min_start ? '#FFC107' : '#4CAF50')
+                .attr('height', backgroundHeight)
+                .attr('fill', selectedChromosomeSequence.start < seq.max_end && selectedChromosomeSequence.end > seq.min_start ? '#FFC107' : '#4CAF50')
                 .style('cursor', 'pointer')
                 .on('click', () => {
                     setSelectedChromosomeSequence({
                         start: seq.min_start,
                         end: seq.max_end
                     });
-                    console.log('clicked', seq.min_start, seq.max_end);
                 })
                 .on('mouseover', (event) => {
                     d3.select(event.currentTarget)
@@ -69,49 +79,72 @@ export const ChromosomeBar = ({ setSelectedChromosomeSequence, chromosomeSequenc
                 });
         });
 
-        // Selection triangles
-        const triangleHeight = 10;
-        const triangleY = margin.top + height / 4 - triangleHeight;
+        // Function to draw triangles and vertical lines
+        const drawSelectionMarkers = () => {
+            svg.selectAll('.triangle, .line-marker').remove();
 
-        const drawTriangles = () => {
-            svg.selectAll('.triangle').remove();
+            const triangleHeight = 10;
+            const triangleY = backgroundY - triangleHeight;
 
-            // Start triangle
+            // Start triangle and line
             svg.append('polygon')
                 .attr('class', 'triangle')
-                .attr('points', `${xScale(selection.start)},${triangleY + triangleHeight} ${xScale(selection.start) - 5},${triangleY} ${xScale(selection.start) + 5},${triangleY}`)
-                .attr('fill', 'blue')
+                .attr('points', `${xScale(selectedChromosomeSequence.start)},${triangleY + triangleHeight} ${xScale(selectedChromosomeSequence.start) - 5},${triangleY} ${xScale(selectedChromosomeSequence.start) + 5},${triangleY}`)
+                .attr('fill', '#666')
+                .attr('stroke', '#666')
+                .attr('stroke-width', 1.5)
                 .style('cursor', 'pointer')
                 .call(d3.drag()
                     .on('drag', (event) => {
                         const mouseX = d3.pointer(event)[0];
-                        const newStart = Math.min(xScale.invert(mouseX), selection.end);
-                        if (newStart !== selection.start) {
-                            setSelection((prev) => ({ ...prev, start: newStart }));
+                        let newStart = Math.round(Math.min(Math.max(xScale.invert(mouseX), min_start), selectedChromosomeSequence.end));
+                        if (newStart !== selectedChromosomeSequence.start) {
+                            setSelectedChromosomeSequence((prev) => ({ ...prev, start: newStart }));
                         }
                     }));
 
-            // End triangle
+            svg.append('line')
+                .attr('class', 'line-marker')
+                .attr('x1', xScale(selectedChromosomeSequence.start))
+                .attr('x2', xScale(selectedChromosomeSequence.start))
+                .attr('y1', backgroundY)
+                .attr('y2', backgroundY + backgroundHeight)
+                .attr('stroke', '#666')
+                .attr('stroke-width', 1.5);
+
+            // End triangle and line
             svg.append('polygon')
                 .attr('class', 'triangle')
-                .attr('points', `${xScale(selection.end)},${triangleY + triangleHeight} ${xScale(selection.end) - 5},${triangleY} ${xScale(selection.end) + 5},${triangleY}`)
-                .attr('fill', 'blue')
+                .attr('points', `${xScale(selectedChromosomeSequence.end)},${triangleY + triangleHeight} ${xScale(selectedChromosomeSequence.end) - 5},${triangleY} ${xScale(selectedChromosomeSequence.end) + 5},${triangleY}`)
+                .attr('fill', '#666')
+                .attr('stroke', '#666')
+                .attr('stroke-width', 1.5)
                 .style('cursor', 'pointer')
                 .call(d3.drag()
                     .on('drag', (event) => {
                         const mouseX = d3.pointer(event)[0];
-                        const newEnd = Math.max(xScale.invert(mouseX), selection.start);
-                        if (newEnd !== selection.end) {
-                            setSelection((prev) => ({ ...prev, end: newEnd }));
+                        let newEnd = Math.round(Math.max(Math.min(xScale.invert(mouseX), max_end), selectedChromosomeSequence.start));
+                        if (newEnd !== selectedChromosomeSequence.end) {
+                            setSelectedChromosomeSequence((prev) => ({ ...prev, end: newEnd }));
                         }
                     }));
+
+            svg.append('line')
+                .attr('class', 'line-marker')
+                .attr('x1', xScale(selectedChromosomeSequence.end))
+                .attr('x2', xScale(selectedChromosomeSequence.end))
+                .attr('y1', backgroundY)
+                .attr('y2', backgroundY + backgroundHeight)
+                .attr('stroke', '#666')
+                .attr('stroke-width', 1.5);
         };
 
-        if (selection.start === 0 && selection.end === 0) {
-            setSelection({ start: min_start, end: min_start });
+        // Default position for triangles
+        if (selectedChromosomeSequence.start === 0 && selectedChromosomeSequence.end === 0) {
+            setSelectedChromosomeSequence({ start: min_start, end: min_start });
         }
 
-        drawTriangles();
+        drawSelectionMarkers();
 
         svg.append('text')
             .attr('x', margin.left)
@@ -126,7 +159,7 @@ export const ChromosomeBar = ({ setSelectedChromosomeSequence, chromosomeSequenc
             .attr('text-anchor', 'end')
             .attr('font-size', '12px')
             .text(max_end);
-    }, [chromosomeSequenceDatabyChromosName, selection]);
+    }, [chromosomeSequenceDatabyChromosName, selectedChromosomeSequence]);
 
     return (
         <div ref={parentRef} style={{ width: '100%', position: 'relative' }}>
