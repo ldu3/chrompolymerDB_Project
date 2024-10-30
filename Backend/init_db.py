@@ -63,6 +63,25 @@ def initialize_tables():
         print("chromosome table already exists, skipping creation.")
         return
 
+    if not table_exists(cur, "gene"):
+        print("Creating gene table...")
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS gene ("
+            "gID serial PRIMARY KEY,"
+            "gene_id BIGINT NOT NULL,"
+            "chromosome VARCHAR(50) NOT NULL,"
+            "start_location BIGINT NOT NULL DEFAULT 0,"
+            "end_location BIGINT NOT NULL DEFAULT 0,"
+            "gene_name VARCHAR(255) NOT NULL,"
+            "symbol VARCHAR(30) NOT NULL"
+            ");"
+        )
+        conn.commit()
+        print("gene table created successfully.")
+    else:
+        print("gene table already exists, skipping creation.")
+        return
+
     if not table_exists(cur, "non_random_hic"):
         print("Creating non_random_hic table...")
         cur.execute(
@@ -127,6 +146,20 @@ def process_chromosome_data(cur, file_path):
         psycopg2.extras.execute_batch(cur, query, data_to_insert)
 
 
+def process_gene_data(cur, file_path):
+    """Process and insert gene data from the specified file."""
+    gene_df = pd.read_csv(file_path, sep="\t")
+    gene_df = gene_df[["Gene ID", "Name", "Symbol", "Chromosome", "Begin", "End"]]
+
+    query = """
+    INSERT INTO gene (gene_id, chromosome, start_location, end_location, gene_name, symbol)
+    VALUES (%s, %s, %s, %s, %s, %s);
+    """
+    data_to_insert = gene_df[["Gene ID", "Chromosome", "Begin", "End", "Name", "Symbol"]].values.tolist()
+
+    psycopg2.extras.execute_batch(cur, query, data_to_insert)
+
+
 def process_non_random_hic_data(cur, folder_path, start_value, end_value, chromosome_name):
     """Process and insert Hi-C data from the specified folder."""        
     csv_path = os.path.join(folder_path, "hic.clean.1/hic.clean.csv.gz")
@@ -140,9 +173,7 @@ def process_non_random_hic_data(cur, folder_path, start_value, end_value, chromo
         INSERT INTO non_random_hic (chrID, i1, j1, fq, pval, fdr, bon, ibp, jbp, rawc, start_value, end_value)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
         """
-        data_to_insert = df[
-            ["chrID", "i1", "j1", "fq", "pval", "fdr", "bon", "ibp", "jbp", "rawc", "start_value", "end_value"]
-        ].values.tolist()
+        data_to_insert = df[["chrID", "i1", "j1", "fq", "pval", "fdr", "bon", "ibp", "jbp", "rawc", "start_value", "end_value"]].values.tolist()
 
         psycopg2.extras.execute_batch(cur, query, data_to_insert)
 
@@ -160,6 +191,15 @@ def insert_data():
         print("Chromosome data inserted successfully.")
     else:
         print("Chromosome data already exists, skipping insertion.")
+
+    # Insert gene data only if the table is empty
+    if not data_exists(cur, "gene"):
+        file_path = "../Data/ncbi_dataset.tsv"
+        print("Inserting gene data...")
+        process_gene_data(cur, file_path)
+        print("Gene data inserted successfully.")
+    else:
+        print("Gene data already exists, skipping insertion.")
 
     # Insert non-random Hi-C data only if the table is empty
     if not data_exists(cur, "non_random_hic"):
