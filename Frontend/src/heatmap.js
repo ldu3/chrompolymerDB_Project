@@ -88,10 +88,16 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
         });
 
         const hasData = (ibp, jbp) => {
-            return totalChromosomeSequences.seqs.some(seq => 
+            const inRange = totalChromosomeSequences.seqs.some(seq => 
                 ibp >= seq.min_start && ibp <= seq.max_end && 
                 jbp >= seq.min_start && jbp <= seq.max_end
             );
+            
+            // check fq and fdr exist and are not both 0
+            const value = fqMap.get(`X:${ibp}, y:${jbp}`) || fqMap.get(`X:${jbp}, y:${ibp}`);
+            const hasNonZeroData = value && (value.fq !== 0 || value.fdr !== 0);
+            
+            return inRange && hasNonZeroData;
         };
 
         svg.selectAll()
