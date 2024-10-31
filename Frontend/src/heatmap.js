@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, chromosomeSequenceDatabyChromosName }) => {
+export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChromosomeSequences }) => {
     useEffect(() => {
         const margin = { top: 10, right: 10, bottom: 50, left: 60 };
         const width = 700 - margin.left - margin.right;
@@ -87,7 +87,7 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, chromosome
         });
 
         const hasData = (ibp, jbp) => {
-            return chromosomeSequenceDatabyChromosName.seqs.some(seq => 
+            return totalChromosomeSequences.seqs.some(seq => 
                 ibp >= seq.min_start && ibp <= seq.max_end && 
                 jbp >= seq.min_start && jbp <= seq.max_end
             );
@@ -120,7 +120,7 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, chromosome
             })
             .style('stroke', 'black')
             .style('stroke-width', 0.01);
-    }, [chromosomeData, selectedChromosomeSequence, chromosomeSequenceDatabyChromosName]);
+    }, [chromosomeData, selectedChromosomeSequence, totalChromosomeSequences]);
 
     return <div id="heatmap" />;
 };

@@ -10,7 +10,7 @@ function App() {
   const [chromosomeName, setChromosomeName] = useState(null);
   const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: 0, end: 0 });
   const [chromosomeData, setChromosomeData] = useState([]);
-  const [chromosomeSequenceDatabyChromosName, setChromosomeSequenceDatabyChromosName] = useState({});
+  const [totalChromosomeSequences, setTotalChromosomeSequences] = useState({});
 
   useEffect(() => {
     fetch('/getChromosList')
@@ -32,28 +32,20 @@ function App() {
       })
         .then(res => res.json())
         .then(data => {
-          setChromosomeSequenceDatabyChromosName(data);
+          setTotalChromosomeSequences(data);
         });
     }
   }, [chromosomeName]);
 
   useEffect(() => {
-    setSelectedChromosomeSequence({ start: chromosomeSequenceDatabyChromosName.min_start, end: chromosomeSequenceDatabyChromosName.min_start });
-  }, [chromosomeSequenceDatabyChromosName]);
+    setSelectedChromosomeSequence({ start: totalChromosomeSequences.min_start, end: totalChromosomeSequences.min_start });
+  }, [totalChromosomeSequences]);
 
   const chromosomeChange = value => {
     setChromosomeName(value);
   };
 
-  const chromosomeSequenceChange = (position, value) => {
-    if (position === 'start') {
-      setSelectedChromosomeSequence({ ...selectedChromosomeSequence, start: Number(value.target.value) });
-    } else {
-      setSelectedChromosomeSequence({ ...selectedChromosomeSequence, end: Number(value.target.value) });
-    }
-  };
-
-  const submit = () => {
+  const fetchChromosomeData = () => {
     fetch("/getChromosData", {
       method: 'POST',
       headers: {
@@ -67,11 +59,19 @@ function App() {
       });
   }
 
+  const chromosomeSequenceChange = (position, value) => {
+    if (position === 'start') {
+      setSelectedChromosomeSequence({ ...selectedChromosomeSequence, start: Number(value.target.value) });
+    } else {
+      setSelectedChromosomeSequence({ ...selectedChromosomeSequence, end: Number(value.target.value) });
+    }
+  };
+
   return (
     <div className="App">
       <div className="controlGroup">
         {/* TODO: WITH MORE TISSUE TYPES */}
-        <span className="controlGroupText">Organ:</span>
+        <span className="controlGroupText">Cell line:</span>
         <Select
           defaultValue="Lung"
           size="small"
@@ -113,19 +113,19 @@ function App() {
         <Input size="small" style={{ width: 200, marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} value={selectedChromosomeSequence.start} />
         <span className="controlGroupText">~</span>
         <Input size="small" style={{ width: 200, marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} value={selectedChromosomeSequence.end} />
-        <Button size="small" color="primary" variant="outlined" onClick={submit}>Submit</Button>
+        <Button size="small" color="primary" variant="outlined" onClick={fetchChromosomeData}>Submit</Button>
       </div>
-      {Object.keys(chromosomeSequenceDatabyChromosName).length > 0 && (
+      {Object.keys(totalChromosomeSequences).length > 0 && (
         <ChromosomeBar
           selectedChromosomeSequence={selectedChromosomeSequence}
           setSelectedChromosomeSequence={setSelectedChromosomeSequence}
-          chromosomeSequenceDatabyChromosName={chromosomeSequenceDatabyChromosName}
+          totalChromosomeSequences={totalChromosomeSequences}
         />
       )}
       {chromosomeData.length > 0 && (
         <Heatmap
           chromosomeData={chromosomeData}
-          chromosomeSequenceDatabyChromosName={chromosomeSequenceDatabyChromosName}
+          totalChromosomeSequences={totalChromosomeSequences}
           selectedChromosomeSequence={selectedChromosomeSequence}
         />)}
     </div>

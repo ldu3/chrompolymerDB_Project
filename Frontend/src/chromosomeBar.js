@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import "./Styles/chromosomeBar.css";
 
-export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosomeSequence, chromosomeSequenceDatabyChromosName }) => {
+export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosomeSequence, totalChromosomeSequences }) => {
     const svgRef = useRef();
     const parentRef = useRef();
     const [tooltip, setTooltip] = useState({ visible: false, minStart: 0, maxEnd: 0, left: 0, top: 0 });
 
     useEffect(() => {
         if (selectedChromosomeSequence.start !== undefined && selectedChromosomeSequence.end !== undefined) {
-            const { min_start, max_end, seqs } = chromosomeSequenceDatabyChromosName;
+            const { min_start, max_end, seqs } = totalChromosomeSequences;
             const height = 50;
             const margin = { top: 10, bottom: 5, left: 10, right: 10 };
             const width = parentRef.current ? parentRef.current.clientWidth - margin.left - margin.right : 0;
@@ -163,7 +163,7 @@ export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosom
                 .attr('font-size', '12px')
                 .text(max_end);
         }
-    }, [chromosomeSequenceDatabyChromosName, selectedChromosomeSequence]);
+    }, [totalChromosomeSequences, selectedChromosomeSequence]);
 
     return (
         <div ref={parentRef} style={{ width: '100%', position: 'relative' }}>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, chromosomeSequenceDatabyChromosName }) => {
+export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChromosomeSequences }) => {
     const canvasRef = useRef(null);
 
     useEffect(() => {
@@ -100,7 +100,7 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, chromosome
         });
 
         const hasData = (ibp, jbp) => {
-            return chromosomeSequenceDatabyChromosName.seqs.some(seq =>
+            return totalChromosomeSequences.seqs.some(seq =>
                 ibp >= seq.min_start && ibp <= seq.max_end &&
                 jbp >= seq.min_start && jbp <= seq.max_end
             );
@@ -123,7 +123,7 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, chromosome
 
             });
         });
-    }, [chromosomeData, selectedChromosomeSequence, chromosomeSequenceDatabyChromosName]);
+    }, [chromosomeData, totalChromosomeSequences]);
 
     return (
         <div >
