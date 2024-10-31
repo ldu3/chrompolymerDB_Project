@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Select, Input, Button } from 'antd';
+import { Select, Input, Button, message } from 'antd';
 import './App.css';
 // import { Heatmap } from './heatmap.js';
 import { Heatmap } from './canvasHeatmap.js';
@@ -11,6 +11,7 @@ function App() {
   const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: 0, end: 0 });
   const [chromosomeData, setChromosomeData] = useState([]);
   const [totalChromosomeSequences, setTotalChromosomeSequences] = useState({});
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     fetch('/getChromosList')
@@ -41,34 +42,62 @@ function App() {
     setSelectedChromosomeSequence({ start: totalChromosomeSequences.min_start, end: totalChromosomeSequences.min_start });
   }, [totalChromosomeSequences]);
 
+  const warning = (type) => {
+    if(type === 'overrange') {
+      messageApi.open({
+        type: 'warning',
+        content: 'Please limits the range to 4,000,000',
+      });
+    }
+    if(type === 'smallend') {
+      messageApi.open({
+        type: 'warning',
+        content: 'Please set the end value greater than the start value',
+      });
+    }
+  };
+
   const chromosomeChange = value => {
     setChromosomeName(value);
   };
 
   const fetchChromosomeData = () => {
-    fetch("/getChromosData", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ chromosome_name: chromosomeName, selectedChromosomeSequence: selectedChromosomeSequence })
-    })
-      .then(res => res.json())
-      .then(data => {
-        setChromosomeData(data);
-      });
+    if (selectedChromosomeSequence.end - selectedChromosomeSequence.start > 4000000) {
+      warning('overrange');
+    } else {
+      fetch("/getChromosData", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chromosome_name: chromosomeName, selectedChromosomeSequence: selectedChromosomeSequence })
+      })
+        .then(res => res.json())
+        .then(data => {
+          setChromosomeData(data);
+        });
+    }
   }
 
   const chromosomeSequenceChange = (position, value) => {
     if (position === 'start') {
-      setSelectedChromosomeSequence({ ...selectedChromosomeSequence, start: Number(value.target.value) });
+      if (selectedChromosomeSequence.end < Number(value.target.value)) {
+        warning('smallend');
+      } else {
+        setSelectedChromosomeSequence({ ...selectedChromosomeSequence, start: Number(value.target.value) });
+      }
     } else {
-      setSelectedChromosomeSequence({ ...selectedChromosomeSequence, end: Number(value.target.value) });
+      if (Number(value.target.value) - selectedChromosomeSequence.start > 4000000) {
+        warning('overrange');
+      } else {
+        setSelectedChromosomeSequence({ ...selectedChromosomeSequence, end: Number(value.target.value) });
+      }
     }
   };
 
   return (
     <div className="App">
+      {contextHolder}
       <div className="controlGroup">
         {/* TODO: WITH MORE TISSUE TYPES */}
         <span className="controlGroupText">Cell line:</span>
