@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ chromosomeData, selectedChromosomeSequence }) => {
+export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, chromosomeSequenceDatabyChromosName }) => {
     useEffect(() => {
         const margin = { top: 10, right: 10, bottom: 50, left: 60 };
         const width = 700 - margin.left - margin.right;
@@ -32,8 +32,6 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence }) => {
             { length: Math.floor((end - start) / step) + 1 },
             (_, i) => start + i * step
         );
-        console.log(axisValues);
-
 
         const colorScale = d3.scaleSequential(d3.interpolateYlOrBr)
             .domain([0, d3.max(chromosomeData, d => d.fq)]);
@@ -88,6 +86,13 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence }) => {
             fqMap.set(`X:${d.jbp}, y:${d.ibp}`, { fq: d.fq, fdr: d.fdr });
         });
 
+        const hasData = (ibp, jbp) => {
+            return chromosomeSequenceDatabyChromosName.seqs.some(seq => 
+                ibp >= seq.min_start && ibp <= seq.max_end && 
+                jbp >= seq.min_start && jbp <= seq.max_end
+            );
+        };
+
         svg.selectAll()
             .data(axisValues.flatMap(ibp => axisValues.map(jbp => {
                 const value = fqMap.get(`X:${ibp}, y:${jbp}`) || fqMap.get(`X:${jbp}, y:${ibp}`) || { fq: 0, fdr: 0 };
@@ -104,11 +109,18 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence }) => {
             .attr('y', d => yScale(d.ibp))
             .attr('width', xScale.bandwidth())
             .attr('height', yScale.bandwidth())
-            .style('fill', d => d.jbp <= d.ibp ? (d.fdr > 0.05 ? 'white' : colorScale(d.fq)) : colorScale(d.fq))
+            .style('fill', d => {
+                if (!hasData(d.ibp, d.jbp)) {
+                    return 'white';
+                }
+                if (d.jbp <= d.ibp && (d.fdr > 0.05 || (d.fdr === 0 && d.fq === 0))) {
+                    return 'white';
+                }
+                return colorScale(d.fq);
+            })
             .style('stroke', 'black')
             .style('stroke-width', 0.01);
-
-    }, [chromosomeData]);
+    }, [chromosomeData, selectedChromosomeSequence, chromosomeSequenceDatabyChromosName]);
 
     return <div id="heatmap" />;
 };

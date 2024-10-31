@@ -124,6 +124,7 @@ function App() {
       {chromosomeData.length > 0 && (
         <Heatmap
           chromosomeData={chromosomeData}
+          chromosomeSequenceDatabyChromosName={chromosomeSequenceDatabyChromosName}
           selectedChromosomeSequence={selectedChromosomeSequence}
         />)}
     </div>
