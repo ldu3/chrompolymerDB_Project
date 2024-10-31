@@ -47,12 +47,14 @@ function App() {
       messageApi.open({
         type: 'warning',
         content: 'Please limits the range to 4,000,000',
+        duration: 1.5,
       });
     }
     if(type === 'smallend') {
       messageApi.open({
         type: 'warning',
         content: 'Please set the end value greater than the start value',
+        duration: 1.5,
       });
     }
   };
@@ -146,6 +148,7 @@ function App() {
       </div>
       {Object.keys(totalChromosomeSequences).length > 0 && (
         <ChromosomeBar
+          warning={warning}
           selectedChromosomeSequence={selectedChromosomeSequence}
           setSelectedChromosomeSequence={setSelectedChromosomeSequence}
           totalChromosomeSequences={totalChromosomeSequences}
