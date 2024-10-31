@@ -39,12 +39,13 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
 
         // Define scales based on chromosomeSequence length and step size
         const { start, end } = selectedChromosomeSequence;
-        const range = end - start;
-        const factor = 0.001;
-        const step = Math.max(5000, Math.floor(range * factor));
+        const step = 5000;
+        const adjustedStart = Math.floor(start / step) * step;
+        const adjustedEnd = Math.ceil(end / step) * step;
+        
         const axisValues = Array.from(
-            { length: Math.floor((end - start) / step) + 1 },
-            (_, i) => start + i * step
+            { length: Math.floor((adjustedEnd - adjustedStart) / step) + 1 },
+            (_, i) => adjustedStart + i * step
         );
 
         const colorScale = d3.scaleSequential(d3.interpolateYlOrBr)
@@ -63,7 +64,7 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
         svg.append('g')
             .attr('transform', `translate(0, ${height})`)
             .call(d3.axisBottom(xScale)
-                .tickValues(axisValues.filter((_, i) => i % 5 === 0))
+                .tickValues(axisValues.filter((_, i) => i % 12 === 0))
                 .tickFormat(d => {
                     if (d >= 1000000) {
                         return `${(d / 1000000).toFixed(2)}M`;
@@ -81,7 +82,7 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
 
         svg.append('g')
             .call(d3.axisLeft(yScale)
-                .tickValues(axisValues.filter((_, i) => i % 5 === 0))
+                .tickValues(axisValues.filter((_, i) => i % 12 === 0))
                 .tickFormat(d => {
                     if (d >= 1000000) {
                         return `${(d / 1000000).toFixed(2)}M`;
