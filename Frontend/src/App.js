@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Select, Input, Button } from 'antd';
 import './App.css';
-import { Heatmap } from './heatmap.js';
+// import { Heatmap } from './heatmap.js';
+import { Heatmap } from './canvasHeatmap.js';
 import { ChromosomeBar } from './chromosomeBar.js';
 
 function App() {
