@@ -10,7 +10,7 @@ export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosom
     useEffect(() => {
         if (selectedChromosomeSequence.start !== undefined && selectedChromosomeSequence.end !== undefined) {
             const { min_start, max_end, seqs } = totalChromosomeSequences;
-            const height = 50;
+            const height = 30;
             const margin = { top: 10, bottom: 5, left: 10, right: 10 };
             const width = parentRef.current ? parentRef.current.clientWidth - margin.left - margin.right : 0;
 

@@ -43,14 +43,14 @@ function App() {
   }, [totalChromosomeSequences]);
 
   const warning = (type) => {
-    if(type === 'overrange') {
+    if (type === 'overrange') {
       messageApi.open({
         type: 'warning',
         content: 'Please limits the range to 4,000,000',
         duration: 1.5,
       });
     }
-    if(type === 'smallend') {
+    if (type === 'smallend') {
       messageApi.open({
         type: 'warning',
         content: 'Please set the end value greater than the start value',
@@ -100,66 +100,72 @@ function App() {
   return (
     <div className="App">
       {contextHolder}
-      <div className="controlGroup">
-        {/* TODO: WITH MORE TISSUE TYPES */}
-        <span className="controlGroupText">Cell line:</span>
-        <Select
-          defaultValue="Lung"
-          size="small"
-          style={{
-            width: 120,
-            marginRight: 20
-          }}
-          options={[
-            {
-              value: 'Lung',
-              label: 'Lung',
-            },
-            {
-              value: 'Breast',
-              label: 'Breast',
-            },
-            {
-              value: 'Liver',
-              label: 'Liver',
-            }
-          ]}
-        />
-        {chromosList.length > 0 && (
-          <>
-            <span className="controlGroupText">Chromosome:</span>
-            <Select
-              defaultValue={chromosomeName}
-              size="small"
-              style={{
-                width: 120,
-                marginRight: 20
-              }}
-              onChange={chromosomeChange}
-              options={chromosList}
-            />
-          </>
+      <div className="controlHeader">
+        <div className="controlGroup">
+          {/* TODO: WITH MORE TISSUE TYPES */}
+          <span className="controlGroupText">Cell line:</span>
+          <Select
+            defaultValue="Lung"
+            size="small"
+            style={{
+              width: 120,
+              marginRight: 20
+            }}
+            options={[
+              {
+                value: 'Lung',
+                label: 'Lung',
+              },
+              {
+                value: 'Breast',
+                label: 'Breast',
+              },
+              {
+                value: 'Liver',
+                label: 'Liver',
+              }
+            ]}
+          />
+          {chromosList.length > 0 && (
+            <>
+              <span className="controlGroupText">Chromosome:</span>
+              <Select
+                defaultValue={chromosomeName}
+                size="small"
+                style={{
+                  width: 120,
+                  marginRight: 20
+                }}
+                onChange={chromosomeChange}
+                options={chromosList}
+              />
+            </>
+          )}
+          <span className="controlGroupText">Sequences:</span>
+          <Input size="small" style={{ width: 200, marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} value={selectedChromosomeSequence.start} />
+          <span className="controlGroupText">~</span>
+          <Input size="small" style={{ width: 200, marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} value={selectedChromosomeSequence.end} />
+          <Button size="small" color="primary" variant="outlined" onClick={fetchChromosomeData}>Check</Button>
+        </div>
+
+        {Object.keys(totalChromosomeSequences).length > 0 && (
+          <ChromosomeBar
+            warning={warning}
+            selectedChromosomeSequence={selectedChromosomeSequence}
+            setSelectedChromosomeSequence={setSelectedChromosomeSequence}
+            totalChromosomeSequences={totalChromosomeSequences}
+          />
         )}
-        <span className="controlGroupText">Sequences:</span>
-        <Input size="small" style={{ width: 200, marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} value={selectedChromosomeSequence.start} />
-        <span className="controlGroupText">~</span>
-        <Input size="small" style={{ width: 200, marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} value={selectedChromosomeSequence.end} />
-        <Button size="small" color="primary" variant="outlined" onClick={fetchChromosomeData}>Submit</Button>
       </div>
-      {Object.keys(totalChromosomeSequences).length > 0 && (
-        <ChromosomeBar
-          warning={warning}
-          selectedChromosomeSequence={selectedChromosomeSequence}
-          setSelectedChromosomeSequence={setSelectedChromosomeSequence}
-          totalChromosomeSequences={totalChromosomeSequences}
-        />
-      )}
-      {chromosomeData.length > 0 && (
-        <Heatmap
-          chromosomeData={chromosomeData}
-          totalChromosomeSequences={totalChromosomeSequences}
-          selectedChromosomeSequence={selectedChromosomeSequence}
-        />)}
+      <div className='content'>
+        {chromosomeData.length > 0 && (
+          <Heatmap
+            chromosomeName={chromosomeName}
+            chromosomeData={chromosomeData}
+            totalChromosomeSequences={totalChromosomeSequences}
+            selectedChromosomeSequence={selectedChromosomeSequence}
+          />)}
+      </div>
     </div>
   );
 }

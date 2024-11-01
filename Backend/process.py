@@ -60,13 +60,14 @@ def matched_chromosome_data(chromosome_name, chromosomeSequence):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT *
+        SELECT chrID, ibp, jbp, fdr, AVG(fq) as avg_fq
         FROM non_random_hic
         WHERE chrID = %s
         AND ibp >= %s
         AND ibp <= %s
         AND jbp >= %s
         AND jbp <= %s
+        GROUP BY chrID, ibp, jbp, fdr
     """, (chromosome_name, chromosomeSequence["start"], chromosomeSequence["end"], chromosomeSequence["start"], chromosomeSequence["end"]))
     chromosome_data = cur.fetchall()
     conn.close()
