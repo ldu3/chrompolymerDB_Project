@@ -88,17 +88,17 @@ def initialize_tables():
             "CREATE TABLE IF NOT EXISTS non_random_hic ("
             "hID serial PRIMARY KEY,"
             "chrID VARCHAR(50) NOT NULL,"
-            "i1 INT NOT NULL DEFAULT 0,"
-            "j1 INT NOT NULL DEFAULT 0,"
+            # "i1 INT NOT NULL DEFAULT 0,"
+            # "j1 INT NOT NULL DEFAULT 0,"
             "fq FLOAT NOT NULL DEFAULT 0.0,"
-            "pval FLOAT NOT NULL DEFAULT 0.0,"
+            # "pval FLOAT NOT NULL DEFAULT 0.0,"
             "fdr FLOAT NOT NULL DEFAULT 0.0,"
-            "bon FLOAT NOT NULL DEFAULT 0.0,"
+            # "bon FLOAT NOT NULL DEFAULT 0.0,"
             "ibp BIGINT NOT NULL DEFAULT 0,"
             "jbp BIGINT NOT NULL DEFAULT 0,"
-            "rawc FLOAT NOT NULL DEFAULT 0.0,"
-            "start_value BIGINT NOT NULL DEFAULT 0,"
-            "end_value BIGINT NOT NULL DEFAULT 0,"
+            # "rawc FLOAT NOT NULL DEFAULT 0.0,"
+            # "start_value BIGINT NOT NULL DEFAULT 0,"
+            # "end_value BIGINT NOT NULL DEFAULT 0,"
             "CONSTRAINT fk_non_random_hic_chrID FOREIGN KEY (chrID) REFERENCES chromosome(chrID) ON DELETE CASCADE ON UPDATE CASCADE"
             ");"
         )
@@ -106,6 +106,23 @@ def initialize_tables():
         print("non_random_hic table created successfully.")
     else:
         print("non_random_hic table already exists, skipping creation.")
+        return
+
+    if not table_exists(cur, "sequence"):
+        print("Creating sequence table...")
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS sequence ("
+            "sID serial PRIMARY KEY,"
+            "chrID VARCHAR(50) NOT NULL,"
+            "cell_line VARCHAR(50) NOT NULL,"
+            "start_value BIGINT NOT NULL DEFAULT 0,"
+            "end_value BIGINT NOT NULL DEFAULT 0"
+            ");"
+        )
+        conn.commit()
+        print("sequence table created successfully.")
+    else:
+        print("sequence table already exists, skipping creation.")
         return
 
     if not table_exists(cur, "position"):
@@ -160,22 +177,35 @@ def process_gene_data(cur, file_path):
     psycopg2.extras.execute_batch(cur, query, data_to_insert)
 
 
-def process_non_random_hic_data(cur, folder_path, start_value, end_value, chromosome_name):
+def process_non_random_hic_data(cur, record, cell_line):
     """Process and insert Hi-C data from the specified folder."""        
-    csv_path = os.path.join(folder_path, "hic.clean.1/hic.clean.csv.gz")
-    if os.path.exists(csv_path):
-        df = pd.read_csv(csv_path, compression="gzip")
-        df["chrID"] = chromosome_name
-        df["start_value"] = start_value
-        df["end_value"] = end_value
+    # csv_path = os.path.join(folder_path, "hic.clean.1/hic.clean.csv.gz")
+    # if os.path.exists(csv_path):
+    #     df = pd.read_csv(csv_path, compression="gzip")
+    #     df["chrID"] = chromosome_name
 
-        query = """
-        INSERT INTO non_random_hic (chrID, i1, j1, fq, pval, fdr, bon, ibp, jbp, rawc, start_value, end_value)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-        """
-        data_to_insert = df[["chrID", "i1", "j1", "fq", "pval", "fdr", "bon", "ibp", "jbp", "rawc", "start_value", "end_value"]].values.tolist()
+    query = """
+    INSERT INTO non_random_hic (chrID, cell_line, ibp, jbp, fq, fdr)
+    VALUES (%s, %s, %s, %s, %s);
+    """
+    # data_to_insert = df[["chrID", "fq", "fdr", "ibp", "jbp"]].values.tolist()
+    data_to_insert = [(record[0], cell_line, record[3], record[4], record[1], record[2])]
 
-        psycopg2.extras.execute_batch(cur, query, data_to_insert)
+    psycopg2.extras.execute_batch(cur, query, data_to_insert)
+
+
+def process_sequence_data(cur):
+    """Process and insert sequence data from the specified folder."""
+    sequence_path = "../Data/ibp_ranges_summary.csv.gz"
+    df = pd.read_csv(sequence_path, usecols=["chr", "ibp_range_start", "ibp_range_end", "cell_line"])
+
+    query = """
+    INSERT INTO sequence (chrID, cell_line, start_value, end_value)
+    VALUES (%s, %s, %s, %s);
+    """
+    data_to_insert = df.to_records(index=False).tolist()
+
+    psycopg2.extras.execute_batch(cur, query, data_to_insert)
 
 
 def insert_data():
@@ -203,21 +233,48 @@ def insert_data():
 
     # Insert non-random Hi-C data only if the table is empty
     if not data_exists(cur, "non_random_hic"):
-        chromosome_dir = "../Data/chromosomes"
-        for folder_name in os.listdir(chromosome_dir):
-            folder_path = os.path.join(chromosome_dir, folder_name)
-            if os.path.isdir(folder_path):
-                chromosome_name = folder_name.split(".")[0]
-                start_value = folder_name.split(".")[1]
-                end_value = folder_name.split(".")[2]
-                print(f"Inserting non-random Hi-C data for chromosome {folder_name}...")
-                process_non_random_hic_data(cur, folder_path, start_value, end_value, chromosome_name)
+        # chromosome_dir = "../Data/chromosomes"
+        chromosome_dir = "../Data/all_processed_HiC"
+
+        for file_name in os.listdir(chromosome_dir):
+            if file_name.endswith(".csv.gz"):
+                # Get cell_line name
+                cell_line = re.search(r"^(\w+)_", file_name).group(1)
+
+                # Load each cell line chromosome data
+                file_path = os.path.join(chromosome_dir, file_name)
+                GM_df = pd.read_csv(file_path)
+
+                # Drop unnecessary columns
+                GM_df = GM_df.drop(columns=['rawc'])
+
+                # group by chr, ibp, jbp, get the first value of fq and fdr in each group
+                GM_df = GM_df.groupby(['chr', 'ibp', 'jbp'], as_index=False).agg({'fq': 'first', 'fdr': 'first'})
+
+                non_random_hic_records = GM_df[['chr', 'ibp', 'jbp', 'fq', 'fdr']].values.tolist()
+                process_non_random_hic_data(cur, non_random_hic_records, cell_line)
                 print(
-                    f"Non-random Hi-C data for chromosome {folder_name} inserted successfully."
+                    f"Non-random Hi-C data for cell line {cell_line} inserted successfully."
                 )
+
+        # for folder_name in os.listdir(chromosome_dir):
+        #     folder_path = os.path.join(chromosome_dir, folder_name)
+        #     if os.path.isdir(folder_path):
+        #         chromosome_name = folder_name.split(".")[0]
+        #         start_value = folder_name.split(".")[1]
+        #         end_value = folder_name.split(".")[2]
+        #         print(f"Inserting non-random Hi-C data for chromosome {folder_name}...")
+        #         process_non_random_hic_data(cur, folder_path, start_value, end_value, chromosome_name)
+        #         print(
+        #             f"Non-random Hi-C data for chromosome {folder_name} inserted successfully."
+        #         )
     else:
         print("Non-random Hi-C data already exists, skipping insertion.")
 
+    if not data_exists(cur, "sequence"):
+        print("Inserting sequence data...")
+        process_sequence_data(cur)
+        print("Sequence data inserted successfully.")
     # Commit and close connection
     conn.commit()
     cur.close()
