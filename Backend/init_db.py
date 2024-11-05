@@ -88,6 +88,7 @@ def initialize_tables():
             "CREATE TABLE IF NOT EXISTS non_random_hic ("
             "hID serial PRIMARY KEY,"
             "chrID VARCHAR(50) NOT NULL,"
+            "cell_line VARCHAR(50) NOT NULL,"
             # "i1 INT NOT NULL DEFAULT 0,"
             # "j1 INT NOT NULL DEFAULT 0,"
             "fq FLOAT NOT NULL DEFAULT 0.0,"
@@ -116,7 +117,9 @@ def initialize_tables():
             "chrID VARCHAR(50) NOT NULL,"
             "cell_line VARCHAR(50) NOT NULL,"
             "start_value BIGINT NOT NULL DEFAULT 0,"
-            "end_value BIGINT NOT NULL DEFAULT 0"
+            "end_value BIGINT NOT NULL DEFAULT 0,"
+            "UNIQUE(chrID, cell_line, start_value, end_value)"
+            # "CONSTRAINT fk_sequence_non_random_hic_chrID FOREIGN KEY (chrID, cell_line, start_value, end_value) REFERENCES non_random_hic(chrID, cell_line, start_value, end_value) ON DELETE CASCADE ON UPDATE CASCADE"
             ");"
         )
         conn.commit()
@@ -125,24 +128,24 @@ def initialize_tables():
         print("sequence table already exists, skipping creation.")
         return
 
-    if not table_exists(cur, "position"):
-        print("Creating position table...")
-        cur.execute(
-            "CREATE TABLE IF NOT EXISTS position ("
-            "pID serial PRIMARY KEY,"
-            "chrID VARCHAR(50) NOT NULL,"
-            "sampleID INT NOT NULL DEFAULT 0,"
-            "start_value BIGINT NOT NULL DEFAULT 0,"
-            "end_value BIGINT NOT NULL DEFAULT 0,"
-            "X FLOAT NOT NULL DEFAULT 0.0,"
-            "Y FLOAT NOT NULL DEFAULT 0.0,"
-            "Z FLOAT NOT NULL DEFAULT 0.0"
-            ");"
-        )
-        conn.commit()
-        print("position table created successfully.")
-    else:
-        print("position table already exists, skipping creation.")
+    # if not table_exists(cur, "position"):
+    #     print("Creating position table...")
+    #     cur.execute(
+    #         "CREATE TABLE IF NOT EXISTS position ("
+    #         "pID serial PRIMARY KEY,"
+    #         "chrID VARCHAR(50) NOT NULL,"
+    #         "sampleID INT NOT NULL DEFAULT 0,"
+    #         "start_value BIGINT NOT NULL DEFAULT 0,"
+    #         "end_value BIGINT NOT NULL DEFAULT 0,"
+    #         "X FLOAT NOT NULL DEFAULT 0.0,"
+    #         "Y FLOAT NOT NULL DEFAULT 0.0,"
+    #         "Z FLOAT NOT NULL DEFAULT 0.0"
+    #         ");"
+    #     )
+    #     conn.commit()
+    #     print("position table created successfully.")
+    # else:
+    #     print("position table already exists, skipping creation.")
 
     # Close connection
     cur.close()
@@ -195,17 +198,22 @@ def process_non_random_hic_data(cur, record, cell_line):
 
 
 def process_sequence_data(cur):
-    """Process and insert sequence data from the specified folder."""
-    sequence_path = "../Data/ibp_ranges_summary.csv.gz"
-    df = pd.read_csv(sequence_path, usecols=["chr", "ibp_range_start", "ibp_range_end", "cell_line"])
+    """Process and insert sequence data from all CSV files in the specified folder."""
+    folder_path = "../Data/seqs"
+    for filename in os.listdir(folder_path):
+        # check if the file is a CSV.gz file
+        if filename.endswith(".csv.gz"):
+            file_path = os.path.join(folder_path, filename)
+            
+            df = pd.read_csv(file_path, usecols=["chr", "cell_line", "start_value", "end_value"])
+            
+            query = """
+            INSERT INTO sequence (chrID, cell_line, start_value, end_value)
+            VALUES (%s, %s, %s, %s);
+            """
 
-    query = """
-    INSERT INTO sequence (chrID, cell_line, start_value, end_value)
-    VALUES (%s, %s, %s, %s);
-    """
-    data_to_insert = df.to_records(index=False).tolist()
-
-    psycopg2.extras.execute_batch(cur, query, data_to_insert)
+            data_to_insert = df.to_records(index=False).tolist()
+            psycopg2.extras.execute_batch(cur, query, data_to_insert)
 
 
 def insert_data():
