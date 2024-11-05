@@ -27,84 +27,86 @@ def get_db_connection():
 
 
 """
-Returns the list of chromosomes in the given data path
+Returns the list of cell line in the given data path
 """
-def chromosomes_list():
+def cell_lines_list():
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT DISTINCT chrid
-        FROM non_random_hic
+        SELECT DISTINCT cell_line
+        FROM seqs
     """)
-    chromosomes = cur.fetchall()
+    cell_lines = [row[0] for row in cur.fetchall()]
+    conn.close()
+    return cell_lines
+
+
+"""
+Returns the list of chromosomes in the cell line
+"""
+def chromosomes_list(cell_line):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT DISTINCT chrID
+        FROM seqs
+        WHERE cell_line = %s
+    """, (cell_line,))
     
+    chromosomes = [row[0] for row in cur.fetchall()]
+
     def sort_key(chromosome):
-        match = re.match(r"chr(\d+|\D+)", chromosome['chrid'])
+        match = re.match(r"chr(\d+|\D+)", chromosome)
         if match:
             value = match.group(1)
             return (int(value) if value.isdigit() else float('inf'), value)
         return (float('inf'), '')
-    
-    # Sort the chromosomes by the numeric or character suffix
+
     sorted_chromosomes_list = sorted(chromosomes, key=sort_key)
-    sorted_chromosomes_list = [{"value": chrom['chrid'], "label": chrom['chrid']} for chrom in sorted_chromosomes_list]
+    sorted_chromosomes_list = [{"value": chrom, "label": chrom} for chrom in sorted_chromosomes_list]
     
     conn.close()
     return sorted_chromosomes_list
 
 
 """
-Returns the concated dataframe of the chromosome data in the given chromosome name and sequence start and end
+Returns the all sequences of the chromosome data in the given cell line, chromosome name
 """
-def matched_chromosome_data(chromosome_name, chromosomeSequence):
+def chromosome_sequences(cell_line, chromosome_name):
     conn = get_db_connection()
     cur = conn.cursor()
+    
     cur.execute("""
-        SELECT chrID, ibp, jbp, fdr, AVG(fq) as avg_fq
-        FROM non_random_hic
-        WHERE chrID = %s
-        AND ibp >= %s
-        AND ibp <= %s
-        AND jbp >= %s
-        AND jbp <= %s
-        GROUP BY chrID, ibp, jbp, fdr
-    """, (chromosome_name, chromosomeSequence["start"], chromosomeSequence["end"], chromosomeSequence["start"], chromosomeSequence["end"]))
-    chromosome_data = cur.fetchall()
+        SELECT start_value, end_value
+        FROM seqs
+        WHERE cell_line = %s
+        AND chrID = %s
+        ORDER BY start_value
+    """, (cell_line, chromosome_name))
+    
+    ranges = [{"start": row[0], "end": row[1]} for row in cur.fetchall()]
+    
     conn.close()
-    return pd.DataFrame(chromosome_data)
+    return ranges
 
 """
-Returns the existing chromosome sequence data in the given chromosome name
+Returns the existing chromosome data in the given cell line, chromosome name, start, end
 """
-def chromosome_sequence(chromosome_name):
+def chromosome_data(cell_line, chromosome_name, sequences):
     conn = get_db_connection()
     cur = conn.cursor()
+
     cur.execute("""
-        SELECT MIN(start_value) as min_start, MAX(end_value) as max_end
+        SELECT *
         FROM non_random_hic
         WHERE chrID = %s
-        GROUP BY start_value, end_value
-    """, (chromosome_name,))
+        AND cell_line = %s
+        AND ibp >= %s
+        AND ibp <= %s
+        ORDER BY start_value
+    """, (chromosome_name, cell_line, sequences.start, sequences.end))
     chromosome_sequence = cur.fetchall()
     conn.close()
 
-    merged_sequences = []
-    for seq in sorted(chromosome_sequence, key=lambda x: x['min_start']):
-        if not merged_sequences:
-            merged_sequences.append(seq)
-        else:
-            last = merged_sequences[-1]
-            if seq['min_start'] <= last['max_end']:
-                last['max_end'] = max(last['max_end'], seq['max_end'])
-            else:
-                merged_sequences.append(seq)
-
-    min_start = min(seq['min_start'] for seq in merged_sequences)
-    max_end = max(seq['max_end'] for seq in merged_sequences)
-
-    chromosome_sequence_result = {
-        "seqs": merged_sequences,
-        "min_start": min_start,
-        "max_end": max_end
-    }
-    return chromosome_sequence_result
+    return chromosome_sequence

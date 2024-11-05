@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, render_template
-from process import chromosomes_list, matched_chromosome_data, chromosome_sequence
+from process import cell_lines_list, chromosomes_list, chromosome_sequences, chromosome_data
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -10,21 +10,28 @@ def index():
     return 'Hello, World!'
 
 
-@app.route('/getChromosList', methods=['GET'])
+@app.route('/getCellLines', methods=['GET'])
+def get_CellLines():
+    return jsonify(cell_lines_list())
+
+@app.route('/getChromosList', methods=['POST'])
 def get_ChromosList():
-    return jsonify(chromosomes_list())
+    cell_line = request.json['cell_line']
+    return jsonify(chromosomes_list(cell_line))
 
 
 @app.route('/getChromosData', methods=['POST'])
-def get_ChromosData():
+def get_ChromosSequences():
+    cell_line = request.json['cell_line']
     chromosome_name = request.json['chromosome_name']
-    chromosomeSequence = request.json['selectedChromosomeSequence']
-    return jsonify(matched_chromosome_data(chromosome_name, chromosomeSequence).to_dict(orient='records'))
+    return jsonify(chromosome_sequences(cell_line, chromosome_name).to_dict(orient='records'))
 
 @app.route('/getChromosSequence', methods=['POST'])
-def get_ChromosSequence():
+def get_ChromosData():
+    cell_line = request.json['cell_line']
     chromosome_name = request.json['chromosome_name']
-    return jsonify(chromosome_sequence(chromosome_name))
+    sequences = request.json['sequences']
+    return jsonify(chromosome_data(cell_line, chromosome_name, sequences))
 
 
 if __name__ == "__main__":
