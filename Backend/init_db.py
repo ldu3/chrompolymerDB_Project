@@ -221,17 +221,49 @@ def process_gene_data(cur, file_path):
     psycopg2.extras.execute_batch(cur, query, data_to_insert)
 
 
-def process_non_random_hic_data(cur, record, cell_line):
-    """Process and insert Hi-C data from the specified folder."""
+def process_non_random_hic_data(chromosome_dir):
+    """Process and insert Hi-C data from CSV files in the specified directory."""
     query = """
     INSERT INTO non_random_hic (chrID, cell_line, ibp, jbp, fq, fdr)
-    VALUES (%s, %s, %s, %s, %s);
+    VALUES (%s, %s, %s, %s, %s, %s);
     """
-    data_to_insert = [
-        (record[0], cell_line, record[3], record[4], record[1], record[2])
-    ]
 
-    psycopg2.extras.execute_batch(cur, query, data_to_insert)
+    # Loop through all files in the directory
+    for file_name in os.listdir(chromosome_dir):
+        if file_name.endswith(".csv.gz"):
+            # Get the cell_line from the file name
+            cell_line = re.search(r"^(\w+)_", file_name).group(1)
+            file_path = os.path.join(chromosome_dir, file_name)
+
+            # Read the CSV file in chunks
+            for chunk in pd.read_csv(
+                file_path, usecols=["chr", "ibp", "jbp", "fq", "fdr"], chunksize=1000
+            ):
+                # Convert the chunk to a list of tuples
+                non_random_hic_records = chunk[
+                    ["chr", "ibp", "jbp", "fq", "fdr"]
+                ].values.tolist()
+
+                # Prepare data for batch insertion
+                data_to_insert = [
+                    (record[0], cell_line, record[3], record[4], record[1], record[2])
+                    for record in non_random_hic_records
+                ]
+
+                conn = get_db_connection(database=DB_NAME)
+                cur = conn.cursor()
+
+                # Batch insert the records and commit after each chunk
+                psycopg2.extras.execute_batch(cur, query, data_to_insert)
+                print(f"Inserted {len(data_to_insert)} records for {cell_line}.")
+                
+                conn.commit()
+                cur.close()
+                conn.close()
+
+            print(
+                f"Non-random Hi-C data for cell line {cell_line} inserted successfully."
+            )
 
 
 def process_sequence_data(cur):
@@ -243,7 +275,7 @@ def process_sequence_data(cur):
             file_path = os.path.join(folder_path, filename)
 
             df = pd.read_csv(
-                file_path, usecols=["chr", "cell_line", "start_value", "end_value"]
+                file_path, usecols=["chrID", "cell_line", "start_value", "end_value"]
             )
 
             query = """
@@ -256,7 +288,7 @@ def process_sequence_data(cur):
 
 
 def insert_data():
-    """Insert data into the database if not already present."""
+    """Insert data(Except for the data of non random HiC) into the database if not already present."""
     conn = get_db_connection(database=DB_NAME)
     cur = conn.cursor()
 
@@ -278,40 +310,32 @@ def insert_data():
     else:
         print("Gene data already exists, skipping insertion.")
 
-    # Insert non-random Hi-C data only if the table is empty
-    if not data_exists(cur, "non_random_hic"):
-        chromosome_dir = "../Data/refined_processed_HiC"
-
-        for file_name in os.listdir(chromosome_dir):
-            if file_name.endswith(".csv.gz"):
-                # Get cell_line name
-                cell_line = re.search(r"^(\w+)_", file_name).group(1)
-
-                # Load each cell line chromosome data
-                file_path = os.path.join(chromosome_dir, file_name)
-                chromosome_df = pd.read_csv(file_path)
-
-                non_random_hic_records = chromosome_df[
-                    ["chr", "ibp", "jbp", "fq", "fdr"]
-                ].values.tolist()
-                process_non_random_hic_data(cur, non_random_hic_records, cell_line)
-                print(
-                    f"Non-random Hi-C data for cell line {cell_line} inserted successfully."
-                )
-    else:
-        print("Non-random Hi-C data already exists, skipping insertion.")
-
+    # Insert sequence data only if the table is empty
     if not data_exists(cur, "sequence"):
         print("Inserting sequence data...")
         process_sequence_data(cur)
         print("Sequence data inserted successfully.")
 
-    # Commit and close connection
+    # Commit changes and close connection
     conn.commit()
     cur.close()
     conn.close()
     return
 
 
+def insert_non_random_HiC_data():
+    """Insert non random HiC data into the database if not already present.(it is seperated from insert_data() to avoid long running transactions)"""
+    conn = get_db_connection(database=DB_NAME)
+    cur = conn.cursor()
+
+    # Insert non-random Hi-C data only if the table is empty
+    if not data_exists(cur, "non_random_hic"):
+        chromosome_dir = "../Data/refined_processed_HiC"
+        process_non_random_hic_data(chromosome_dir)
+    else:
+        print("Non-random Hi-C data already exists, skipping insertion.")
+
+
 initialize_tables()
 insert_data()
+insert_non_random_HiC_data()
