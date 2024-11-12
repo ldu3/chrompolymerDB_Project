@@ -15,9 +15,14 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 def get_db_connection(database=None):
     """Create a connection to the database."""
-    return psycopg2.connect(
-        host=DB_HOST, user=DB_USERNAME, password=DB_PASSWORD, database=database
-    )
+    try:
+        conn = psycopg2.connect(
+            host=DB_HOST, user=DB_USERNAME, password=DB_PASSWORD, database=database
+        )
+        return conn
+    except Exception as e:
+        print(f"Failed to connect to database: {e}")
+        return None
 
 
 def table_exists(cur, table_name):
@@ -41,9 +46,49 @@ def data_exists(cur, table_name):
     return cur.fetchone()[0]
 
 
+def create_position_trigger(conn):
+    """Create a trigger on the position table to delete all rows when a group exceeds 5 rows."""
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        CREATE OR REPLACE FUNCTION check_position_count()
+        RETURNS TRIGGER AS $$
+        DECLARE
+            row_count INT;
+        BEGIN
+            SELECT COUNT(*) INTO row_count
+            FROM position
+            WHERE cell_line = NEW.cell_line
+                AND chrID = NEW.chrID
+                AND sampleID = NEW.sampleID;
+
+            IF row_count > 5 THEN
+                DELETE FROM position;
+            END IF;
+
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+        """
+    )
+
+    cur.execute(
+        """
+        CREATE TRIGGER position_count_trigger
+        AFTER INSERT ON position
+        FOR EACH ROW
+        EXECUTE FUNCTION check_position_count();
+        """
+    )
+
+    conn.commit()
+    cur.close()
+
+
 def initialize_tables():
-    """Create tables."""
-    
+    """Create tables"""
+
     # Connect to the newly created database to create tables
     conn = get_db_connection(database=DB_NAME)
     cur = conn.cursor()
@@ -89,17 +134,10 @@ def initialize_tables():
             "hID serial PRIMARY KEY,"
             "chrID VARCHAR(50) NOT NULL,"
             "cell_line VARCHAR(50) NOT NULL,"
-            # "i1 INT NOT NULL DEFAULT 0,"
-            # "j1 INT NOT NULL DEFAULT 0,"
             "fq FLOAT NOT NULL DEFAULT 0.0,"
-            # "pval FLOAT NOT NULL DEFAULT 0.0,"
             "fdr FLOAT NOT NULL DEFAULT 0.0,"
-            # "bon FLOAT NOT NULL DEFAULT 0.0,"
             "ibp BIGINT NOT NULL DEFAULT 0,"
             "jbp BIGINT NOT NULL DEFAULT 0,"
-            # "rawc FLOAT NOT NULL DEFAULT 0.0,"
-            # "start_value BIGINT NOT NULL DEFAULT 0,"
-            # "end_value BIGINT NOT NULL DEFAULT 0,"
             "CONSTRAINT fk_non_random_hic_chrID FOREIGN KEY (chrID) REFERENCES chromosome(chrID) ON DELETE CASCADE ON UPDATE CASCADE"
             ");"
         )
@@ -119,7 +157,6 @@ def initialize_tables():
             "start_value BIGINT NOT NULL DEFAULT 0,"
             "end_value BIGINT NOT NULL DEFAULT 0,"
             "UNIQUE(chrID, cell_line, start_value, end_value)"
-            # "CONSTRAINT fk_sequence_non_random_hic_chrID FOREIGN KEY (chrID, cell_line, start_value, end_value) REFERENCES non_random_hic(chrID, cell_line, start_value, end_value) ON DELETE CASCADE ON UPDATE CASCADE"
             ");"
         )
         conn.commit()
@@ -128,24 +165,26 @@ def initialize_tables():
         print("sequence table already exists, skipping creation.")
         return
 
-    # if not table_exists(cur, "position"):
-    #     print("Creating position table...")
-    #     cur.execute(
-    #         "CREATE TABLE IF NOT EXISTS position ("
-    #         "pID serial PRIMARY KEY,"
-    #         "chrID VARCHAR(50) NOT NULL,"
-    #         "sampleID INT NOT NULL DEFAULT 0,"
-    #         "start_value BIGINT NOT NULL DEFAULT 0,"
-    #         "end_value BIGINT NOT NULL DEFAULT 0,"
-    #         "X FLOAT NOT NULL DEFAULT 0.0,"
-    #         "Y FLOAT NOT NULL DEFAULT 0.0,"
-    #         "Z FLOAT NOT NULL DEFAULT 0.0"
-    #         ");"
-    #     )
-    #     conn.commit()
-    #     print("position table created successfully.")
-    # else:
-    #     print("position table already exists, skipping creation.")
+    if not table_exists(cur, "position"):
+        print("Creating position table...")
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS position ("
+            "pID serial PRIMARY KEY,"
+            "cell_line VARCHAR(50) NOT NULL,"
+            "chrID VARCHAR(50) NOT NULL,"
+            "sampleID INT NOT NULL DEFAULT 0,"
+            "start_value BIGINT NOT NULL DEFAULT 0,"
+            "end_value BIGINT NOT NULL DEFAULT 0,"
+            "X FLOAT NOT NULL DEFAULT 0.0,"
+            "Y FLOAT NOT NULL DEFAULT 0.0,"
+            "Z FLOAT NOT NULL DEFAULT 0.0"
+            ");"
+        )
+        conn.commit()
+        create_position_trigger(conn)
+        print("position table created successfully.")
+    else:
+        print("position table already exists, skipping creation.")
 
     # Close connection
     cur.close()
@@ -175,24 +214,22 @@ def process_gene_data(cur, file_path):
     INSERT INTO gene (gene_id, chromosome, start_location, end_location, gene_name, symbol)
     VALUES (%s, %s, %s, %s, %s, %s);
     """
-    data_to_insert = gene_df[["Gene ID", "Chromosome", "Begin", "End", "Name", "Symbol"]].values.tolist()
+    data_to_insert = gene_df[
+        ["Gene ID", "Chromosome", "Begin", "End", "Name", "Symbol"]
+    ].values.tolist()
 
     psycopg2.extras.execute_batch(cur, query, data_to_insert)
 
 
 def process_non_random_hic_data(cur, record, cell_line):
-    """Process and insert Hi-C data from the specified folder."""        
-    # csv_path = os.path.join(folder_path, "hic.clean.1/hic.clean.csv.gz")
-    # if os.path.exists(csv_path):
-    #     df = pd.read_csv(csv_path, compression="gzip")
-    #     df["chrID"] = chromosome_name
-
+    """Process and insert Hi-C data from the specified folder."""
     query = """
     INSERT INTO non_random_hic (chrID, cell_line, ibp, jbp, fq, fdr)
     VALUES (%s, %s, %s, %s, %s);
     """
-    # data_to_insert = df[["chrID", "fq", "fdr", "ibp", "jbp"]].values.tolist()
-    data_to_insert = [(record[0], cell_line, record[3], record[4], record[1], record[2])]
+    data_to_insert = [
+        (record[0], cell_line, record[3], record[4], record[1], record[2])
+    ]
 
     psycopg2.extras.execute_batch(cur, query, data_to_insert)
 
@@ -204,9 +241,11 @@ def process_sequence_data(cur):
         # check if the file is a CSV.gz file
         if filename.endswith(".csv.gz"):
             file_path = os.path.join(folder_path, filename)
-            
-            df = pd.read_csv(file_path, usecols=["chr", "cell_line", "start_value", "end_value"])
-            
+
+            df = pd.read_csv(
+                file_path, usecols=["chr", "cell_line", "start_value", "end_value"]
+            )
+
             query = """
             INSERT INTO sequence (chrID, cell_line, start_value, end_value)
             VALUES (%s, %s, %s, %s);
@@ -241,8 +280,7 @@ def insert_data():
 
     # Insert non-random Hi-C data only if the table is empty
     if not data_exists(cur, "non_random_hic"):
-        # chromosome_dir = "../Data/chromosomes"
-        chromosome_dir = "../Data/all_processed_HiC"
+        chromosome_dir = "../Data/refined_processed_HiC"
 
         for file_name in os.listdir(chromosome_dir):
             if file_name.endswith(".csv.gz"):
@@ -251,31 +289,15 @@ def insert_data():
 
                 # Load each cell line chromosome data
                 file_path = os.path.join(chromosome_dir, file_name)
-                GM_df = pd.read_csv(file_path)
+                chromosome_df = pd.read_csv(file_path)
 
-                # Drop unnecessary columns
-                GM_df = GM_df.drop(columns=['rawc'])
-
-                # group by chr, ibp, jbp, get the first value of fq and fdr in each group
-                GM_df = GM_df.groupby(['chr', 'ibp', 'jbp'], as_index=False).agg({'fq': 'first', 'fdr': 'first'})
-
-                non_random_hic_records = GM_df[['chr', 'ibp', 'jbp', 'fq', 'fdr']].values.tolist()
+                non_random_hic_records = chromosome_df[
+                    ["chr", "ibp", "jbp", "fq", "fdr"]
+                ].values.tolist()
                 process_non_random_hic_data(cur, non_random_hic_records, cell_line)
                 print(
                     f"Non-random Hi-C data for cell line {cell_line} inserted successfully."
                 )
-
-        # for folder_name in os.listdir(chromosome_dir):
-        #     folder_path = os.path.join(chromosome_dir, folder_name)
-        #     if os.path.isdir(folder_path):
-        #         chromosome_name = folder_name.split(".")[0]
-        #         start_value = folder_name.split(".")[1]
-        #         end_value = folder_name.split(".")[2]
-        #         print(f"Inserting non-random Hi-C data for chromosome {folder_name}...")
-        #         process_non_random_hic_data(cur, folder_path, start_value, end_value, chromosome_name)
-        #         print(
-        #             f"Non-random Hi-C data for chromosome {folder_name} inserted successfully."
-        #         )
     else:
         print("Non-random Hi-C data already exists, skipping insertion.")
 
@@ -283,6 +305,7 @@ def insert_data():
         print("Inserting sequence data...")
         process_sequence_data(cur)
         print("Sequence data inserted successfully.")
+
     # Commit and close connection
     conn.commit()
     cur.close()

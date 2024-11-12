@@ -5,15 +5,18 @@ chrlensfile="../Data/chromosome_sizes.txt"
 res=5000
 threads=50
 EXE_PATH="../sBIF/bin/sBIF"
-FLAG_FILE="/chromosome/backend/flags/.position_inserted"
+n_samples=$1
+n_runs=$2
+is_download=$3
+# FLAG_FILE="/chromosome/backend/flags/.position_inserted"
 
 count=1
 
 # Check if the position table has already been inserted
-if [ -f "$FLAG_FILE" ]; then
-    echo "Position table already inserted, skipping entrypoint script."
-    exit 0
-fi
+# if [ -f "$FLAG_FILE" ]; then
+#     echo "Position table already inserted, skipping entrypoint script."
+#     exit 0
+# fi
 
 
 for interfile in ../Data/Folding_input/*.txt; do
@@ -26,7 +29,7 @@ for interfile in ../Data/Folding_input/*.txt; do
     end=$(echo "$filename" | cut -d'.' -f3 | sed 's/.txt//')
 
     ##command
-    cmd="$EXE_PATH -i $interfile -c $chrom -l $chrlensfile -s $start -e $end -r $res -j $job_prefix -p $threads"
+    cmd="$EXE_PATH -i $interfile -c $chrom -l $chrlensfile -s $start -e $end -r $res -do $is_download -j $job_prefix -p $threads"
     
     echo "Processing file $count of $total_files: $filename"
     echo "Running command: $cmd"
@@ -37,7 +40,7 @@ done
 
 
 # Mark the position table as inserted
-touch "$FLAG_FILE"
-echo "Position table insert complete. Flag file created at $FLAG_FILE."
+# touch "$FLAG_FILE"
+# echo "Position table insert complete. Flag file created at $FLAG_FILE."
 
 echo "Done."

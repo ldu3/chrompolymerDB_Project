@@ -7,7 +7,7 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install git
-RUN apt-get update && apt-get install -y git cmake
+RUN apt-get update && apt-get install -y git cmake libzip-dev
 WORKDIR /chromosome
 RUN git clone https://github.com/ScheWann/sBIF.git
 
@@ -21,8 +21,6 @@ WORKDIR /chromosome/backend
 
 COPY . .
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 5000
-CMD ["sh", "-c", "python init_db.py && /usr/local/bin/entrypoint.sh && python app.py"]
+CMD ["sh", "-c", "python init_db.py && python app.py"]

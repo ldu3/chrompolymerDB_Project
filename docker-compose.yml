@@ -31,7 +31,6 @@ services:
     volumes:
       - ./backend:/chromosome/backend
       - ./Data:/chromosome/Data
-      - backend_flag_data:/chromosome/backend/flags
     build:
       context: ./backend
       dockerfile: Dockerfile
