@@ -89,8 +89,8 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
 
         const hasData = (ibp, jbp) => {
             const inRange = totalChromosomeSequences.some(seq => 
-                ibp >= seq.min_start && ibp <= seq.max_end && 
-                jbp >= seq.min_start && jbp <= seq.max_end
+                ibp >= seq.start && ibp <= seq.end && 
+                jbp >= seq.start && jbp <= seq.end
             );
             // check fq and fdr exist and are not both 0
             const value = fqMap.get(`X:${ibp}, Y:${jbp}`) || fqMap.get(`X:${jbp}, Y:${ibp}`);
@@ -115,13 +115,13 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
             .attr('y', d => yScale(d.ibp))
             .attr('width', xScale.bandwidth())
             .attr('height', yScale.bandwidth())
-            .on('mouseover', function (event, d) {
+            .on('mouseover', (event, d) => {
                 console.log(d);
             })
             .style('fill', d => {
-                // if (!hasData(d.ibp, d.jbp)) {
-                //     return 'white';
-                // }
+                if (!hasData(d.ibp, d.jbp)) {
+                    return 'white';
+                }
                 if (d.jbp <= d.ibp && (d.fdr > 0.05 || (d.fdr === 0 && d.fq === 0))) {
                     return 'white';
                 }
