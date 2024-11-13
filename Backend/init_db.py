@@ -236,6 +236,7 @@ def process_non_random_hic_data(chromosome_dir):
     for file_name in os.listdir(chromosome_dir):
         if file_name.endswith(".csv.gz"):
             # Get the cell_line from the file name
+            cell_line = re.search(r"^(\w+)_", file_name).group(1)
             file_path = os.path.join(chromosome_dir, file_name)
 
             # Read the CSV file in chunks
