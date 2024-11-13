@@ -88,7 +88,7 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
         });
 
         const hasData = (ibp, jbp) => {
-            const inRange = totalChromosomeSequences.seqs.some(seq => 
+            const inRange = totalChromosomeSequences.some(seq => 
                 ibp >= seq.min_start && ibp <= seq.max_end && 
                 jbp >= seq.min_start && jbp <= seq.max_end
             );

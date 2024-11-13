@@ -12,7 +12,7 @@ function App() {
   const [chromosomeName, setChromosomeName] = useState(null);
   const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: 0, end: 0 });
   const [chromosomeData, setChromosomeData] = useState([]);
-  const [totalChromosomeSequences, setTotalChromosomeSequences] = useState({});
+  const [totalChromosomeSequences, setTotalChromosomeSequences] = useState([]);
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
@@ -20,28 +20,45 @@ function App() {
       .then(res => res.json())
       .then(data => {
         setCellLineList(data);
-        setCellLineName(data[0].value);
       });
   }, []);
 
   useEffect(() => {
-    if (chromosomeName) {
+    if (cellLineName) {
+      fetch('/getChromosList', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cell_line: cellLineName })
+      })
+        .then(res => res.json())
+        .then(data => {
+          setChromosList(data);
+        });
+    }
+  }, [cellLineName]);
+
+  useEffect(() => {
+    if (cellLineName && chromosomeName) {
       fetch('/getChromosSequence', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ chromosome_name: chromosomeName })
+        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName })
       })
         .then(res => res.json())
         .then(data => {
           setTotalChromosomeSequences(data);
         });
     }
-  }, [chromosomeName]);
+  }, [cellLineName, chromosomeName]);
 
   useEffect(() => {
-    setSelectedChromosomeSequence({ start: totalChromosomeSequences.min_start, end: totalChromosomeSequences.min_start });
+    if(totalChromosomeSequences.length > 0) {
+      setSelectedChromosomeSequence({ start: totalChromosomeSequences[0].start, end: totalChromosomeSequences[0].start });
+    }
   }, [totalChromosomeSequences]);
 
   const warning = (type) => {
@@ -77,7 +94,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ chromosome_name: chromosomeName, selectedChromosomeSequence: selectedChromosomeSequence })
+        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence })
       })
         .then(res => res.json())
         .then(data => {
@@ -108,18 +125,17 @@ function App() {
       <div className="controlHeader">
         <div className="controlGroup">
           {/* TODO: WITH MORE TISSUE TYPES */}
-          <span className="controlGroupText">Cell line:</span>
+          <span className="controlGroupText">Cell Line:</span>
           <Select
             defaultValue={cellLineName}
             size="small"
             style={{
-              width: 120,
+              width: 200,
               marginRight: 20
             }}
             onChange={cellLineChange}
             options={cellLineList}
           />
-          {chromosList.length > 0 && (
             <>
               <span className="controlGroupText">Chromosome:</span>
               <Select
@@ -133,7 +149,6 @@ function App() {
                 options={chromosList}
               />
             </>
-          )}
           <span className="controlGroupText">Sequences:</span>
           <Input size="small" style={{ width: 200, marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} value={selectedChromosomeSequence.start} />
           <span className="controlGroupText">~</span>

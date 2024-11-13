@@ -10,7 +10,7 @@ export const Heatmap = ({ chromosomeName, chromosomeData, selectedChromosomeSequ
     const download = () => {
         if(chromosomeData) {
             const csvData = chromosomeData.map(row => 
-                `${row.chrid},${row.ibp},${row.jbp},${row.avg_fq},${row.fdr}`
+                `${row.chrid},${row.ibp},${row.jbp},${row.fq},${row.fdr}`
             ).join('\n');
             
             const header = 'chrid,ibp,jbp,fq,fdr\n';
@@ -61,7 +61,7 @@ export const Heatmap = ({ chromosomeName, chromosomeData, selectedChromosomeSequ
         chromosomeData.forEach(d => {
             d.ibp = +d.ibp;
             d.jbp = +d.jbp;
-            d.avg_fq = +d.avg_fq;
+            d.fq = +d.fq;
             d.fdr = +d.fdr;
         });
 
@@ -77,7 +77,7 @@ export const Heatmap = ({ chromosomeName, chromosomeData, selectedChromosomeSequ
         );
 
         const colorScale = d3.scaleSequential(d3.interpolateYlOrBr)
-            .domain([0, d3.max(chromosomeData, d => d.avg_fq)]);
+            .domain([0, d3.max(chromosomeData, d => d.fq)]);
 
         const xScale = d3.scaleBand()
             .domain(axisValues)
@@ -125,18 +125,17 @@ export const Heatmap = ({ chromosomeName, chromosomeData, selectedChromosomeSequ
         const fqMap = new Map();
 
         chromosomeData.forEach(d => {
-            fqMap.set(`x:${d.ibp}, y:${d.jbp}`, { fq: d.avg_fq, fdr: d.fdr });
-            fqMap.set(`X:${d.jbp}, y:${d.ibp}`, { fq: d.avg_fq, fdr: d.fdr });
+            fqMap.set(`X:${d.ibp}, Y:${d.jbp}`, { fq: d.fq, fdr: d.fdr });
+            fqMap.set(`X:${d.jbp}, Y:${d.ibp}`, { fq: d.fq, fdr: d.fdr });
         });
-
+        console.log(fqMap);
         const hasData = (ibp, jbp) => {
-            const inRange = totalChromosomeSequences.seqs.some(seq =>
+            const inRange = totalChromosomeSequences.some(seq =>
                 ibp >= seq.min_start && ibp <= seq.max_end &&
                 jbp >= seq.min_start && jbp <= seq.max_end
             );
-
             // check fq and fdr exist and are not both 0
-            const value = fqMap.get(`X:${ibp}, y:${jbp}`) || fqMap.get(`X:${jbp}, y:${ibp}`);
+            const value = fqMap.get(`X:${ibp}, Y:${jbp}`) || fqMap.get(`X:${jbp}, Y:${ibp}`);
             const hasNonZeroData = value && (value.fq !== 0 || value.fdr !== 0);
 
             return inRange && hasNonZeroData;
@@ -145,7 +144,7 @@ export const Heatmap = ({ chromosomeName, chromosomeData, selectedChromosomeSequ
         // Draw heatmap using Canvas
         axisValues.forEach(ibp => {
             axisValues.forEach(jbp => {
-                const { fq, fdr } = fqMap.get(`X:${ibp}, y:${jbp}`) || fqMap.get(`X:${jbp}, y:${ibp}`) || { fq: 0, fdr: 0 };
+                const { fq, fdr } = fqMap.get(`X:${ibp}, Y:${jbp}`) || fqMap.get(`X:${jbp}, Y:${ibp}`) || { fq: 0, fdr: 0 };
 
                 const x = margin.left + xScale(jbp);
                 const y = margin.top + yScale(ibp);

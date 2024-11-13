@@ -14,19 +14,21 @@ def index():
 def get_CellLines():
     return jsonify(cell_lines_list())
 
+
 @app.route('/getChromosList', methods=['POST'])
 def get_ChromosList():
     cell_line = request.json['cell_line']
     return jsonify(chromosomes_list(cell_line))
 
 
-@app.route('/getChromosData', methods=['POST'])
+@app.route('/getChromosSequence', methods=['POST'])
 def get_ChromosSequences():
     cell_line = request.json['cell_line']
     chromosome_name = request.json['chromosome_name']
-    return jsonify(chromosome_sequences(cell_line, chromosome_name).to_dict(orient='records'))
+    return jsonify(chromosome_sequences(cell_line, chromosome_name))
 
-@app.route('/getChromosSequence', methods=['POST'])
+
+@app.route('/getChromosData', methods=['POST'])
 def get_ChromosData():
     cell_line = request.json['cell_line']
     chromosome_name = request.json['chromosome_name']

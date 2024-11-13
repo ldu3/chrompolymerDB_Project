@@ -41,9 +41,23 @@ def cell_lines_list():
         FROM sequence
     """
     )
-    cell_lines = [row[0] for row in cur.fetchall()]
+    rows = cur.fetchall()
+
+    label_mapping = {
+        'IMR': 'Lung',
+        'K': 'Blood Leukemia',
+        'GM': 'Lymphoblastoid Cell Line'
+    }
+    options = [
+        {
+            'value': row['cell_line'],
+            'label': label_mapping.get(row['cell_line'], 'Unknown')  # 如果没有找到对应的 label，则返回 'Unknown'
+        }
+        for row in rows
+    ]
+
     conn.close()
-    return cell_lines
+    return options
 
 
 """
@@ -58,13 +72,13 @@ def chromosomes_list(cell_line):
     cur.execute(
         """
         SELECT DISTINCT chrID
-        FROM seqs
+        FROM sequence
         WHERE cell_line = %s
     """,
         (cell_line,),
     )
 
-    chromosomes = [row[0] for row in cur.fetchall()]
+    chromosomes = [row["chrid"] for row in cur.fetchall()]
 
     def sort_key(chromosome):
         match = re.match(r"chr(\d+|\D+)", chromosome)
@@ -94,7 +108,7 @@ def chromosome_sequences(cell_line, chromosome_name):
     cur.execute(
         """
         SELECT start_value, end_value
-        FROM seqs
+        FROM sequence
         WHERE cell_line = %s
         AND chrID = %s
         ORDER BY start_value
@@ -102,7 +116,7 @@ def chromosome_sequences(cell_line, chromosome_name):
         (cell_line, chromosome_name),
     )
 
-    ranges = [{"start": row[0], "end": row[1]} for row in cur.fetchall()]
+    ranges = [{"start": row["start_value"], "end": row["end_value"]} for row in cur.fetchall()]
 
     conn.close()
     return ranges
@@ -125,9 +139,8 @@ def chromosome_data(cell_line, chromosome_name, sequences):
         AND cell_line = %s
         AND ibp >= %s
         AND ibp <= %s
-        ORDER BY start_value
     """,
-        (chromosome_name, cell_line, sequences.start, sequences.end),
+        (chromosome_name, cell_line, sequences['start'], sequences["end"]),
     )
     chromosome_sequence = cur.fetchall()
     conn.close()

@@ -9,7 +9,9 @@ export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosom
 
     useEffect(() => {
         if (selectedChromosomeSequence.start !== undefined && selectedChromosomeSequence.end !== undefined) {
-            const { min_start, max_end, seqs } = totalChromosomeSequences;
+            const min_start = totalChromosomeSequences[0].start;
+            const max_end = totalChromosomeSequences[totalChromosomeSequences.length - 1].end;
+            const seqs = totalChromosomeSequences;
             const height = 30;
             const margin = { top: 10, bottom: 5, left: 10, right: 10 };
             const width = parentRef.current ? parentRef.current.clientWidth - margin.left - margin.right : 0;
@@ -49,14 +51,14 @@ export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosom
                     .attr('class', 'rect')
                     .attr('x', xScale(seq.min_start))
                     .attr('y', backgroundY)
-                    .attr('width', xScale(seq.max_end) - xScale(seq.min_start))
+                    .attr('width', xScale(seq.end) - xScale(seq.start))
                     .attr('height', backgroundHeight)
                     .attr('fill', selectedChromosomeSequence.start < seq.max_end && selectedChromosomeSequence.end > seq.min_start ? '#FFC107' : '#4CAF50')
                     .style('cursor', 'pointer')
                     .on('click', () => {
                         setSelectedChromosomeSequence({
-                            start: seq.min_start,
-                            end: seq.max_end
+                            start: seq.start,
+                            end: seq.end
                         });
                     })
                     .on('mouseover', (event) => {
@@ -73,8 +75,8 @@ export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosom
 
                         setTooltip({
                             visible: true,
-                            minStart: seq.min_start,
-                            maxEnd: seq.max_end,
+                            minStart: seq.start,
+                            maxEnd: seq.end,
                             left: adjustedLeft,
                             top: event.pageY - 28
                         });
