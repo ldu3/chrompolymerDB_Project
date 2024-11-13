@@ -6,7 +6,9 @@ import { Heatmap } from './canvasHeatmap.js';
 import { ChromosomeBar } from './chromosomeBar.js';
 
 function App() {
+  const [cellLineList, setCellLineList] = useState([]);
   const [chromosList, setChromosList] = useState([]);
+  const [cellLineName, setCellLineName] = useState(null);
   const [chromosomeName, setChromosomeName] = useState(null);
   const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: 0, end: 0 });
   const [chromosomeData, setChromosomeData] = useState([]);
@@ -14,11 +16,11 @@ function App() {
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
-    fetch('/getChromosList')
+    fetch('/getCellLines')
       .then(res => res.json())
       .then(data => {
-        setChromosList(data);
-        setChromosomeName(data[0].value);
+        setCellLineList(data);
+        setCellLineName(data[0].value);
       });
   }, []);
 
@@ -59,6 +61,9 @@ function App() {
     }
   };
 
+  const cellLineChange = value => {
+    setCellLineName(value);
+  }
   const chromosomeChange = value => {
     setChromosomeName(value);
   };
@@ -105,26 +110,14 @@ function App() {
           {/* TODO: WITH MORE TISSUE TYPES */}
           <span className="controlGroupText">Cell line:</span>
           <Select
-            defaultValue="Lung"
+            defaultValue={cellLineName}
             size="small"
             style={{
               width: 120,
               marginRight: 20
             }}
-            options={[
-              {
-                value: 'Lung',
-                label: 'Lung',
-              },
-              {
-                value: 'Breast',
-                label: 'Breast',
-              },
-              {
-                value: 'Liver',
-                label: 'Liver',
-              }
-            ]}
+            onChange={cellLineChange}
+            options={cellLineList}
           />
           {chromosList.length > 0 && (
             <>

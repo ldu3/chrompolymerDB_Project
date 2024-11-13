@@ -283,7 +283,7 @@ def process_sequence_data(cur):
             )
 
             query = """
-            INSERT INTO sequence (chrID, cell_line, start_value, end_value)
+            INSERT INTO sequence (cell_line, chrID, start_value, end_value)
             VALUES (%s, %s, %s, %s);
             """
 

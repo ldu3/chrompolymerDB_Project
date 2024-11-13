@@ -38,7 +38,7 @@ def cell_lines_list():
     cur.execute(
         """
         SELECT DISTINCT cell_line
-        FROM seqs
+        FROM sequence
     """
     )
     cell_lines = [row[0] for row in cur.fetchall()]
