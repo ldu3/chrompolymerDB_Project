@@ -84,6 +84,7 @@ def create_position_trigger(conn):
 
     conn.commit()
     cur.close()
+    print("Position trigger created successfully.")
 
 
 def initialize_tables():
@@ -237,7 +238,7 @@ def process_non_random_hic_data(chromosome_dir):
 
             # Read the CSV file in chunks
             for chunk in pd.read_csv(
-                file_path, usecols=["chr", "ibp", "jbp", "fq", "fdr"], chunksize=1000
+                file_path, usecols=["chr", "ibp", "jbp", "fq", "fdr"], chunksize=10000
             ):
                 # Convert the chunk to a list of tuples
                 non_random_hic_records = chunk[
