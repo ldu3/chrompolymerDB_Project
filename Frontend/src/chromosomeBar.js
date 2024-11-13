@@ -2,15 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import "./Styles/chromosomeBar.css";
 
-export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosomeSequence, totalChromosomeSequences, warning }) => {
+export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setSelectedChromosomeSequence, totalChromosomeSequences, warning }) => {
     const svgRef = useRef();
     const parentRef = useRef();
     const [tooltip, setTooltip] = useState({ visible: false, minStart: 0, maxEnd: 0, left: 0, top: 0 });
 
     useEffect(() => {
         if (selectedChromosomeSequence.start !== undefined && selectedChromosomeSequence.end !== undefined) {
-            const min_start = totalChromosomeSequences.length > 0 ? totalChromosomeSequences[0].start : 0;
-            const max_end = totalChromosomeSequences.length > 0 ? totalChromosomeSequences[totalChromosomeSequences.length - 1].end : 0;
+            const min_start = chromosomeSize ? 1 : 0;
+            const max_end = chromosomeSize ? chromosomeSize : 0;
             const seqs = totalChromosomeSequences;
             const height = 30;
             const margin = { top: 10, bottom: 5, left: 10, right: 10 };

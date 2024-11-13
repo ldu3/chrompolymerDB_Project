@@ -10,9 +10,10 @@ function App() {
   const [chromosList, setChromosList] = useState([]);
   const [cellLineName, setCellLineName] = useState(null);
   const [chromosomeName, setChromosomeName] = useState(null);
+  const [chromosomeSize, setChromosomeSize] = useState(0);
+  const [totalChromosomeSequences, setTotalChromosomeSequences] = useState([]);
   const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: 0, end: 0 });
   const [chromosomeData, setChromosomeData] = useState([]);
-  const [totalChromosomeSequences, setTotalChromosomeSequences] = useState([]);
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
@@ -42,6 +43,18 @@ function App() {
 
   useEffect(() => {
     if (cellLineName && chromosomeName) {
+      fetch('/getChromosSize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chromosome_name: chromosomeName })
+      })
+        .then(res => res.json())
+        .then(data => {
+          setChromosomeSize(data);
+      })
+
       fetch('/getChromosSequence', {
         method: 'POST',
         headers: {
@@ -170,6 +183,7 @@ function App() {
           warning={warning}
           selectedChromosomeSequence={selectedChromosomeSequence}
           setSelectedChromosomeSequence={setSelectedChromosomeSequence}
+          chromosomeSize={chromosomeSize}
           totalChromosomeSequences={totalChromosomeSequences}
         />
       </div>

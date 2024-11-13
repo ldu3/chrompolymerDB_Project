@@ -95,6 +95,27 @@ def chromosomes_list(cell_line):
 
 
 """
+Return the chromosome size in the given chromosome name
+"""
+def chromosome_size(chromosome_name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT size
+        FROM chromosome
+        WHERE chrID = %s
+    """,
+        (chromosome_name,),
+    )
+
+    size = cur.fetchone()["size"]
+    conn.close()
+    return size
+
+
+"""
 Returns the all sequences of the chromosome data in the given cell line, chromosome name
 """
 def chromosome_sequences(cell_line, chromosome_name):
