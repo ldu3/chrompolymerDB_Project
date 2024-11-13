@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Select, Input, Button, message } from 'antd';
 import './App.css';
-// import { Heatmap } from './heatmap.js';
-import { Heatmap } from './canvasHeatmap.js';
+import { Heatmap } from './heatmap.js';
+// import { Heatmap } from './canvasHeatmap.js';
 import { ChromosomeBar } from './chromosomeBar.js';
 
 function App() {
@@ -35,6 +35,7 @@ function App() {
         .then(res => res.json())
         .then(data => {
           setChromosList(data);
+          setChromosomeName(null);
         });
     }
   }, [cellLineName]);
@@ -95,6 +96,9 @@ function App() {
   const fetchChromosomeData = () => {
     if (selectedChromosomeSequence.end - selectedChromosomeSequence.start > 4000000) {
       warning('overrange');
+    } else if (!cellLineName || !chromosomeName) {
+      console.log(cellLineName, chromosomeName);
+      warning('noData');
     } else {
       fetch("/getChromosData", {
         method: 'POST',
@@ -162,12 +166,12 @@ function App() {
           <Button size="small" color="primary" variant="outlined" onClick={fetchChromosomeData}>Check</Button>
         </div>
 
-          <ChromosomeBar
-            warning={warning}
-            selectedChromosomeSequence={selectedChromosomeSequence}
-            setSelectedChromosomeSequence={setSelectedChromosomeSequence}
-            totalChromosomeSequences={totalChromosomeSequences}
-          />
+        <ChromosomeBar
+          warning={warning}
+          selectedChromosomeSequence={selectedChromosomeSequence}
+          setSelectedChromosomeSequence={setSelectedChromosomeSequence}
+          totalChromosomeSequences={totalChromosomeSequences}
+        />
       </div>
       <div className='content'>
         {chromosomeData.length > 0 && (

@@ -6,7 +6,7 @@ export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosom
     const svgRef = useRef();
     const parentRef = useRef();
     const [tooltip, setTooltip] = useState({ visible: false, minStart: 0, maxEnd: 0, left: 0, top: 0 });
-    console.log(totalChromosomeSequences, selectedChromosomeSequence, 'totalChromosomeSequences, selectedChromosomeSequence');
+
     useEffect(() => {
         if (selectedChromosomeSequence.start !== undefined && selectedChromosomeSequence.end !== undefined) {
             const min_start = totalChromosomeSequences.length > 0 ? totalChromosomeSequences[0].start : 0;

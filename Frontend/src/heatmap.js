@@ -83,8 +83,8 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
         const fqMap = new Map();
 
         chromosomeData.forEach(d => {
-            fqMap.set(`x:${d.ibp}, y:${d.jbp}`, { fq: d.fq, fdr: d.fdr });
-            fqMap.set(`X:${d.jbp}, y:${d.ibp}`, { fq: d.fq, fdr: d.fdr });
+            fqMap.set(`X:${d.ibp}, Y:${d.jbp}`, { fq: d.fq, fdr: d.fdr });
+            fqMap.set(`X:${d.jbp}, Y:${d.ibp}`, { fq: d.fq, fdr: d.fdr });
         });
 
         const hasData = (ibp, jbp) => {
@@ -92,9 +92,8 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
                 ibp >= seq.min_start && ibp <= seq.max_end && 
                 jbp >= seq.min_start && jbp <= seq.max_end
             );
-            
             // check fq and fdr exist and are not both 0
-            const value = fqMap.get(`X:${ibp}, y:${jbp}`) || fqMap.get(`X:${jbp}, y:${ibp}`);
+            const value = fqMap.get(`X:${ibp}, Y:${jbp}`) || fqMap.get(`X:${jbp}, Y:${ibp}`);
             const hasNonZeroData = value && (value.fq !== 0 || value.fdr !== 0);
             
             return inRange && hasNonZeroData;
@@ -102,7 +101,7 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
 
         svg.selectAll()
             .data(axisValues.flatMap(ibp => axisValues.map(jbp => {
-                const value = fqMap.get(`X:${ibp}, y:${jbp}`) || fqMap.get(`X:${jbp}, y:${ibp}`) || { fq: 0, fdr: 0 };
+                const value = fqMap.get(`X:${ibp}, Y:${jbp}`) || fqMap.get(`X:${jbp}, Y:${ibp}`) || { fq: 0, fdr: 0 };
                 return {
                     ibp,
                     jbp,
@@ -120,9 +119,9 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
                 console.log(d);
             })
             .style('fill', d => {
-                if (!hasData(d.ibp, d.jbp)) {
-                    return 'white';
-                }
+                // if (!hasData(d.ibp, d.jbp)) {
+                //     return 'white';
+                // }
                 if (d.jbp <= d.ibp && (d.fdr > 0.05 || (d.fdr === 0 && d.fq === 0))) {
                     return 'white';
                 }

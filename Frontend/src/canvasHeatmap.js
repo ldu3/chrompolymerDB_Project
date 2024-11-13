@@ -13,7 +13,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 `${row.cell_line},${row.chrid},${row.ibp},${row.jbp},${row.fq},${row.fdr}`
             ).join('\n');
             
-            const header = 'chrid,ibp,jbp,fq,fdr\n';
+            const header = 'cell_line,chrid,ibp,jbp,fq,fdr\n';
             const csvContent = header + csvData;
             
             // create a blob object and set MIME type to text/csv
@@ -151,9 +151,10 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 const width = xScale.bandwidth();
                 const height = yScale.bandwidth();
 
-                context.fillStyle = !hasData(ibp, jbp) ? 'white' :
-                    (jbp <= ibp && (fdr > 0.05 || (fdr === 0 && fq === 0))) ? 'white' :
-                        colorScale(fq);
+                // context.fillStyle = !hasData(ibp, jbp) ? 'white' :
+                //     (jbp <= ibp && (fdr > 0.05 || (fdr === 0 && fq === 0))) ? 'white' :
+                //         colorScale(fq);
+                context.fillStyle = (jbp <= ibp && (fdr > 0.05 || (fdr === 0 && fq === 0))) ? 'white' : colorScale(fq);
                 context.fillRect(x, y, width, height);
             });
         });

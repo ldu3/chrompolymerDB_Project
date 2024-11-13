@@ -135,9 +135,8 @@ def chromosome_data(cell_line, chromosome_name, sequences):
         AND ibp <= %s
         AND jbp >= %s
         AND jbp <= %s
-        ORDER BY ibp
     """,
-        (chromosome_name, cell_line, sequences['start'], sequences["end"]),
+        (chromosome_name, cell_line, sequences['start'], sequences["end"], sequences['start'], sequences["end"]),
     )
     chromosome_sequence = cur.fetchall()
     conn.close()
