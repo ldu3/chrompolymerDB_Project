@@ -15,8 +15,10 @@ DB_USERNAME = os.getenv("DB_USERNAME")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 
+"""
+Establish a connection to the database.
+"""
 def get_db_connection():
-    """Establish a connection to the database."""
     conn = psycopg2.connect(
         host=DB_HOST,
         database=DB_NAME,
@@ -30,8 +32,6 @@ def get_db_connection():
 """
 Returns the list of cell line in the given data path
 """
-
-
 def cell_lines_list():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -51,7 +51,7 @@ def cell_lines_list():
     options = [
         {
             'value': row['cell_line'],
-            'label': label_mapping.get(row['cell_line'], 'Unknown')  # 如果没有找到对应的 label，则返回 'Unknown'
+            'label': label_mapping.get(row['cell_line'], 'Unknown')
         }
         for row in rows
     ]
@@ -63,8 +63,6 @@ def cell_lines_list():
 """
 Returns the list of chromosomes in the cell line
 """
-
-
 def chromosomes_list(cell_line):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -99,8 +97,6 @@ def chromosomes_list(cell_line):
 """
 Returns the all sequences of the chromosome data in the given cell line, chromosome name
 """
-
-
 def chromosome_sequences(cell_line, chromosome_name):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -125,20 +121,21 @@ def chromosome_sequences(cell_line, chromosome_name):
 """
 Returns the existing chromosome data in the given cell line, chromosome name, start, end
 """
-
-
 def chromosome_data(cell_line, chromosome_name, sequences):
     conn = get_db_connection()
     cur = conn.cursor()
 
     cur.execute(
         """
-        SELECT *
+        SELECT cell_line, chrid, fdr, ibp, jbp, fq
         FROM non_random_hic
         WHERE chrID = %s
         AND cell_line = %s
         AND ibp >= %s
         AND ibp <= %s
+        AND jbp >= %s
+        AND jbp <= %s
+        ORDER BY ibp
     """,
         (chromosome_name, cell_line, sequences['start'], sequences["end"]),
     )
@@ -151,8 +148,6 @@ def chromosome_data(cell_line, chromosome_name, sequences):
 """
 Returns the example(3) 3D chromosome data in the given cell line, chromosome name, start, end
 """
-
-
 def example_chromosome_3d_data(cell_line, chromosome_name, sequences):
     conn = get_db_connection()
     cur = conn.cursor()

@@ -6,11 +6,11 @@ export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosom
     const svgRef = useRef();
     const parentRef = useRef();
     const [tooltip, setTooltip] = useState({ visible: false, minStart: 0, maxEnd: 0, left: 0, top: 0 });
-
+    console.log(totalChromosomeSequences, selectedChromosomeSequence, 'totalChromosomeSequences, selectedChromosomeSequence');
     useEffect(() => {
         if (selectedChromosomeSequence.start !== undefined && selectedChromosomeSequence.end !== undefined) {
-            const min_start = totalChromosomeSequences[0].start;
-            const max_end = totalChromosomeSequences[totalChromosomeSequences.length - 1].end;
+            const min_start = totalChromosomeSequences.length > 0 ? totalChromosomeSequences[0].start : 0;
+            const max_end = totalChromosomeSequences.length > 0 ? totalChromosomeSequences[totalChromosomeSequences.length - 1].end : 0;
             const seqs = totalChromosomeSequences;
             const height = 30;
             const margin = { top: 10, bottom: 5, left: 10, right: 10 };
@@ -49,11 +49,11 @@ export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosom
             seqs.forEach((seq) => {
                 svg.append('rect')
                     .attr('class', 'rect')
-                    .attr('x', xScale(seq.min_start))
+                    .attr('x', xScale(seq.start))
                     .attr('y', backgroundY)
                     .attr('width', xScale(seq.end) - xScale(seq.start))
                     .attr('height', backgroundHeight)
-                    .attr('fill', selectedChromosomeSequence.start < seq.max_end && selectedChromosomeSequence.end > seq.min_start ? '#FFC107' : '#4CAF50')
+                    .attr('fill', selectedChromosomeSequence.start < seq.end && selectedChromosomeSequence.end > seq.start ? '#FFC107' : '#4CAF50')
                     .style('cursor', 'pointer')
                     .on('click', () => {
                         setSelectedChromosomeSequence({
@@ -106,6 +106,15 @@ export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosom
                     .attr('stroke-width', 1.5)
                     .style('cursor', 'pointer')
                     .call(d3.drag()
+                        .on('start', () => {
+                            if (totalChromosomeSequences.length === 0) {
+                                if (!hasShownAlert) {
+                                    warning('noData');
+                                    hasShownAlert = true;
+                                }
+                                return;
+                            }
+                        })
                         .on('drag', (event) => {
                             const mouseX = d3.pointer(event)[0];
                             let newStart = Math.round(Math.min(Math.max(xScale.invert(mouseX), min_start), selectedChromosomeSequence.end));
@@ -139,6 +148,15 @@ export const ChromosomeBar = ({ selectedChromosomeSequence, setSelectedChromosom
                     .attr('stroke-width', 1.5)
                     .style('cursor', 'pointer')
                     .call(d3.drag()
+                        .on('start', () => {
+                            if (totalChromosomeSequences.length === 0) {
+                                if (!hasShownAlert) {
+                                    warning('noData');
+                                    hasShownAlert = true;
+                                }
+                                return;
+                            }
+                        })
                         .on('drag', (event) => {
                             const mouseX = d3.pointer(event)[0];
                             let newEnd = Math.round(Math.max(Math.min(xScale.invert(mouseX), max_end), selectedChromosomeSequence.start));

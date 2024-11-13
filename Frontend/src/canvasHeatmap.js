@@ -3,14 +3,14 @@ import { Button } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 import * as d3 from 'd3';
 
-export const Heatmap = ({ chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences }) => {
+export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
 
     const download = () => {
         if(chromosomeData) {
             const csvData = chromosomeData.map(row => 
-                `${row.chrid},${row.ibp},${row.jbp},${row.fq},${row.fdr}`
+                `${row.cell_line},${row.chrid},${row.ibp},${row.jbp},${row.fq},${row.fdr}`
             ).join('\n');
             
             const header = 'chrid,ibp,jbp,fq,fdr\n';
@@ -23,7 +23,7 @@ export const Heatmap = ({ chromosomeName, chromosomeData, selectedChromosomeSequ
             // create a temporary download link and trigger click
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${chromosomeName}.${selectedChromosomeSequence.start}.${selectedChromosomeSequence.end}.csv`;
+            link.download = `${cellLineName}.${chromosomeName}.${selectedChromosomeSequence.start}.${selectedChromosomeSequence.end}.csv`;
             link.click();
 
             // realease the URL resource
@@ -128,7 +128,7 @@ export const Heatmap = ({ chromosomeName, chromosomeData, selectedChromosomeSequ
             fqMap.set(`X:${d.ibp}, Y:${d.jbp}`, { fq: d.fq, fdr: d.fdr });
             fqMap.set(`X:${d.jbp}, Y:${d.ibp}`, { fq: d.fq, fdr: d.fdr });
         });
-        console.log(fqMap);
+
         const hasData = (ibp, jbp) => {
             const inRange = totalChromosomeSequences.some(seq =>
                 ibp >= seq.min_start && ibp <= seq.max_end &&

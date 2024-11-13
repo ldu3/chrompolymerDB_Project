@@ -11,7 +11,7 @@ body {
 }
 
 .controlHeader {
-  height: 10vh;
+  height: 8vh;
   display: flex;
   flex-direction: column;
   align-items: center;

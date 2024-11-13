@@ -76,6 +76,13 @@ function App() {
         duration: 1.5,
       });
     }
+    if (type === 'noData') {
+      messageApi.open({
+        type: 'warning',
+        content: 'Select cell line and chromosome first',
+        duration: 1.5,
+      });
+    }
   };
 
   const cellLineChange = value => {
@@ -124,7 +131,6 @@ function App() {
       {contextHolder}
       <div className="controlHeader">
         <div className="controlGroup">
-          {/* TODO: WITH MORE TISSUE TYPES */}
           <span className="controlGroupText">Cell Line:</span>
           <Select
             defaultValue={cellLineName}
@@ -156,18 +162,17 @@ function App() {
           <Button size="small" color="primary" variant="outlined" onClick={fetchChromosomeData}>Check</Button>
         </div>
 
-        {Object.keys(totalChromosomeSequences).length > 0 && (
           <ChromosomeBar
             warning={warning}
             selectedChromosomeSequence={selectedChromosomeSequence}
             setSelectedChromosomeSequence={setSelectedChromosomeSequence}
             totalChromosomeSequences={totalChromosomeSequences}
           />
-        )}
       </div>
       <div className='content'>
         {chromosomeData.length > 0 && (
           <Heatmap
+            cellLineName={cellLineName}
             chromosomeName={chromosomeName}
             chromosomeData={chromosomeData}
             totalChromosomeSequences={totalChromosomeSequences}
