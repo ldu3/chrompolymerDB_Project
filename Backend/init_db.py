@@ -236,21 +236,20 @@ def process_non_random_hic_data(chromosome_dir):
     for file_name in os.listdir(chromosome_dir):
         if file_name.endswith(".csv.gz"):
             # Get the cell_line from the file name
-            cell_line = re.search(r"^(\w+)_", file_name).group(1)
             file_path = os.path.join(chromosome_dir, file_name)
 
             # Read the CSV file in chunks
             for chunk in pd.read_csv(
-                file_path, usecols=["chr", "ibp", "jbp", "fq", "fdr"], chunksize=10000
+                file_path, usecols=["chr", "cell_line", "ibp", "jbp", "fq", "fdr"], chunksize=10000
             ):
                 # Convert the chunk to a list of tuples
                 non_random_hic_records = chunk[
-                    ["chr", "ibp", "jbp", "fq", "fdr"]
+                    ["chr", "cell_line", "ibp", "jbp", "fq", "fdr"]
                 ].values.tolist()
 
                 # Prepare data for batch insertion
                 data_to_insert = [
-                    (record[0], cell_line, record[3], record[4], record[1], record[2])
+                    (record[0], record[1], record[2], record[3], record[4], record[5])
                     for record in non_random_hic_records
                 ]
 
