@@ -5,12 +5,15 @@ import psycopg2.extras
 import pandas as pd
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 DB_NAME = os.getenv("DB_NAME")
 DB_HOST = os.getenv("DB_HOST")
 DB_USERNAME = os.getenv("DB_USERNAME")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+ROOT_DIR = "../Example_Data"
 
 
 def get_db_connection(database=None):
@@ -269,7 +272,7 @@ def process_non_random_hic_data(chromosome_dir):
 
 def process_sequence_data(cur):
     """Process and insert sequence data from all CSV files in the specified folder."""
-    folder_path = "../Data/seqs"
+    folder_path = os.path.join(ROOT_DIR, "seqs")
     for filename in os.listdir(folder_path):
         # check if the file is a CSV.gz file
         if filename.endswith(".csv.gz"):
@@ -295,7 +298,7 @@ def insert_data():
 
     # Insert chromosome data only if the table is empty
     if not data_exists(cur, "chromosome"):
-        file_path = "../Data/chromosome_sizes.txt"
+        file_path = os.path.join(ROOT_DIR, "chromosome_sizes.txt")
         print("Inserting chromosome data...")
         process_chromosome_data(cur, file_path)
         print("Chromosome data inserted successfully.")
@@ -304,7 +307,7 @@ def insert_data():
 
     # Insert gene data only if the table is empty
     if not data_exists(cur, "gene"):
-        file_path = "../Data/ncbi_dataset.tsv"
+        file_path = os.path.join(ROOT_DIR, "ncbi_dataset.tsv")
         print("Inserting gene data...")
         process_gene_data(cur, file_path)
         print("Gene data inserted successfully.")
@@ -331,7 +334,7 @@ def insert_non_random_HiC_data():
 
     # Insert non-random Hi-C data only if the table is empty
     if not data_exists(cur, "non_random_hic"):
-        chromosome_dir = "../Data/refined_processed_HiC"
+        chromosome_dir = os.path.join(ROOT_DIR, "refined_processed_HiC")
         process_non_random_hic_data(chromosome_dir)
     else:
         print("Non-random Hi-C data already exists, skipping insertion.")

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##parameters
-chrlensfile="../Data/chromosome_sizes.txt"
+chrlensfile="../Example_Data/chromosome_sizes.txt"
 res=5000
 threads=50
 EXE_PATH="../sBIF/bin/sBIF"
@@ -19,7 +19,7 @@ count=1
 # fi
 
 
-for interfile in ../Data/Folding_input/*.txt; do
+for interfile in ../Example_Data/Folding_input/*.txt; do
     filename=$(basename "$interfile")
 
     chrom=$(echo "$filename" | cut -d'.' -f1)
