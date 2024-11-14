@@ -96,6 +96,8 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                 let hasShownAlert = false;
                 const triangleHeight = 10;
                 const triangleY = backgroundY - triangleHeight;
+                let newStart = selectedChromosomeSequence.start;
+                let newEnd = selectedChromosomeSequence.end;
 
                 // Start triangle and line
                 svg.append('polygon')
@@ -108,26 +110,22 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                     .call(d3.drag()
                         .on('start', () => {
                             if (totalChromosomeSequences.length === 0) {
-                                if (!hasShownAlert) {
-                                    warning('noData');
-                                    hasShownAlert = true;
-                                }
+                                warning('noData');
                                 return;
                             }
                         })
                         .on('drag', (event) => {
                             const mouseX = d3.pointer(event)[0];
-                            let newStart = Math.round(Math.min(Math.max(xScale.invert(mouseX), min_start), selectedChromosomeSequence.end));
-                            if (selectedChromosomeSequence.end - newStart <= 4000000 && newStart !== selectedChromosomeSequence.start) {
-                                setSelectedChromosomeSequence((prev) => ({ ...prev, start: newStart }));
-                                hasShownAlert = false;
-                            } else if (!hasShownAlert) {
-                                warning('overrange');
-                                hasShownAlert = true;
-                            }
-                        })
+                            newStart = Math.round(Math.min(Math.max(xScale.invert(mouseX), min_start), selectedChromosomeSequence.end));
+                            
+                            // Update the start position continuously while dragging
+                            setSelectedChromosomeSequence((prev) => ({ ...prev, start: newStart }));
+                        })                
                         .on('end', () => {
-                            hasShownAlert = false;
+                            // Check the warning condition when drag ends
+                            if (newEnd - newStart > 4000000) {
+                                warning('overrange');
+                            }
                         }));
 
                 svg.append('line')
@@ -150,26 +148,19 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                     .call(d3.drag()
                         .on('start', () => {
                             if (totalChromosomeSequences.length === 0) {
-                                if (!hasShownAlert) {
-                                    warning('noData');
-                                    hasShownAlert = true;
-                                }
+                                warning('noData');
                                 return;
                             }
                         })
                         .on('drag', (event) => {
                             const mouseX = d3.pointer(event)[0];
-                            let newEnd = Math.round(Math.max(Math.min(xScale.invert(mouseX), max_end), selectedChromosomeSequence.start));
-                            if (newEnd - selectedChromosomeSequence.start <= 4000000 && newEnd !== selectedChromosomeSequence.end) {
-                                setSelectedChromosomeSequence((prev) => ({ ...prev, end: newEnd }));
-                                hasShownAlert = false;
-                            } else if (!hasShownAlert) {
-                                warning('overrange');
-                                hasShownAlert = true;
-                            }
+                            newEnd = Math.round(Math.max(Math.min(xScale.invert(mouseX), max_end), selectedChromosomeSequence.start));
+                            setSelectedChromosomeSequence((prev) => ({ ...prev, end: newEnd }));
                         })
                         .on('end', () => {
-                            hasShownAlert = false;
+                            if (newEnd - newStart > 4000000) {
+                                warning('overrange');
+                            }
                         }));
 
                 svg.append('line')

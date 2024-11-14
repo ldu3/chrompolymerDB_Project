@@ -168,7 +168,7 @@ def chromosome_data(cell_line, chromosome_name, sequences):
 """
 Returns the example(3) 3D chromosome data in the given cell line, chromosome name, start, end
 """
-def example_chromosome_3d_data(cell_line, chromosome_name, sequences):
+def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id):
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -192,12 +192,10 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences):
         AND cell_line = %s
         AND ibp >= %s
         AND ibp <= %s
-        ORDER BY start_value
     """,
         (chromosome_name, cell_line, sequences["start"], sequences["end"]),
     )
     original_data = cur.fetchall()
-    conn.close()
 
     column_names = [desc[0] for desc in cur.description]
     original_df = pd.DataFrame(original_data, columns=column_names)
@@ -230,7 +228,22 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences):
 
     os.remove(custom_name)
 
-    return "Success send example chromosome 3D data request"
+    cur.execute(
+        """
+        SELECT *
+        FROM position
+        WHERE chrID = %s
+        AND cell_line = %s
+        AND start_value = %s
+        AND end_value = %s
+        AND sample = %s
+    """,
+        (chromosome_name, cell_line, sequences["start"], sequences["end"], sample_id),
+    )
+    position_data = cur.fetchall()
+    conn.close()
+
+    return position_data
 
 
 """

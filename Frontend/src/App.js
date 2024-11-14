@@ -36,13 +36,12 @@ function App() {
         .then(res => res.json())
         .then(data => {
           setChromosList(data);
-          setChromosomeName(null);
         });
     }
   }, [cellLineName]);
 
   useEffect(() => {
-    if (cellLineName && chromosomeName) {
+    if (cellLineName || chromosomeName) {
       fetch('/getChromosSize', {
         method: 'POST',
         headers: {
@@ -110,7 +109,6 @@ function App() {
     if (selectedChromosomeSequence.end - selectedChromosomeSequence.start > 4000000) {
       warning('overrange');
     } else if (!cellLineName || !chromosomeName) {
-      console.log(cellLineName, chromosomeName);
       warning('noData');
     } else {
       fetch("/getChromosData", {
