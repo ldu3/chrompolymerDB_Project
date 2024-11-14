@@ -49,45 +49,20 @@ def data_exists(cur, table_name):
     return cur.fetchone()[0]
 
 
-def create_position_trigger(conn):
-    """Create a trigger on the position table to delete all rows when a group exceeds 5 rows."""
+def create_periodic_cleanup(conn):
+    """Create a scheduled job to delete all rows from position every 24 hours."""
     cur = conn.cursor()
 
+    # Create the cron job to delete all rows every 24 hours
     cur.execute(
         """
-        CREATE OR REPLACE FUNCTION check_position_count()
-        RETURNS TRIGGER AS $$
-        DECLARE
-            row_count INT;
-        BEGIN
-            SELECT COUNT(*) INTO row_count
-            FROM position
-            WHERE cell_line = NEW.cell_line
-                AND chrID = NEW.chrID
-                AND sampleID = NEW.sampleID;
-
-            IF row_count > 5 THEN
-                DELETE FROM position;
-            END IF;
-
-            RETURN NEW;
-        END;
-        $$ LANGUAGE plpgsql;
-        """
-    )
-
-    cur.execute(
-        """
-        CREATE TRIGGER position_count_trigger
-        AFTER INSERT ON position
-        FOR EACH ROW
-        EXECUTE FUNCTION check_position_count();
+        SELECT cron.schedule('0 0 * * *', $$DELETE FROM position;$$);
         """
     )
 
     conn.commit()
     cur.close()
-    print("Position trigger created successfully.")
+    print("Periodic cleanup cron job created successfully.")
 
 
 def initialize_tables():
@@ -184,8 +159,9 @@ def initialize_tables():
             "Z FLOAT NOT NULL DEFAULT 0.0"
             ");"
         )
+        cur.execute("CREATE EXTENSION IF NOT EXISTS pg_cron;")
         conn.commit()
-        create_position_trigger(conn)
+        create_periodic_cleanup(conn)
         print("position table created successfully.")
     else:
         print("position table already exists, skipping creation.")

@@ -19,8 +19,6 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 """
 Establish a connection to the database.
 """
-
-
 def get_db_connection():
     conn = psycopg2.connect(
         host=DB_HOST,
@@ -35,8 +33,6 @@ def get_db_connection():
 """
 Returns the list of cell line in the given data path
 """
-
-
 def cell_lines_list():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -68,8 +64,6 @@ def cell_lines_list():
 """
 Returns the list of chromosomes in the cell line
 """
-
-
 def chromosomes_list(cell_line):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -104,8 +98,6 @@ def chromosomes_list(cell_line):
 """
 Return the chromosome size in the given chromosome name
 """
-
-
 def chromosome_size(chromosome_name):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -127,8 +119,6 @@ def chromosome_size(chromosome_name):
 """
 Returns the all sequences of the chromosome data in the given cell line, chromosome name
 """
-
-
 def chromosome_sequences(cell_line, chromosome_name):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -155,8 +145,6 @@ def chromosome_sequences(cell_line, chromosome_name):
 """
 Returns the existing chromosome data in the given cell line, chromosome name, start, end
 """
-
-
 def chromosome_data(cell_line, chromosome_name, sequences):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -190,12 +178,11 @@ def chromosome_data(cell_line, chromosome_name, sequences):
 """
 Returns the example(3) 3D chromosome data in the given cell line, chromosome name, start, end
 """
-
-
 def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id):
     conn = get_db_connection()
     cur = conn.cursor()
 
+    temp_folding_input_path = "../Example_Data/Folding_input"
     def get_spe_inter(hic_data, alpha=0.05):
         """Filter Hi-C data for significant interactions based on the alpha threshold."""
         hic_spe = hic_data.loc[hic_data["fdr"] < alpha]
@@ -203,9 +190,9 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id)
 
     def get_fold_inputs(spe_df):
         """Prepare folding input file from the filtered significant interactions."""
-        spe_out_df = spe_df[["cell_line", "ibp", "jbp", "fq", "chrid", "fdr"]]
+        spe_out_df = spe_df[["ibp", "jbp", "fq", "chrid", "fdr"]]
         spe_out_df["w"] = 1
-        result = spe_out_df[["cell_line", "chrid", "ibp", "jbp", "fq", "w"]]
+        result = spe_out_df[["chrid", "ibp", "jbp", "fq", "w"]]
         return result
 
     cur.execute(
@@ -221,41 +208,35 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id)
     )
     original_data = cur.fetchall()
 
-    column_names = [desc[0] for desc in cur.description]
-    original_df = pd.DataFrame(original_data, columns=column_names)
+    # column_names = [desc[0] for desc in cur.description]
+    original_df = pd.DataFrame(original_data, columns=["chrid", "fdr", "ibp", "jbp", "fq"])
 
     filtered_df = get_spe_inter(original_df)
     fold_inputs = get_fold_inputs(filtered_df)
 
-    txt_data = fold_inputs.to_csv(index=False, sep="\t")
-    custom_name = (
-        f"{cell_line}_{chromosome_name}_{sequences['start']}_{sequences['end']}"
-    )
+    txt_data = fold_inputs.to_csv(index=False, sep="\t", header=False)
+    custom_name = f"{cell_line}.{chromosome_name}.{sequences['start']}.{sequences['end']}"
 
-    # Create a temporary file
-    with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".txt"
-    ) as temp_file:
+    # Ensure the custom path exists, create it if it doesn't
+    os.makedirs(temp_folding_input_path, exist_ok=True)
+
+    # Define the full path where the file will be stored
+    custom_file_path = os.path.join(temp_folding_input_path, custom_name + ".txt")
+
+    # Write the file to the custom path
+    with open(custom_file_path, 'w') as temp_file:
         temp_file.write(txt_data)
-        temp_file_path = temp_file.name
-
-    shutil.move(
-        temp_file_path, custom_name
-    )
-    temp_file_path = custom_name
 
     script = "./sBIF.sh"
     n_samples = 3
-    n_runs = 1
-    is_download = False
+    n_samples_per_run = 1
+    is_download = "false"
     subprocess.run(
-        ["bash", script, str(n_samples), str(n_runs), str(is_download)],
+        ["bash", script, str(n_samples), str(n_samples_per_run), str(is_download)],
         capture_output=True,
         text=True,
         check=True,
     )
-
-    # os.remove(custom_name)
 
     cur.execute(
         """
@@ -272,14 +253,14 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id)
     position_data = cur.fetchall()
     conn.close()
 
-    return position_data
+    # Remove the temporary file
+    os.remove(custom_file_path)
 
+    return position_data
 
 """
 Download the full 3D chromosome data(including distances, 50000) in the given cell line, chromosome name, start, end
 """
-
-
 def download_full_chromosome_3d_data(cell_line, chromosome_name, sequences):
     conn = get_db_connection()
     cur = conn.cursor()
