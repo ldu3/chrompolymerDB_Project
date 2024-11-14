@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Select, Input, Button, message } from 'antd';
 import './App.css';
-import { Heatmap } from './heatmap.js';
-// import { Heatmap } from './canvasHeatmap.js';
+// import { Heatmap } from './heatmap.js';
+import { Heatmap } from './canvasHeatmap.js';
 import { ChromosomeBar } from './chromosomeBar.js';
 
 function App() {
@@ -25,35 +25,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (cellLineName) {
-      fetch('/getChromosList', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ cell_line: cellLineName })
-      })
-        .then(res => res.json())
-        .then(data => {
-          setChromosList(data);
-        });
-    }
-  }, [cellLineName]);
-
-  useEffect(() => {
-    if (cellLineName || chromosomeName) {
-      fetch('/getChromosSize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ chromosome_name: chromosomeName })
-      })
-        .then(res => res.json())
-        .then(data => {
-          setChromosomeSize(data);
-      })
-
+    if (cellLineName && chromosomeName) {
       fetch('/getChromosSequence', {
         method: 'POST',
         headers: {
@@ -73,6 +45,64 @@ function App() {
       setSelectedChromosomeSequence({ start: totalChromosomeSequences[0].start, end: totalChromosomeSequences[0].start });
     }
   }, [totalChromosomeSequences]);
+
+  useEffect(() => {
+    setChromosomeName(null);
+    setChromosomeSize(0);
+    setSelectedChromosomeSequence({ start: 0, end: 0 });
+  }, [cellLineName]);
+
+  useEffect(() => {
+    setChromosomeSize(0);
+    setSelectedChromosomeSequence({ start: 0, end: 0 });
+  }, [chromosomeName]);
+  const fetchChromosomeList = (value) => {
+    fetch('/getChromosList', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ cell_line: value })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setChromosList(data);
+      });
+  };
+
+  const fetchChromosomeSize = (value) => {
+    fetch("/getChromosSize", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ chromosome_name: value })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setChromosomeSize(data);
+      });
+  };
+
+  const fetchChromosomeData = () => {
+    if (selectedChromosomeSequence.end - selectedChromosomeSequence.start > 4000000) {
+      warning('overrange');
+    } else if (!cellLineName || !chromosomeName) {
+      warning('noData');
+    } else {
+      fetch("/getChromosData", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence })
+      })
+        .then(res => res.json())
+        .then(data => {
+          setChromosomeData(data);
+        });
+    }
+  };
 
   const warning = (type) => {
     if (type === 'overrange') {
@@ -100,30 +130,13 @@ function App() {
 
   const cellLineChange = value => {
     setCellLineName(value);
+    fetchChromosomeList(value);
   }
+
   const chromosomeChange = value => {
     setChromosomeName(value);
+    fetchChromosomeSize(value);
   };
-
-  const fetchChromosomeData = () => {
-    if (selectedChromosomeSequence.end - selectedChromosomeSequence.start > 4000000) {
-      warning('overrange');
-    } else if (!cellLineName || !chromosomeName) {
-      warning('noData');
-    } else {
-      fetch("/getChromosData", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence })
-      })
-        .then(res => res.json())
-        .then(data => {
-          setChromosomeData(data);
-        });
-    }
-  }
 
   const chromosomeSequenceChange = (position, value) => {
     if (position === 'start') {
@@ -148,7 +161,7 @@ function App() {
         <div className="controlGroup">
           <span className="controlGroupText">Cell Line:</span>
           <Select
-            defaultValue={cellLineName}
+            value={cellLineName}
             size="small"
             style={{
               width: 200,
@@ -157,26 +170,25 @@ function App() {
             onChange={cellLineChange}
             options={cellLineList}
           />
-            <>
-              <span className="controlGroupText">Chromosome:</span>
-              <Select
-                defaultValue={chromosomeName}
-                size="small"
-                style={{
-                  width: 120,
-                  marginRight: 20
-                }}
-                onChange={chromosomeChange}
-                options={chromosList}
-              />
-            </>
+          <>
+            <span className="controlGroupText">Chromosome:</span>
+            <Select
+              value={chromosomeName}
+              size="small"
+              style={{
+                width: 120,
+                marginRight: 20
+              }}
+              onChange={chromosomeChange}
+              options={chromosList}
+            />
+          </>
           <span className="controlGroupText">Sequences:</span>
           <Input size="small" style={{ width: 200, marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} value={selectedChromosomeSequence.start} />
           <span className="controlGroupText">~</span>
           <Input size="small" style={{ width: 200, marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} value={selectedChromosomeSequence.end} />
           <Button size="small" color="primary" variant="outlined" onClick={fetchChromosomeData}>Check</Button>
         </div>
-
         <ChromosomeBar
           warning={warning}
           selectedChromosomeSequence={selectedChromosomeSequence}

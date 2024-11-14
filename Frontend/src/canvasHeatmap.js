@@ -131,8 +131,8 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
         const hasData = (ibp, jbp) => {
             const inRange = totalChromosomeSequences.some(seq =>
-                ibp >= seq.min_start && ibp <= seq.max_end &&
-                jbp >= seq.min_start && jbp <= seq.max_end
+                ibp >= seq.start && ibp <= seq.end &&
+                jbp >= seq.start && jbp <= seq.end
             );
             // check fq and fdr exist and are not both 0
             const value = fqMap.get(`X:${ibp}, Y:${jbp}`) || fqMap.get(`X:${jbp}, Y:${ibp}`);
@@ -151,9 +151,9 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 const width = xScale.bandwidth();
                 const height = yScale.bandwidth();
 
-                // context.fillStyle = !hasData(ibp, jbp) ? 'white' :
-                //     (jbp <= ibp && (fdr > 0.05 || (fdr === 0 && fq === 0))) ? 'white' :
-                //         colorScale(fq);
+                context.fillStyle = !hasData(ibp, jbp) ? 'white' :
+                    (jbp <= ibp && (fdr > 0.05 || (fdr === 0 && fq === 0))) ? 'white' :
+                        colorScale(fq);
                 context.fillStyle = (jbp <= ibp && (fdr > 0.05 || (fdr === 0 && fq === 0))) ? 'white' : colorScale(fq);
                 context.fillRect(x, y, width, height);
             });

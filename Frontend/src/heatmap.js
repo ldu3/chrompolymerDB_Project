@@ -119,9 +119,9 @@ export const Heatmap = ({ chromosomeData, selectedChromosomeSequence, totalChrom
                 console.log(d);
             })
             .style('fill', d => {
-                // if (!hasData(d.ibp, d.jbp)) {
-                //     return 'white';
-                // }
+                if (!hasData(d.ibp, d.jbp)) {
+                    return 'white';
+                }
                 if (d.jbp <= d.ibp && (d.fdr > 0.05 || (d.fdr === 0 && d.fq === 0))) {
                     return 'white';
                 }
