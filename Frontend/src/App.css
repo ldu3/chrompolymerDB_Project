@@ -31,7 +31,7 @@ body {
 .content {
   display: flex;
   margin-top: 5px;
-  height: 86vh;
+  height:calc(97vh - 75px);
   border: 1px solid #eaeaea;
   border-radius: 8px;
 }

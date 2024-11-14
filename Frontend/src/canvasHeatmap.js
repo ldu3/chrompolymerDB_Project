@@ -8,18 +8,18 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
     const containerRef = useRef(null);
 
     const download = () => {
-        if(chromosomeData) {
-            const csvData = chromosomeData.map(row => 
+        if (chromosomeData) {
+            const csvData = chromosomeData.map(row =>
                 `${row.cell_line},${row.chrid},${row.ibp},${row.jbp},${row.fq},${row.fdr}`
             ).join('\n');
-            
+
             const header = 'cell_line,chrid,ibp,jbp,fq,fdr\n';
             const csvContent = header + csvData;
-            
+
             // create a blob object and set MIME type to text/csv
             const blob = new Blob([csvContent], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
-    
+
             // create a temporary download link and trigger click
             const link = document.createElement('a');
             link.href = url;
@@ -134,27 +134,21 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 ibp >= seq.start && ibp <= seq.end &&
                 jbp >= seq.start && jbp <= seq.end
             );
-            // check fq and fdr exist and are not both 0
-            const value = fqMap.get(`X:${ibp}, Y:${jbp}`) || fqMap.get(`X:${jbp}, Y:${ibp}`);
-            const hasNonZeroData = value && (value.fq !== 0 || value.fdr !== 0);
 
-            return inRange && hasNonZeroData;
+            return inRange;
         };
 
         // Draw heatmap using Canvas
         axisValues.forEach(ibp => {
             axisValues.forEach(jbp => {
-                const { fq, fdr } = fqMap.get(`X:${ibp}, Y:${jbp}`) || fqMap.get(`X:${jbp}, Y:${ibp}`) || { fq: 0, fdr: 0 };
+                const { fq, fdr } = fqMap.get(`X:${ibp}, Y:${jbp}`) || fqMap.get(`X:${jbp}, Y:${ibp}`) || { fq: -1, fdr: -1 };
 
                 const x = margin.left + xScale(jbp);
                 const y = margin.top + yScale(ibp);
                 const width = xScale.bandwidth();
                 const height = yScale.bandwidth();
 
-                context.fillStyle = !hasData(ibp, jbp) ? 'white' :
-                    (jbp <= ibp && (fdr > 0.05 || (fdr === 0 && fq === 0))) ? 'white' :
-                        colorScale(fq);
-                context.fillStyle = (jbp <= ibp && (fdr > 0.05 || (fdr === 0 && fq === 0))) ? 'white' : colorScale(fq);
+                context.fillStyle = !hasData(ibp, jbp) ? 'white' : (jbp <= ibp && (fdr > 0.05 || (fdr === -1 && fq === -1))) ? 'white' : colorScale(fq);
                 context.fillRect(x, y, width, height);
             });
         });
