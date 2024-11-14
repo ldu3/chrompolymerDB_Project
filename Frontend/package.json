@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://backend:5000",
+  "proxy": "http://backend:5001",
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
     "@testing-library/jest-dom": "^5.17.0",

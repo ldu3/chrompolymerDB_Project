@@ -21,6 +21,8 @@ WORKDIR /chromosome/backend
 
 COPY . .
 
+RUN chmod +x ./process.py
+RUN chmod +x ./sBIF.sh
 
-EXPOSE 5000
+EXPOSE 5001
 CMD ["sh", "-c", "python init_db.py && python app.py"]
