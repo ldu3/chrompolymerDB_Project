@@ -38,7 +38,7 @@ services:
         condition: service_healthy
         restart: true
     ports:
-      - "5000:5000"
+      - "5001:5001"
     networks:
       - example
 
