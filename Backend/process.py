@@ -4,6 +4,7 @@ import os
 import re
 import tempfile
 import subprocess
+import shutil
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 
@@ -18,6 +19,8 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 """
 Establish a connection to the database.
 """
+
+
 def get_db_connection():
     conn = psycopg2.connect(
         host=DB_HOST,
@@ -32,6 +35,8 @@ def get_db_connection():
 """
 Returns the list of cell line in the given data path
 """
+
+
 def cell_lines_list():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -44,14 +49,14 @@ def cell_lines_list():
     rows = cur.fetchall()
 
     label_mapping = {
-        'IMR': 'Lung',
-        'K': 'Blood Leukemia',
-        'GM': 'Lymphoblastoid Cell Line'
+        "IMR": "Lung",
+        "K": "Blood Leukemia",
+        "GM": "Lymphoblastoid Cell Line",
     }
     options = [
         {
-            'value': row['cell_line'],
-            'label': label_mapping.get(row['cell_line'], 'Unknown')
+            "value": row["cell_line"],
+            "label": label_mapping.get(row["cell_line"], "Unknown"),
         }
         for row in rows
     ]
@@ -63,6 +68,8 @@ def cell_lines_list():
 """
 Returns the list of chromosomes in the cell line
 """
+
+
 def chromosomes_list(cell_line):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -97,6 +104,8 @@ def chromosomes_list(cell_line):
 """
 Return the chromosome size in the given chromosome name
 """
+
+
 def chromosome_size(chromosome_name):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -118,6 +127,8 @@ def chromosome_size(chromosome_name):
 """
 Returns the all sequences of the chromosome data in the given cell line, chromosome name
 """
+
+
 def chromosome_sequences(cell_line, chromosome_name):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -133,7 +144,9 @@ def chromosome_sequences(cell_line, chromosome_name):
         (cell_line, chromosome_name),
     )
 
-    ranges = [{"start": row["start_value"], "end": row["end_value"]} for row in cur.fetchall()]
+    ranges = [
+        {"start": row["start_value"], "end": row["end_value"]} for row in cur.fetchall()
+    ]
 
     conn.close()
     return ranges
@@ -142,6 +155,8 @@ def chromosome_sequences(cell_line, chromosome_name):
 """
 Returns the existing chromosome data in the given cell line, chromosome name, start, end
 """
+
+
 def chromosome_data(cell_line, chromosome_name, sequences):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -157,7 +172,14 @@ def chromosome_data(cell_line, chromosome_name, sequences):
         AND jbp >= %s
         AND jbp <= %s
     """,
-        (chromosome_name, cell_line, sequences['start'], sequences["end"], sequences['start'], sequences["end"]),
+        (
+            chromosome_name,
+            cell_line,
+            sequences["start"],
+            sequences["end"],
+            sequences["start"],
+            sequences["end"],
+        ),
     )
     chromosome_sequence = cur.fetchall()
     conn.close()
@@ -168,6 +190,8 @@ def chromosome_data(cell_line, chromosome_name, sequences):
 """
 Returns the example(3) 3D chromosome data in the given cell line, chromosome name, start, end
 """
+
+
 def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -179,9 +203,9 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id)
 
     def get_fold_inputs(spe_df):
         """Prepare folding input file from the filtered significant interactions."""
-        spe_out_df = spe_df[["ibp", "jbp", "fq", "chr", "fdr"]]
+        spe_out_df = spe_df[["cell_line", "ibp", "jbp", "fq", "chrid", "fdr"]]
         spe_out_df["w"] = 1
-        result = spe_out_df[["cell_line", "chr", "ibp", "jbp", "fq", "w"]]
+        result = spe_out_df[["cell_line", "chrid", "ibp", "jbp", "fq", "w"]]
         return result
 
     cur.execute(
@@ -207,26 +231,31 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id)
     custom_name = (
         f"{cell_line}_{chromosome_name}_{sequences['start']}_{sequences['end']}"
     )
+
+    # Create a temporary file
     with tempfile.NamedTemporaryFile(
         delete=False, mode="w", suffix=".txt"
     ) as temp_file:
         temp_file.write(txt_data)
         temp_file_path = temp_file.name
-        os.rename(temp_file_path, custom_name)
-        temp_file_path = custom_name
+
+    shutil.move(
+        temp_file_path, custom_name
+    )
+    temp_file_path = custom_name
 
     script = "./sBIF.sh"
     n_samples = 3
     n_runs = 1
     is_download = False
     subprocess.run(
-        ["bash", script, n_samples, n_runs, is_download],
+        ["bash", script, str(n_samples), str(n_runs), str(is_download)],
         capture_output=True,
         text=True,
         check=True,
     )
 
-    os.remove(custom_name)
+    # os.remove(custom_name)
 
     cur.execute(
         """
@@ -236,7 +265,7 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id)
         AND cell_line = %s
         AND start_value = %s
         AND end_value = %s
-        AND sample = %s
+        AND sampleID = %s
     """,
         (chromosome_name, cell_line, sequences["start"], sequences["end"], sample_id),
     )
@@ -249,6 +278,8 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id)
 """
 Download the full 3D chromosome data(including distances, 50000) in the given cell line, chromosome name, start, end
 """
+
+
 def download_full_chromosome_3d_data(cell_line, chromosome_name, sequences):
     conn = get_db_connection()
     cur = conn.cursor()

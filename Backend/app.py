@@ -47,7 +47,7 @@ def get_ExampleChromos3DData():
     cell_line = request.json['cell_line']
     chromosome_name = request.json['chromosome_name']
     sequences = request.json['sequences']
-    sample_id = request.json['sample']
+    sample_id = request.json['sample_id']
     return jsonify(example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id))
 
 

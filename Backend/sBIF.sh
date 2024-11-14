@@ -29,7 +29,7 @@ for interfile in ../Example_Data/Folding_input/*.txt; do
     end=$(echo "$filename" | cut -d'.' -f3 | sed 's/.txt//')
 
     ##command
-    cmd="$EXE_PATH -i $interfile -c $chrom -l $chrlensfile -s $start -e $end -r $res -do $is_download -j $job_prefix -p $threads"
+    cmd="$EXE_PATH -i $interfile -c $chrom -l $chrlensfile -s $start -e $end -r $res -do $is_download -ns $n_samples -nr $n_runs -j $job_prefix -p $threads"
     
     echo "Processing file $count of $total_files: $filename"
     echo "Running command: $cmd"
