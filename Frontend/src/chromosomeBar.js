@@ -13,7 +13,7 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
             const max_end = chromosomeSize ? chromosomeSize : 0;
             const seqs = totalChromosomeSequences;
             const height = 30;
-            const margin = { top: 10, bottom: 5, left: 10, right: 10 };
+            const margin = { top: 10, bottom: 20, left: 10, right: 10 };
             const width = parentRef.current ? parentRef.current.clientWidth - margin.left - margin.right : 0;
 
             const xScale = d3.scaleLinear()
@@ -35,6 +35,8 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                 .attr('y', backgroundY)
                 .attr('width', width)
                 .attr('height', backgroundHeight)
+                .attr('stroke', '#999')
+                .attr('stroke-width', 0.3)
                 .attr('fill', '#F5F5F5');
 
             // Highlighted selection area
@@ -55,6 +57,7 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                     .attr('height', backgroundHeight)
                     .attr('fill', selectedChromosomeSequence.start < seq.end && selectedChromosomeSequence.end > seq.start ? '#FFC107' : '#4CAF50')
                     .style('cursor', 'pointer')
+                    .style('opacity', 0.8)  
                     .on('click', () => {
                         setSelectedChromosomeSequence({
                             start: seq.start,
@@ -63,8 +66,11 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                     })
                     .on('mouseover', (event) => {
                         d3.select(event.currentTarget)
+                            .transition()
+                            .duration(250)
                             .attr('stroke', '#333')
-                            .attr('stroke-width', 1);
+                            .attr('stroke-width', 2)
+                            .style('opacity', 1);
 
                         const tooltipWidth = 150;
                         const tooltipX = event.pageX + 5;
@@ -83,8 +89,11 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                     })
                     .on('mouseout', (event) => {
                         d3.select(event.currentTarget)
+                            .transition()
+                            .duration(250)
                             .attr('stroke', 'none')
-                            .attr('stroke-width', 0);
+                            .attr('stroke-width', 0)
+                            .style('opacity', 0.8);
                         setTooltip((prev) => ({ ...prev, visible: false }));
                     });
             });
@@ -116,10 +125,10 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                         .on('drag', (event) => {
                             const mouseX = d3.pointer(event)[0];
                             newStart = Math.round(Math.min(Math.max(xScale.invert(mouseX), min_start), selectedChromosomeSequence.end));
-                            
+
                             // Update the start position continuously while dragging
                             setSelectedChromosomeSequence((prev) => ({ ...prev, start: newStart }));
-                        })                
+                        })
                         .on('end', () => {
                             // Check the warning condition when drag ends
                             if (newEnd - newStart > 4000000) {
@@ -174,19 +183,31 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
 
             drawSelectionMarkers();
 
-            svg.append('text')
-                .attr('x', margin.left)
-                .attr('y', height + margin.top + 5)
-                .attr('text-anchor', 'start')
-                .attr('font-size', '12px')
-                .text(min_start);
+            // add X axis and explicitly set tick values
+            const xAxis = d3.axisBottom(xScale)
+                .tickValues([min_start, ...xScale.ticks(5), max_end])
+                .tickFormat((d) => d);
 
-            svg.append('text')
-                .attr('x', width + margin.left)
-                .attr('y', height + margin.top + 5)
-                .attr('text-anchor', 'end')
-                .attr('font-size', '12px')
-                .text(max_end);
+            const xAxisGroup = svg.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0, ${height + margin.top})`)
+                .call(xAxis);
+
+            // get the last tick on the x-axis
+            const lastTick = xAxisGroup.selectAll('.tick:last-child text');
+
+            // if the last tick overflows the screen, adjust its position
+            lastTick.each(function () {
+                const tickWidth = this.getBBox().width;
+                const availableWidth = width - tickWidth - margin.right;
+                const tickX = xScale(max_end);
+
+                if (tickX > availableWidth) {
+                    d3.select(this)
+                        .attr('transform', `translate(-${tickWidth / 500}, 0)`)
+                        .style('text-anchor', 'end');
+                }
+            });
         }
     }, [totalChromosomeSequences, selectedChromosomeSequence]);
 

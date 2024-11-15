@@ -13,7 +13,7 @@ body {
 }
 
 .controlHeader {
-  height: 75px;
+  height: 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,7 +34,7 @@ body {
 .content {
   display: flex;
   margin-top: 5px;
-  height:calc(97vh - 75px);
+  height:calc(97vh - 80px);
   border: 1px solid #eaeaea;
   border-radius: 8px;
 }
