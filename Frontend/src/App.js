@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Select, Input, Button, message, Empty } from 'antd';
+import { Select, Input, Button, message, Empty, Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 import './App.css';
 // import { Heatmap } from './heatmap.js';
 import { Heatmap } from './canvasHeatmap.js';
@@ -18,6 +19,8 @@ function App() {
   const [chromosome3DExampleID, setChromosome3DExampleID] = useState(0);
   const [chromosome3DExampleData, setChromosome3DExampleData] = useState([]);
   const [messageApi, contextHolder] = message.useMessage();
+  const [heatmapLoading, setHeatmapLoading] = useState(false);
+  const [chromosome3DLoading, setChromosome3DLoading] = useState(false);
 
   useEffect(() => {
     fetch('/getCellLines')
@@ -104,6 +107,7 @@ function App() {
         .then(res => res.json())
         .then(data => {
           setChromosomeData(data);
+          setHeatmapLoading(false);
         });
     }
   };
@@ -120,6 +124,7 @@ function App() {
         .then(res => res.json())
         .then(data => {
           setChromosome3DExampleData(data);
+          setChromosome3DLoading(false);
         });
     }
   };
@@ -157,7 +162,7 @@ function App() {
     setChromosome3DExampleData([]);
     fetchChromosomeList(value);
   };
-  
+
   const chromosomeChange = value => {
     setChromosomeName(value);
     setChromosomeSize(0);
@@ -168,13 +173,15 @@ function App() {
   };
 
   const submit = () => {
+    setHeatmapLoading(true);
+    setChromosome3DLoading(true);
     fetchChromosomeData();
     getExampleChromos3DData();
   };
 
   const chromosomeSequenceChange = (position, value) => {
     const newValue = Number(value);
-    
+
     if (position === 'start') {
       if (selectedChromosomeSequence.end < newValue) {
         warning('smallend');
@@ -241,6 +248,7 @@ function App() {
         />
       </div>
       <div className='content'>
+        <Spin spinning={heatmapLoading || chromosome3DLoading} fullscreen />
         {chromosomeData.length > 0 ? (
           <Heatmap
             cellLineName={cellLineName}
