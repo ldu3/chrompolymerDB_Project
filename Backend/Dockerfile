@@ -7,7 +7,7 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install git
-RUN apt-get update && apt-get install -y git cmake libzip-dev postgresql-13-pg-cron
+RUN apt-get update && apt-get install -y git cmake libzip-dev
 WORKDIR /chromosome
 RUN git clone https://github.com/ScheWann/sBIF.git
 

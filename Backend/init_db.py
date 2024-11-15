@@ -49,20 +49,18 @@ def data_exists(cur, table_name):
     return cur.fetchone()[0]
 
 
-def create_periodic_cleanup(conn):
-    """Create a scheduled job to delete all rows from position every 24 hours."""
+def delete_old_samples(conn):
+    """Delete old samples from the position table."""
     cur = conn.cursor()
 
-    # Create the cron job to delete all rows every 24 hours
-    cur.execute(
-        """
-        SELECT cron.schedule('0 0 * * *', $$DELETE FROM position;$$);
-        """
-    )
+    cur.execute("""
+        DELETE FROM position
+        WHERE insert_time < CURRENT_TIMESTAMP - INTERVAL '10 minutes';
+    """)
 
     conn.commit()
     cur.close()
-    print("Periodic cleanup cron job created successfully.")
+    print("Old samples deleted successfully.")
 
 
 def initialize_tables():
@@ -156,12 +154,12 @@ def initialize_tables():
             "end_value BIGINT NOT NULL DEFAULT 0,"
             "X FLOAT NOT NULL DEFAULT 0.0,"
             "Y FLOAT NOT NULL DEFAULT 0.0,"
-            "Z FLOAT NOT NULL DEFAULT 0.0"
+            "Z FLOAT NOT NULL DEFAULT 0.0,"
+            "insert_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP"
             ");"
         )
-        cur.execute("CREATE EXTENSION IF NOT EXISTS pg_cron;")
         conn.commit()
-        create_periodic_cleanup(conn)
+        delete_old_samples(conn)
         print("position table created successfully.")
     else:
         print("position table already exists, skipping creation.")
