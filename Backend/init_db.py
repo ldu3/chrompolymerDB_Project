@@ -49,20 +49,6 @@ def data_exists(cur, table_name):
     return cur.fetchone()[0]
 
 
-def delete_old_samples(conn):
-    """Delete old samples from the position table."""
-    cur = conn.cursor()
-
-    cur.execute("""
-        DELETE FROM position
-        WHERE insert_time < CURRENT_TIMESTAMP - INTERVAL '10 minutes';
-    """)
-
-    conn.commit()
-    cur.close()
-    print("Old samples deleted successfully.")
-
-
 def initialize_tables():
     """Create tables"""
 
@@ -159,7 +145,6 @@ def initialize_tables():
             ");"
         )
         conn.commit()
-        delete_old_samples(conn)
         print("position table created successfully.")
     else:
         print("position table already exists, skipping creation.")

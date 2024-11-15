@@ -4,6 +4,7 @@ import './App.css';
 // import { Heatmap } from './heatmap.js';
 import { Heatmap } from './canvasHeatmap.js';
 import { ChromosomeBar } from './chromosomeBar.js';
+import { Chromosome3D } from './Chromosome3D.js';
 
 function App() {
   const [cellLineList, setCellLineList] = useState([]);
@@ -14,6 +15,8 @@ function App() {
   const [totalChromosomeSequences, setTotalChromosomeSequences] = useState([]);
   const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: 0, end: 0 });
   const [chromosomeData, setChromosomeData] = useState([]);
+  const [chromosome3DExampleID, setChromosome3DExampleID] = useState(0);
+  const [chromosome3DExampleData, setChromosome3DExampleData] = useState([]);
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
@@ -116,7 +119,7 @@ function App() {
       })
         .then(res => res.json())
         .then(data => {
-          console.log(data, 'testttt3D');
+          setChromosome3DExampleData(data);
         });
     }
   };
@@ -228,7 +231,11 @@ function App() {
             totalChromosomeSequences={totalChromosomeSequences}
             selectedChromosomeSequence={selectedChromosomeSequence}
           />)}
-
+        {chromosome3DExampleData.length > 0 && (
+          <Chromosome3D
+            chromosome3DExampleData={chromosome3DExampleData}
+          />
+        )}
       </div>
     </div>
   );
