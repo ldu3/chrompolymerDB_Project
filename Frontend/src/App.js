@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Select, Input, Button, message } from 'antd';
+import { Select, Input, Button, message, Empty } from 'antd';
 import './App.css';
 // import { Heatmap } from './heatmap.js';
 import { Heatmap } from './canvasHeatmap.js';
@@ -223,19 +223,19 @@ function App() {
         />
       </div>
       <div className='content'>
-        {chromosomeData.length > 0 && (
+        {chromosomeData.length > 0 ? (
           <Heatmap
             cellLineName={cellLineName}
             chromosomeName={chromosomeName}
             chromosomeData={chromosomeData}
             totalChromosomeSequences={totalChromosomeSequences}
             selectedChromosomeSequence={selectedChromosomeSequence}
-          />)}
-        {chromosome3DExampleData.length > 0 && (
+          />) : <Empty style={{ width: '30%', height: '100%', borderRight: "1px solid #eaeaea", margin: 0 }} description="No data" />}
+        {chromosome3DExampleData.length > 0 ? (
           <Chromosome3D
             chromosome3DExampleData={chromosome3DExampleData}
           />
-        )}
+        ) : <Empty style={{ width: '70%', height: '100%', margin: 0 }} description="No data" />}
       </div>
     </div>
   );
