@@ -41,7 +41,7 @@ function App() {
   }, [cellLineName, chromosomeName]);
 
   useEffect(() => {
-    if(totalChromosomeSequences.length > 0) {
+    if (totalChromosomeSequences.length > 0) {
       setSelectedChromosomeSequence({ start: totalChromosomeSequences[0].start, end: totalChromosomeSequences[0].start });
     }
   }, [totalChromosomeSequences]);
@@ -56,6 +56,7 @@ function App() {
     setChromosomeSize(0);
     setSelectedChromosomeSequence({ start: 0, end: 0 });
   }, [chromosomeName]);
+
   const fetchChromosomeList = (value) => {
     fetch('/getChromosList', {
       method: 'POST',
@@ -104,6 +105,22 @@ function App() {
     }
   };
 
+  const getExampleChromos3DData = () => {
+    if (cellLineName && chromosomeName && selectedChromosomeSequence) {
+      fetch("/getExampleChromos3DData", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence, sample_id: chromosome3DExampleID })
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log(data, 'testttt3D');
+        });
+    }
+  };
+
   const warning = (type) => {
     if (type === 'overrange') {
       messageApi.open({
@@ -138,6 +155,11 @@ function App() {
     fetchChromosomeSize(value);
   };
 
+  const submit = () => {
+    fetchChromosomeData();
+    getExampleChromos3DData();
+  };
+
   const chromosomeSequenceChange = (position, value) => {
     if (position === 'start') {
       if (selectedChromosomeSequence.end < Number(value.target.value)) {
@@ -164,7 +186,7 @@ function App() {
             value={cellLineName}
             size="small"
             style={{
-              width: 200,
+              width: "15%",
               marginRight: 20
             }}
             onChange={cellLineChange}
@@ -176,7 +198,7 @@ function App() {
               value={chromosomeName}
               size="small"
               style={{
-                width: 120,
+                width: "10%",
                 marginRight: 20
               }}
               onChange={chromosomeChange}
@@ -184,10 +206,10 @@ function App() {
             />
           </>
           <span className="controlGroupText">Sequences:</span>
-          <Input size="small" style={{ width: 200, marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} value={selectedChromosomeSequence.start} />
+          <Input size="small" style={{ width: "10%", marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} value={selectedChromosomeSequence.start} />
           <span className="controlGroupText">~</span>
-          <Input size="small" style={{ width: 200, marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} value={selectedChromosomeSequence.end} />
-          <Button size="small" color="primary" variant="outlined" onClick={fetchChromosomeData}>Check</Button>
+          <Input size="small" style={{ width: "10%", marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} value={selectedChromosomeSequence.end} />
+          <Button size="small" color="primary" variant="outlined" onClick={submit}>Check</Button>
         </div>
         <ChromosomeBar
           warning={warning}
@@ -206,6 +228,7 @@ function App() {
             totalChromosomeSequences={totalChromosomeSequences}
             selectedChromosomeSequence={selectedChromosomeSequence}
           />)}
+
       </div>
     </div>
   );
