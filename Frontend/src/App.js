@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Select, Input, Button, message, Empty, Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { Select, Input, Button, message, Empty, Spin, Tabs } from 'antd';
 import './App.css';
 // import { Heatmap } from './heatmap.js';
 import { Heatmap } from './canvasHeatmap.js';
@@ -189,7 +188,9 @@ function App() {
       }
     }
   };
-
+  const onChange = (key) => {
+    console.log(key);
+  };
   return (
     <div className="App">
       {contextHolder}
@@ -243,9 +244,26 @@ function App() {
             totalChromosomeSequences={totalChromosomeSequences}
             selectedChromosomeSequence={selectedChromosomeSequence}
           />) : <Empty style={{ width: '30%', height: '100%', borderRight: "1px solid #eaeaea", margin: 0 }} description="No data" />}
-        {chromosome3DExampleData.length > 0 ? (
+        {/* {chromosome3DExampleData.length > 0 ? (
           <Chromosome3D
             chromosome3DExampleData={chromosome3DExampleData}
+          />
+        ) : <Empty style={{ width: '70%', height: '100%', margin: 0 }} description="No data" />} */}
+        {chromosome3DExampleData.length > 0 ? (
+          <Tabs
+            size='small'
+            style={{ width: '70%', height: '100%', margin: 0 }}
+            onChange={onChange}
+            items={new Array(3).fill(null).map((_, i) => {
+              const id = String(i + 1);
+              return {
+                label: `Sample ${id}`,
+                key: id,
+                children: <Chromosome3D
+                  chromosome3DExampleData={chromosome3DExampleData}
+                />,
+              };
+            })}
           />
         ) : <Empty style={{ width: '70%', height: '100%', margin: 0 }} description="No data" />}
       </div>

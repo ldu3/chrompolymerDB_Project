@@ -33,7 +33,7 @@ body {
 
 .content {
   display: flex;
-  margin-top: 5px;
+  margin-top: 8px;
   height:calc(97vh - 80px);
   border: 1px solid #eaeaea;
   border-radius: 8px;
@@ -41,4 +41,24 @@ body {
 
 .ant-empty-image {
   margin-top: 100px;
+}
+
+.ant-tabs-nav {
+  margin-bottom: 0 !important;
+}
+
+.ant-tabs-nav-list {
+  margin-left: 15px !important;
+}
+
+.ant-tabs-tab {
+  padding: 5px 0 5px 0 !important;
+}
+
+.ant-tabs-content {
+  height: 100% !important;
+}
+
+.ant-tabs-tabpane {
+  height: 100% !important;
 }
