@@ -64,7 +64,7 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
             </div>
             <Canvas
                 ref={canvasRef}
-                camera={{ position: [0, 0, 100], fov: 75 }}
+                camera={{ position: [0, 0, 280], fov: 75 }}
                 style={{ width: '100%', height: '100%' }}
             >
                 <OrbitControls
