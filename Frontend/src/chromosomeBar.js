@@ -209,7 +209,7 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                 }
             });
         }
-    }, [totalChromosomeSequences, selectedChromosomeSequence]);
+    }, [totalChromosomeSequences, selectedChromosomeSequence, chromosomeSize]);
 
     return (
         <div ref={parentRef} style={{ width: '100%', position: 'relative' }}>

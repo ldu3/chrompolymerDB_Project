@@ -52,17 +52,6 @@ function App() {
     }
   }, [totalChromosomeSequences]);
 
-  useEffect(() => {
-    setChromosomeName(null);
-    setChromosomeSize(0);
-    setSelectedChromosomeSequence({ start: 0, end: 0 });
-  }, [cellLineName]);
-
-  useEffect(() => {
-    setChromosomeSize(0);
-    setSelectedChromosomeSequence({ start: 0, end: 0 });
-  }, [chromosomeName]);
-
   const fetchChromosomeList = (value) => {
     fetch('/getChromosList', {
       method: 'POST',
@@ -165,9 +154,6 @@ function App() {
 
   const chromosomeChange = value => {
     setChromosomeName(value);
-    setChromosomeSize(0);
-    setSelectedChromosomeSequence({ start: 0, end: 0 });
-    setChromosomeData([]);
     setChromosome3DExampleData([]);
     fetchChromosomeSize(value);
   };
