@@ -211,8 +211,6 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id)
         )
         position_data = cur.fetchall()
         
-        conn.close()
-        
         if position_data:
             return position_data
         else: 
