@@ -181,6 +181,17 @@ Returns the example(3) 3D chromosome data in the given cell line, chromosome nam
 def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id):
     conn = get_db_connection()
     cur = conn.cursor()
+
+    def delete_old_samples(conn):
+        """Delete old samples from the position table."""
+        cur = conn.cursor()
+
+        cur.execute("""
+            DELETE FROM position
+            WHERE insert_time < CURRENT_TIMESTAMP - INTERVAL '10 minutes';
+        """)
+
+        print("Old samples deleted successfully.")
     
     delete_old_samples(conn)
     
@@ -217,17 +228,6 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id)
             return position_data
         else: 
             return None
-    
-    def delete_old_samples(conn):
-        """Delete old samples from the position table."""
-        cur = conn.cursor()
-
-        cur.execute("""
-            DELETE FROM position
-            WHERE insert_time < CURRENT_TIMESTAMP - INTERVAL '10 minutes';
-        """)
-
-        print("Old samples deleted successfully.")
 
     if checking_existing_data(conn, chromosome_name, cell_line, sequences, sample_id):
         return checking_existing_data(conn, chromosome_name, cell_line, sequences, sample_id)
