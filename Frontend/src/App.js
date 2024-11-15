@@ -150,11 +150,20 @@ function App() {
 
   const cellLineChange = value => {
     setCellLineName(value);
+    setChromosomeName(null);
+    setChromosomeSize(0);
+    setSelectedChromosomeSequence({ start: 0, end: 0 });
+    setChromosomeData([]);
+    setChromosome3DExampleData([]);
     fetchChromosomeList(value);
-  }
-
+  };
+  
   const chromosomeChange = value => {
     setChromosomeName(value);
+    setChromosomeSize(0);
+    setSelectedChromosomeSequence({ start: 0, end: 0 });
+    setChromosomeData([]);
+    setChromosome3DExampleData([]);
     fetchChromosomeSize(value);
   };
 
