@@ -93,7 +93,6 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
             const drawSelectionMarkers = () => {
                 svg.selectAll('.triangle, .line-marker').remove();
 
-                let hasShownAlert = false;
                 const triangleHeight = 10;
                 const triangleY = backgroundY - triangleHeight;
                 let newStart = selectedChromosomeSequence.start;
