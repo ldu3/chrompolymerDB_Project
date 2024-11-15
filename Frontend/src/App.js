@@ -164,17 +164,26 @@ function App() {
   };
 
   const chromosomeSequenceChange = (position, value) => {
+    const newValue = Number(value);
+    
     if (position === 'start') {
-      if (selectedChromosomeSequence.end < Number(value.target.value)) {
+      if (selectedChromosomeSequence.end < newValue) {
         warning('smallend');
       } else {
-        setSelectedChromosomeSequence({ ...selectedChromosomeSequence, start: Number(value.target.value) });
+
+        setSelectedChromosomeSequence(prevState => ({
+          ...prevState,
+          start: newValue,
+        }));
       }
     } else {
-      if (Number(value.target.value) - selectedChromosomeSequence.start > 4000000) {
+      if (newValue - selectedChromosomeSequence.start > 4000000) {
         warning('overrange');
       } else {
-        setSelectedChromosomeSequence({ ...selectedChromosomeSequence, end: Number(value.target.value) });
+        setSelectedChromosomeSequence(prevState => ({
+          ...prevState,
+          end: newValue,
+        }));
       }
     }
   };
@@ -209,9 +218,9 @@ function App() {
             />
           </>
           <span className="controlGroupText">Sequences:</span>
-          <Input size="small" style={{ width: "10%", marginRight: 10 }} placeholder="Start" onChange={(value) => chromosomeSequenceChange('start', value)} value={selectedChromosomeSequence.start} />
+          <Input size="small" style={{ width: "10%", marginRight: 10 }} placeholder="Start" onChange={(e) => chromosomeSequenceChange('start', e.target.value)} value={selectedChromosomeSequence.start} />
           <span className="controlGroupText">~</span>
-          <Input size="small" style={{ width: "10%", marginRight: 20 }} placeholder="End" onChange={(value) => chromosomeSequenceChange('end', value)} value={selectedChromosomeSequence.end} />
+          <Input size="small" style={{ width: "10%", marginRight: 20 }} placeholder="End" onChange={(e) => chromosomeSequenceChange('end', e.target.value)} value={selectedChromosomeSequence.end} />
           <Button size="small" color="primary" variant="outlined" onClick={submit}>Check</Button>
         </div>
         <ChromosomeBar
