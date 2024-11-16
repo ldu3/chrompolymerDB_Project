@@ -100,7 +100,7 @@ function App() {
     }
   };
 
-  const fetchExampleChromos3DData = (sample_id) => {
+  const fetchExampleChromos3DData = (sample_id, sampleChange) => {
     if (cellLineName && chromosomeName && selectedChromosomeSequence) {
       fetch("/getExampleChromos3DData", {
         method: 'POST',
@@ -112,7 +112,9 @@ function App() {
         .then(res => res.json())
         .then(data => {
           setChromosome3DExampleData(data);
-          setChromosome3DLoading(false);
+          if(sampleChange === "submit") {
+            setChromosome3DLoading(false);
+          }
         });
     }
   };
@@ -163,7 +165,7 @@ function App() {
     }
     setChromosome3DLoading(true);
     fetchChromosomeData();
-    fetchExampleChromos3DData(chromosome3DExampleID);
+    fetchExampleChromos3DData(chromosome3DExampleID, "submit");
   };
 
   const chromosomeSequenceChange = (position, value) => {
@@ -193,8 +195,7 @@ function App() {
 
   const sampleChange = (key) => {
     setChromosome3DExampleID(key);
-    setChromosome3DLoading(true);
-    fetchExampleChromos3DData(key);
+    fetchExampleChromos3DData(key, "sampleChange");
   };
 
   return (
@@ -266,6 +267,7 @@ function App() {
           chromosome3DExampleData.length > 0 ? (
             <Tabs
               size='small'
+              defaultActiveKey={chromosome3DExampleID}
               style={{ width: '70%', height: '100%', margin: 0 }}
               onChange={sampleChange}
               items={new Array(3).fill(null).map((_, i) => {
