@@ -57,9 +57,9 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                     .attr('height', backgroundHeight)
                     .attr('fill', selectedChromosomeSequence.start < seq.end && selectedChromosomeSequence.end > seq.start ? '#FFC107' : '#4CAF50')
                     .style('cursor', 'pointer')
-                    .style('opacity', 0.8)  
+                    .style('opacity', 0.8)
                     .on('click', () => {
-                        if(seq.end - seq.start > 4000000) {
+                        if (seq.end - seq.start > 4000000) {
                             warning('overrange');
                         }
                         setSelectedChromosomeSequence({
@@ -117,6 +117,7 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                     .attr('fill', '#666')
                     .attr('stroke', '#666')
                     .attr('stroke-width', 1.5)
+                    .style('z-index', 10)
                     .style('cursor', 'pointer')
                     .call(d3.drag()
                         .on('start', () => {
@@ -155,6 +156,7 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                     .attr('fill', '#666')
                     .attr('stroke', '#666')
                     .attr('stroke-width', 1.5)
+                    .style('z-index', 10)
                     .style('cursor', 'pointer')
                     .call(d3.drag()
                         .on('start', () => {
@@ -186,31 +188,33 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
 
             drawSelectionMarkers();
 
-            // add X axis and explicitly set tick values
             const xAxis = d3.axisBottom(xScale)
-                .tickValues([min_start, ...xScale.ticks(5), max_end])
+                .ticks(5)
                 .tickFormat((d) => d);
 
-            const xAxisGroup = svg.append('g')
+            svg.append('g')
                 .attr('class', 'x-axis')
                 .attr('transform', `translate(0, ${height + margin.top})`)
                 .call(xAxis);
 
-            // get the last tick on the x-axis
-            const lastTick = xAxisGroup.selectAll('.tick:last-child text');
+            // Add labels above the bars for start and end
+            svg.append('text')
+                .attr('x', margin.left)
+                .attr('y', margin.top)
+                .attr('text-anchor', 'start')
+                .attr('font-size', '12px')
+                .attr('font-weight', 'bold')
+                .attr('fill', '#333')
+                .text(`${min_start}`);
 
-            // if the last tick overflows the screen, adjust its position
-            lastTick.each(function () {
-                const tickWidth = this.getBBox().width;
-                const availableWidth = width - tickWidth - margin.right;
-                const tickX = xScale(max_end);
-
-                if (tickX > availableWidth) {
-                    d3.select(this)
-                        .attr('transform', `translate(-${tickWidth / 500}, 0)`)
-                        .style('text-anchor', 'end');
-                }
-            });
+            svg.append('text')
+                .attr('x', width + margin.left)
+                .attr('y', margin.top)
+                .attr('text-anchor', 'end')
+                .attr('font-size', '12px')
+                .attr('font-weight', 'bold')
+                .attr('fill', '#333')
+                .text(`${max_end}`);
         }
     }, [totalChromosomeSequences, selectedChromosomeSequence, chromosomeSize]);
 

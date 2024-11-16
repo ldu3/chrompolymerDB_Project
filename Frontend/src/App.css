@@ -28,13 +28,13 @@ body {
 
 .controlGroupText {
   margin-right: 10px;
-  font-size: 15px;
+  font-size: 12px;
 }
 
 .content {
   display: flex;
   margin-top: 8px;
-  height:calc(97vh - 80px);
+  height:calc(97vh - 70px);
   border: 1px solid #eaeaea;
   border-radius: 8px;
 }
