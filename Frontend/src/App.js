@@ -158,7 +158,9 @@ function App() {
   };
 
   const submit = () => {
-    setHeatmapLoading(true);
+    if (selectedChromosomeSequence.end - selectedChromosomeSequence.start < 4000000) {
+      setHeatmapLoading(true);
+    }
     setChromosome3DLoading(true);
     fetchChromosomeData();
     fetchExampleChromos3DData(chromosome3DExampleID);
@@ -239,32 +241,51 @@ function App() {
         />
       </div>
       <div className='content'>
-        <Spin spinning={heatmapLoading || chromosome3DLoading} tip="Loading Data..." fullscreen />
-        {chromosomeData.length > 0 ? (
-          <Heatmap
-            cellLineName={cellLineName}
-            chromosomeName={chromosomeName}
-            chromosomeData={chromosomeData}
-            totalChromosomeSequences={totalChromosomeSequences}
-            selectedChromosomeSequence={selectedChromosomeSequence}
-          />) : <Empty style={{ width: '30%', height: '100%', borderRight: "1px solid #eaeaea", margin: 0 }} description="No data" />}
-        {chromosome3DExampleData.length > 0 ? (
-          <Tabs
-            size='small'
-            style={{ width: '70%', height: '100%', margin: 0 }}
-            onChange={sampleChange}
-            items={new Array(3).fill(null).map((_, i) => {
-              const id = i;
-              return {
-                label: `Sample ${id + 1}`,
-                key: id,
-                children: <Chromosome3D
-                  chromosome3DExampleData={chromosome3DExampleData}
-                />,
-              };
-            })}
-          />
-        ) : <Empty style={{ width: '70%', height: '100%', margin: 0 }} description="No data" />}
+        {heatmapLoading ? (
+          <Spin spinning={true} size="large" style={{ width: '30%', height: '100%', borderRight: "1px solid #eaeaea", margin: 0 }} />
+        ) : (
+          chromosomeData.length > 0 ? (
+            <Heatmap
+              cellLineName={cellLineName}
+              chromosomeName={chromosomeName}
+              chromosomeData={chromosomeData}
+              totalChromosomeSequences={totalChromosomeSequences}
+              selectedChromosomeSequence={selectedChromosomeSequence}
+            />
+          ) : (
+            <Empty
+              style={{ width: '30%', height: '100%', borderRight: "1px solid #eaeaea", margin: 0 }}
+              description="No Heatmap Data"
+            />
+          )
+        )}
+
+        {chromosome3DLoading ? (
+          <Spin spinning={true} size="large" style={{ width: '70%', height: '100%', margin: 0 }} />
+        ) : (
+          chromosome3DExampleData.length > 0 ? (
+            <Tabs
+              size='small'
+              style={{ width: '70%', height: '100%', margin: 0 }}
+              onChange={sampleChange}
+              items={new Array(3).fill(null).map((_, i) => {
+                const id = i;
+                return {
+                  label: `Sample ${id + 1}`,
+                  key: id,
+                  children: (
+                    <Chromosome3D chromosome3DExampleData={chromosome3DExampleData} />
+                  ),
+                };
+              })}
+            />
+          ) : (
+            <Empty
+              style={{ width: '70%', height: '100%', margin: 0 }}
+              description="No 3D Data"
+            />
+          )
+        )}
       </div>
     </div>
   );

@@ -39,6 +39,10 @@ body {
   border-radius: 8px;
 }
 
+.ant-spin-dot-holder {
+  margin-top: 100px;
+}
+
 .ant-empty-image {
   margin-top: 100px;
 }
