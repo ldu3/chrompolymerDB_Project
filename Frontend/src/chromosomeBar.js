@@ -59,6 +59,9 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
                     .style('cursor', 'pointer')
                     .style('opacity', 0.8)  
                     .on('click', () => {
+                        if(seq.end - seq.start > 4000000) {
+                            warning('overrange');
+                        }
                         setSelectedChromosomeSequence({
                             start: seq.start,
                             end: seq.end
