@@ -100,14 +100,14 @@ function App() {
     }
   };
 
-  const getExampleChromos3DData = () => {
+  const fetchExampleChromos3DData = (sample_id) => {
     if (cellLineName && chromosomeName && selectedChromosomeSequence) {
       fetch("/getExampleChromos3DData", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence, sample_id: chromosome3DExampleID })
+        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence, sample_id: sample_id })
       })
         .then(res => res.json())
         .then(data => {
@@ -161,7 +161,7 @@ function App() {
     setHeatmapLoading(true);
     setChromosome3DLoading(true);
     fetchChromosomeData();
-    getExampleChromos3DData();
+    fetchExampleChromos3DData(chromosome3DExampleID);
   };
 
   const chromosomeSequenceChange = (position, value) => {
@@ -188,9 +188,13 @@ function App() {
       }
     }
   };
-  const onChange = (key) => {
-    console.log(key);
+
+  const sampleChange = (key) => {
+    setChromosome3DExampleID(key);
+    setChromosome3DLoading(true);
+    fetchExampleChromos3DData(key);
   };
+
   return (
     <div className="App">
       {contextHolder}
@@ -235,7 +239,7 @@ function App() {
         />
       </div>
       <div className='content'>
-        <Spin spinning={heatmapLoading || chromosome3DLoading} fullscreen />
+        <Spin spinning={heatmapLoading || chromosome3DLoading} tip="Loading Data..." fullscreen />
         {chromosomeData.length > 0 ? (
           <Heatmap
             cellLineName={cellLineName}
@@ -244,20 +248,15 @@ function App() {
             totalChromosomeSequences={totalChromosomeSequences}
             selectedChromosomeSequence={selectedChromosomeSequence}
           />) : <Empty style={{ width: '30%', height: '100%', borderRight: "1px solid #eaeaea", margin: 0 }} description="No data" />}
-        {/* {chromosome3DExampleData.length > 0 ? (
-          <Chromosome3D
-            chromosome3DExampleData={chromosome3DExampleData}
-          />
-        ) : <Empty style={{ width: '70%', height: '100%', margin: 0 }} description="No data" />} */}
         {chromosome3DExampleData.length > 0 ? (
           <Tabs
             size='small'
             style={{ width: '70%', height: '100%', margin: 0 }}
-            onChange={onChange}
+            onChange={sampleChange}
             items={new Array(3).fill(null).map((_, i) => {
-              const id = String(i + 1);
+              const id = i;
               return {
-                label: `Sample ${id}`,
+                label: `Sample ${id + 1}`,
                 key: id,
                 children: <Chromosome3D
                   chromosome3DExampleData={chromosome3DExampleData}

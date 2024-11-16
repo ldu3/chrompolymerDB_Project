@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei';
 import { Button } from 'antd';
-import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
+import { DownloadOutlined, ReloadOutlined, PlusOutlined } from "@ant-design/icons";
 
 export const Chromosome3D = ({ chromosome3DExampleData }) => {
     const spheresRef = useRef([]);
@@ -39,12 +39,20 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
             {/* Container for buttons */}
             <div style={{
                 position: 'absolute',
-                top: 3,
-                right: 3,
+                top: 10,
+                right: 10,
                 zIndex: 10,
                 display: 'flex',
                 gap: '10px',
             }}>
+                <Button
+                    style={{
+                        fontSize: 15,
+                        cursor: "pointer",
+                    }}
+                    icon={<PlusOutlined />}
+                    onClick={resetView}
+                />
                 <Button
                     style={{
                         fontSize: 15,
@@ -64,8 +72,8 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
             </div>
             <Canvas
                 ref={canvasRef}
-                camera={{ position: [0, 0, 280], fov: 75 }}
-                style={{ width: '100%', height: '100%' }}
+                camera={{ position: [0, 0, 230], fov: 75 }}
+                style={{ width: '100%', height: '100%', backgroundColor: '#333' }}
             >
                 <OrbitControls
                     ref={controlsRef}
@@ -86,8 +94,8 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                         </mesh>
                         {/* Outline Mesh */}
                         <mesh>
-                            <sphereGeometry args={[2.9, 32, 32]} />
-                            <meshBasicMaterial color="black" side={THREE.BackSide} />
+                            <sphereGeometry args={[3, 32, 32]} />
+                            <meshBasicMaterial color="white" side={THREE.BackSide} />
                         </mesh>
                     </group>
                 ))}
