@@ -32,10 +32,11 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
     }
 
     useEffect(() => {
-        const parentHeight = containerRef.current.offsetHeight;
+        const parentWidth = containerRef.current.offsetWidth;
         const margin = { top: 35, right: 10, bottom: 50, left: 60 };
-        const width = parentHeight / 1.5 - margin.left - margin.right;
-        const height = parentHeight / 1.5 - margin.top - margin.bottom;
+
+        const width = parentWidth - margin.left - margin.right;
+        const height = parentWidth - margin.top - margin.bottom;
 
         // Set up the canvas
         const canvas = canvasRef.current;
