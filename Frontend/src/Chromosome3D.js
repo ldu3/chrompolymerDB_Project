@@ -3,9 +3,9 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei';
 import { Button } from 'antd';
-import { DownloadOutlined, ReloadOutlined, PlusOutlined } from "@ant-design/icons";
+import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
 
-export const Chromosome3D = ({ chromosome3DExampleData }) => {
+export const Chromosome3D = ({ chromosome3DExampleData, chromosome3DComprationShowing }) => {
     const spheresRef = useRef([]);
     const scaleFactor = 0.15;
     const canvasRef = useRef();
@@ -18,7 +18,7 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
             const z = data.z * scaleFactor;
             return new THREE.Vector3(x, y, z);
         });
-    }, [chromosome3DExampleData]);
+    }, [chromosome3DExampleData, chromosome3DComprationShowing]);
 
     const download = () => {
         // Function to handle download, for example exporting the canvas as an image
@@ -45,14 +45,6 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                 display: 'flex',
                 gap: '10px',
             }}>
-                <Button
-                    style={{
-                        fontSize: 15,
-                        cursor: "pointer",
-                    }}
-                    icon={<PlusOutlined />}
-                    onClick={resetView}
-                />
                 <Button
                     style={{
                         fontSize: 15,

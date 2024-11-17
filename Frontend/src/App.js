@@ -5,6 +5,8 @@ import './App.css';
 import { Heatmap } from './canvasHeatmap.js';
 import { ChromosomeBar } from './chromosomeBar.js';
 import { Chromosome3D } from './Chromosome3D.js';
+import { PlusOutlined, MinusOutlined } from "@ant-design/icons";
+
 
 function App() {
   const [cellLineList, setCellLineList] = useState([]);
@@ -20,6 +22,7 @@ function App() {
   const [messageApi, contextHolder] = message.useMessage();
   const [heatmapLoading, setHeatmapLoading] = useState(false);
   const [chromosome3DLoading, setChromosome3DLoading] = useState(false);
+  const [chromosome3DComparisonShowing, setChromosome3DComparisonShowing] = useState(false);
 
   useEffect(() => {
     fetch('/getCellLines')
@@ -112,7 +115,7 @@ function App() {
         .then(res => res.json())
         .then(data => {
           setChromosome3DExampleData(data);
-          if(sampleChange === "submit") {
+          if (sampleChange === "submit") {
             setChromosome3DLoading(false);
           }
         });
@@ -198,6 +201,14 @@ function App() {
     fetchExampleChromos3DData(key, "sampleChange");
   };
 
+  const handleAddChromosome3D = () => {
+    setChromosome3DComparisonShowing(true);
+  };
+
+  const handleRemoveChromosome3D = () => {
+    setChromosome3DComparisonShowing(false);
+  };
+
   return (
     <div className="App">
       {contextHolder}
@@ -265,22 +276,77 @@ function App() {
           <Spin spinning={true} size="large" style={{ width: '70%', height: '100%', margin: 0 }} />
         ) : (
           chromosome3DExampleData.length > 0 ? (
-            <Tabs
-              size='small'
-              defaultActiveKey={chromosome3DExampleID}
-              style={{ width: '70%', height: '100%', margin: 0 }}
-              onChange={sampleChange}
-              items={new Array(3).fill(null).map((_, i) => {
-                const id = i;
-                return {
-                  label: `Sample ${id + 1}`,
-                  key: id,
-                  children: (
-                    <Chromosome3D chromosome3DExampleData={chromosome3DExampleData} />
-                  ),
-                };
-              })}
-            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', height: '100%' }}>
+              <div style={{ width: chromosome3DComparisonShowing ? '49.9%' : '100%', marginRight: chromosome3DComparisonShowing ? '0.2%' : '0%' }}>
+                <Tabs
+                  size="small"
+                  defaultActiveKey={chromosome3DExampleID}
+                  style={{ width: '100%', height: '100%' }}
+                  onChange={sampleChange}
+                  tabBarExtraContent={
+                    <Button
+                      style={{
+                        fontSize: 15,
+                        cursor: "pointer",
+                        marginRight: 5,
+                      }}
+                      size="small"
+                      icon={<PlusOutlined />}
+                      onClick={handleAddChromosome3D}
+                    />
+                  }
+                  items={new Array(3).fill(null).map((_, i) => {
+                    const id = i;
+                    return {
+                      label: `Sample ${id + 1}`,
+                      key: id,
+                      children: (
+                        <Chromosome3D
+                          chromosome3DExampleData={chromosome3DExampleData}
+                          chromosome3DComparisonShowing={chromosome3DComparisonShowing}
+                        />
+                      ),
+                    };
+                  })}
+                />
+              </div>
+
+              {chromosome3DComparisonShowing && (
+                <div style={{ width: '49.9%' }}>
+                  <Tabs
+                    size="small"
+                    defaultActiveKey={chromosome3DExampleID}
+                    style={{ width: '100%', height: '100%' }}
+                    onChange={sampleChange}
+                    tabBarExtraContent={
+                      <Button
+                        style={{
+                          fontSize: 15,
+                          cursor: "pointer",
+                          marginRight: 5,
+                        }}
+                        size="small"
+                        icon={<MinusOutlined />}
+                        onClick={handleRemoveChromosome3D}
+                      />
+                    }
+                    items={new Array(3).fill(null).map((_, i) => {
+                      const id = i;
+                      return {
+                        label: `Sample ${id + 1}`,
+                        key: id,
+                        children: (
+                          <Chromosome3D
+                            chromosome3DExampleData={chromosome3DExampleData}
+                            chromosome3DComparisonShowing={chromosome3DComparisonShowing}
+                          />
+                        ),
+                      };
+                    })}
+                  />
+                </div>
+              )}
+            </div>
           ) : (
             <Empty
               style={{ width: '70%', height: '100%', margin: 0 }}
