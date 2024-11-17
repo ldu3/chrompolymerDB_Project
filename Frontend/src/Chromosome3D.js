@@ -52,6 +52,19 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
         }
     };
 
+    const handleResetSelect = (index) => {
+        if (selectedSphereList[index]?.color) {
+            // Reset the sphere's color
+            setSelectedSphereList((prev) => {
+                const updatedList = { ...prev };
+                delete updatedList[index];
+                return updatedList;
+            });
+        } else {
+            setSelectedIndex(null);
+        }
+    };
+
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
             {/* Container for buttons */}
@@ -115,6 +128,10 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                         onClick={(e) => {
                             e.stopPropagation();
                             setSelectedIndex(index);
+                        }}
+                        onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            handleResetSelect(index);
                         }}
                     >
                         {/* Sphere Mesh */}
