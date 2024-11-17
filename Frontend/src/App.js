@@ -22,6 +22,7 @@ function App() {
   const [messageApi, contextHolder] = message.useMessage();
   const [heatmapLoading, setHeatmapLoading] = useState(false);
   const [chromosome3DLoading, setChromosome3DLoading] = useState(false);
+  const [geneList, setGeneList] = useState([]);
 
   // 3D Chromosome Comparison settings
   const [chromosome3DComparisonShowing, setChromosome3DComparisonShowing] = useState(false);
@@ -130,6 +131,23 @@ function App() {
               setChromosome3DLoading(false);
             }
           }
+        });
+    }
+  };
+
+  const fetchGeneList = () => {
+    if (chromosomeName && selectedChromosomeSequence) {
+      let filteredChromosomeName = chromosomeName.slice(3);
+      fetch("/getGeneList", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chromosome_name: filteredChromosomeName, sequences: selectedChromosomeSequence })
+      })
+        .then(res => res.json())
+        .then(data => {
+          setGeneList(data);
         });
     }
   };
@@ -287,6 +305,7 @@ function App() {
     setChromosome3DExampleData([]);
     setChromosome3DLoading(true);
     fetchChromosomeData();
+    fetchGeneList();
     fetchExampleChromos3DData(cellLineName, chromosome3DExampleID, "submit", false);
   };
 
@@ -343,6 +362,7 @@ function App() {
         ) : (
           chromosomeData.length > 0 ? (
             <Heatmap
+              geneList={geneList}
               cellLineName={cellLineName}
               chromosomeName={chromosomeName}
               chromosomeData={chromosomeData}

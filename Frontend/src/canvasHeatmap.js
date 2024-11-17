@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { Button } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
+import { GeneList } from './geneList.js';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences }) => {
+export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
 
@@ -156,21 +157,27 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
     }, [chromosomeData, totalChromosomeSequences]);
 
     return (
-        <div ref={containerRef} style={{ width: '30%', height: '100%', borderRight: "1px solid #eaeaea", position: 'relative' }}>
-            <Button
-                style={{
-                    position: 'absolute',
-                    top: 2,
-                    right: 2,
-                    fontSize: 15,
-                    cursor: "pointer",
-                    zIndex: 10,
-                }}
-                icon={<DownloadOutlined />}
-                onClick={() => download()}
+        <div style={{display: 'flex', flexDirection: 'column', width: '30%', height: '100%'}}>
+            <div ref={containerRef} style={{ width: '100%', height: '70%', borderRight: "1px solid #eaeaea", position: 'relative' }}>
+                <Button
+                    style={{
+                        position: 'absolute',
+                        top: 2,
+                        right: 2,
+                        fontSize: 15,
+                        cursor: "pointer",
+                        zIndex: 10,
+                    }}
+                    icon={<DownloadOutlined />}
+                    onClick={() => download()}
+                />
+                <canvas ref={canvasRef} style={{ position: 'absolute', zIndex: 0 }} />
+                <svg id="axis"></svg>
+            </div>
+            <GeneList 
+                geneList={geneList}
+                selectedChromosomeSequence={selectedChromosomeSequence}
             />
-            <canvas ref={canvasRef} style={{ position: 'absolute', zIndex: 0 }} />
-            <svg id="axis"></svg>
         </div>
     );
 };

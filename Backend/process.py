@@ -389,3 +389,30 @@ def comparison_cell_line_list(cell_line, chromosome_name, sequences):
     conn.close()
 
     return options
+
+
+"""
+Return the gene list in the given chromosome_name and sequence
+"""
+def gene_list(chromosome_name, sequences):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT *
+        FROM gene
+        WHERE chromosome = %s
+        AND (
+            (start_location BETWEEN %s AND %s)
+            OR (end_location BETWEEN %s AND %s)
+            OR (start_location <= %s AND end_location >= %s)
+        )
+    """,
+        (chromosome_name, sequences["start"], sequences["end"], sequences["start"], sequences["end"], sequences["start"], sequences["end"]),
+    )
+
+    gene_list = cur.fetchall()
+    conn.close()
+
+    return gene_list
