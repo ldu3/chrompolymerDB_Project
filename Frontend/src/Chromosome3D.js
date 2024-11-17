@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei';
 import { Button, ColorPicker } from 'antd';
 import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
+import "./Styles/Chromosome3D.css";
 
 export const Chromosome3D = ({ chromosome3DExampleData }) => {
     const scaleFactor = 0.15;
@@ -32,6 +33,9 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
 
     const resetView = () => {
         if (controlsRef.current) {
+            setHoveredIndex(null);
+            setSelectedIndex(null);
+            setSelectedSphereList({});
             controlsRef.current.reset();
         }
     };
@@ -97,6 +101,12 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                     icon={<DownloadOutlined />}
                     onClick={download}
                 />
+                <Button
+                    className={`custom-button ${Object.keys(selectedSphereList).length < 2 ? 'disabled' : ''}`}
+                    disabled={Object.keys(selectedSphereList).length < 2}
+                >
+                    Generate Distance
+                </Button>
             </div>
             <Canvas
                 ref={canvasRef}
