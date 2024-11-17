@@ -38,10 +38,10 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
 
     const handleColorChange = (color) => {
         if (selectedIndex !== null) {
-            setSelectedSphereList({
-                ...selectedSphereList,
-                selectedIndex: color
-            });
+            setSelectedSphereList((prev) => ({
+                ...prev,
+                [selectedIndex]: color.toHexString(),
+            }));
         }
     };
 
@@ -57,7 +57,7 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                 gap: '10px',
             }}>
                 <ColorPicker
-                    color={selectedSphereList.selectedIndex}
+                    color={selectedSphereList[selectedIndex] || '#ffffff'}
                     disabled={selectedIndex === null}
                     onChange={handleColorChange}
                 />
@@ -108,7 +108,6 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                         onClick={(e) => {
                             e.stopPropagation();
                             setSelectedIndex(index);
-                            console.log(index, selectedIndex);
                         }}
                     >
                         {/* Sphere Mesh */}
@@ -116,9 +115,10 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                             <sphereGeometry args={[2.8, 32, 32]} />
                             <meshStandardMaterial
                                 color={
-                                    hoveredIndex === index || selectedIndex === index
+                                    selectedSphereList[index] || 
+                                    (hoveredIndex === index || selectedIndex === index
                                         ? 'yellow'
-                                        : 'red'
+                                        : 'red')
                                 }
                             />
                         </mesh>
