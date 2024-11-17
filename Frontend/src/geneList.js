@@ -90,13 +90,15 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                 .attr("height", layerHeight - 4)
                 .attr("fill", "#69b3a2")
                 .attr("stroke", "#333")
-                .attr("stroke-width", 1)
+                .attr("stroke-width", 0.8)
+                .style("transition", "all 0.3s ease")
                 .on("mouseover", (event, d) => {
                     d3.select(event.target)
                         .style("stroke-width", 2);
 
                     const tooltip = d3.select(tooltipRef.current);
-                    tooltip.style("visibility", "visible")
+                    tooltip.style("opacity", 0.8)
+                        .style("visibility", "visible")
                         .html(`
                         <strong>Gene Symbol:</strong> ${d.symbol || d.gene_name}<br>
                         <strong>Start:</strong> ${d.start_location}<br>
@@ -109,7 +111,8 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                     d3.select(event.target)
                         .style("stroke-width", 1);
                     const tooltip = d3.select(tooltipRef.current);
-                    tooltip.style("visibility", "hidden");
+                    tooltip.style("opacity", 0)
+                        .style("visibility", "hidden");
                 });
         });
     }, [geneList, selectedChromosomeSequence, svgWidth, svgHeight]);
@@ -125,7 +128,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                     padding: '5px 12px',
                     border: "1px solid #d9d9d9",
                     borderRadius: 5,
-                    opacity: 0.9,
+                    opacity: 0,
                     fontSize: "12px",
                     padding: "5px",
                     borderRadius: "4px",
@@ -133,6 +136,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                     visibility: "hidden",
                     zIndex: 10,
                     textAlign: "left",
+                    transition: "opacity 0.4s ease, visibility 0.4s linear 0.4s",
                 }}
             ></div>
         </div>
