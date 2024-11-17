@@ -7,6 +7,8 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
     const [svgWidth, setSvgWidth] = useState(0);
     const [svgHeight, setSvgHeight] = useState(0);
 
+    const tooltipRef = useRef();
+
     useEffect(() => {
         const handleResize = () => {
             setSvgWidth(containerRef.current.offsetWidth);
@@ -87,34 +89,52 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                 .attr("width", (d) => xScale(d.displayEnd) - xScale(d.displayStart))
                 .attr("height", layerHeight - 4)
                 .attr("fill", "#69b3a2")
-                .attr("stroke", "#333");
-        });
+                .attr("stroke", "#333")
+                .attr("stroke-width", 1)
+                .on("mouseover", (event, d) => {
+                    d3.select(event.target)
+                        .style("stroke-width", 2);
 
-        // Gene symbol 
-        layers.forEach((layer, layerIndex) => {
-            svg
-                .selectAll(`.gene-text-layer-${layerIndex}`)
-                .data(layer)
-                .enter()
-                .append("text")
-                .attr("x", (d) => xScale(d.displayStart) + 5)
-                .attr("y", margin.top + layerIndex * layerHeight + layerHeight / 2)
-                .attr("alignment-baseline", "middle")
-                .attr("font-size", "10px")
-                .text((d) => d.symbol || d.gene_name);
+                    const tooltip = d3.select(tooltipRef.current);
+                    tooltip.style("visibility", "visible")
+                        .html(`
+                        <strong>Gene Symbol:</strong> ${d.symbol || d.gene_name}<br>
+                        <strong>Start:</strong> ${d.start_location}<br>
+                        <strong>End:</strong> ${d.end_location}
+                        `)
+                        .style("left", `${event.pageX + 10}px`)
+                        .style("top", `${event.pageY + 10}px`);
+                })
+                .on("mouseout", (event) => {
+                    d3.select(event.target)
+                        .style("stroke-width", 1);
+                    const tooltip = d3.select(tooltipRef.current);
+                    tooltip.style("visibility", "hidden");
+                });
         });
-
-        // x-axis
-        // const xAxis = d3.axisBottom(xScale).ticks(10);
-        // svg
-        //     .append("g")
-        //     .attr("transform", `translate(0, ${height - margin.bottom})`)
-        //     .call(xAxis);
     }, [geneList, selectedChromosomeSequence, svgWidth, svgHeight]);
 
     return (
         <div ref={containerRef} style={{ width: '100%', height: '30%', borderTop: "1px solid #eaeaea", overflowY: "auto" }}>
             <svg ref={svgRef}></svg>
+            <div
+                ref={tooltipRef}
+                style={{
+                    position: "absolute",
+                    background: "white",
+                    padding: '5px 12px',
+                    border: "1px solid #d9d9d9",
+                    borderRadius: 5,
+                    opacity: 0.9,
+                    fontSize: "12px",
+                    padding: "5px",
+                    borderRadius: "4px",
+                    pointerEvents: "none",
+                    visibility: "hidden",
+                    zIndex: 10,
+                    textAlign: "left",
+                }}
+            ></div>
         </div>
     );
 };
