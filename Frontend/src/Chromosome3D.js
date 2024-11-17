@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei';
 import { Button, ColorPicker } from 'antd';
 import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
+import { Chromosome3DDistance } from './Chromosome3DDistance';
 import "./Styles/Chromosome3D.css";
 
 export const Chromosome3D = ({ chromosome3DExampleData }) => {
@@ -14,6 +15,7 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
     const [hoveredIndex, setHoveredIndex] = useState(null);
     const [selectedIndex, setSelectedIndex] = useState(null);
     const [selectedSphereList, setSelectedSphereList] = useState({});
+    const [showChromosome3DDistance, setShowChromosome3DDistance] = useState(false);
 
     const coordinates = useMemo(() => {
         return chromosome3DExampleData.map((data) => {
@@ -70,100 +72,114 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
     };
 
     return (
-        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-            {/* Container for buttons */}
-            <div style={{
-                position: 'absolute',
-                top: 10,
-                right: 10,
-                zIndex: 10,
-                display: 'flex',
-                gap: '10px',
-            }}>
-                <ColorPicker
-                    color={selectedSphereList[selectedIndex]?.color || '#ffffff'}
-                    disabled={selectedIndex === null}
-                    onChange={handleColorChange}
-                />
-                <Button
-                    style={{
-                        fontSize: 15,
-                        cursor: "pointer",
-                    }}
-                    icon={<ReloadOutlined />}
-                    onClick={resetView}
-                />
-                <Button
-                    style={{
-                        fontSize: 15,
-                        cursor: "pointer",
-                    }}
-                    icon={<DownloadOutlined />}
-                    onClick={download}
-                />
-                <Button
-                    className={`custom-button ${Object.keys(selectedSphereList).length < 2 ? 'disabled' : ''}`}
-                    disabled={Object.keys(selectedSphereList).length < 2}
-                >
-                    Generate Distance
-                </Button>
-            </div>
-            <Canvas
-                ref={canvasRef}
-                camera={{ position: [0, 0, 230], fov: 75 }}
-                style={{ width: '100%', height: '100%', backgroundColor: '#333' }}
-            >
-                <OrbitControls
-                    ref={controlsRef}
-                    enableZoom={true}
-                    enableRotate={true}
-                    enablePan={true}
-                />
-
-                <ambientLight intensity={1} />
-                <pointLight position={[10, 20, 10]} intensity={1} />
-
-                {coordinates.map((coord, index) => (
-                    <group
-                        key={index}
-                        position={coord}
-                        onPointerOver={(e) => {
-                            e.stopPropagation();
-                            setHoveredIndex(index);
+        <>
+            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                {/* Container for buttons */}
+                <div style={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    zIndex: 10,
+                    display: 'flex',
+                    gap: '10px',
+                }}>
+                    <ColorPicker
+                        color={selectedSphereList[selectedIndex]?.color || '#ffffff'}
+                        disabled={selectedIndex === null}
+                        onChange={handleColorChange}
+                    />
+                    <Button
+                        style={{
+                            fontSize: 15,
+                            cursor: "pointer",
                         }}
-                        onPointerOut={(e) => {
-                            e.stopPropagation();
-                            setHoveredIndex(null);
+                        icon={<ReloadOutlined />}
+                        onClick={resetView}
+                    />
+                    <Button
+                        style={{
+                            fontSize: 15,
+                            cursor: "pointer",
                         }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedIndex(index);
-                        }}
-                        onDoubleClick={(e) => {
-                            e.stopPropagation();
-                            handleResetSelect(index);
-                        }}
+                        icon={<DownloadOutlined />}
+                        onClick={download}
+                    />
+                    <Button
+                        className={`custom-button ${Object.keys(selectedSphereList).length < 2 ? 'disabled' : ''}`}
+                        disabled={Object.keys(selectedSphereList).length < 2}
+                        onClick={() => setShowChromosome3DDistance(true)}
                     >
-                        {/* Sphere Mesh */}
-                        <mesh>
-                            <sphereGeometry args={[2.8, 32, 32]} />
-                            <meshStandardMaterial
-                                color={
-                                    selectedSphereList[index]?.color ||
-                                    (hoveredIndex === index || selectedIndex === index
-                                        ? 'yellow'
-                                        : 'red')
-                                }
-                            />
-                        </mesh>
-                        {/* Outline Mesh */}
-                        <mesh>
-                            <sphereGeometry args={[3, 32, 32]} />
-                            <meshBasicMaterial color="white" side={THREE.BackSide} />
-                        </mesh>
-                    </group>
-                ))}
-            </Canvas>
-        </div>
+                        Generate Distance
+                    </Button>
+                </div>
+
+                <div style={{ height: showChromosome3DDistance ? '70%' : '100%', transition: 'height 0.3s ease' }}>
+                    <Canvas
+                        ref={canvasRef}
+                        camera={{ position: [0, 0, 230], fov: 75 }}
+                        style={{ width: '100%', height: '100%', backgroundColor: '#333' }}
+                    >
+                        <OrbitControls
+                            ref={controlsRef}
+                            enableZoom={true}
+                            enableRotate={true}
+                            enablePan={true}
+                        />
+
+                        <ambientLight intensity={1} />
+                        <pointLight position={[10, 20, 10]} intensity={1} />
+
+                        {coordinates.map((coord, index) => (
+                            <group
+                                key={index}
+                                position={coord}
+                                onPointerOver={(e) => {
+                                    e.stopPropagation();
+                                    setHoveredIndex(index);
+                                }}
+                                onPointerOut={(e) => {
+                                    e.stopPropagation();
+                                    setHoveredIndex(null);
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedIndex(index);
+                                }}
+                                onDoubleClick={(e) => {
+                                    e.stopPropagation();
+                                    handleResetSelect(index);
+                                }}
+                            >
+                                {/* Sphere Mesh */}
+                                <mesh>
+                                    <sphereGeometry args={[2.8, 32, 32]} />
+                                    <meshStandardMaterial
+                                        color={
+                                            selectedSphereList[index]?.color ||
+                                            (hoveredIndex === index || selectedIndex === index
+                                                ? 'yellow'
+                                                : 'red')
+                                        }
+                                    />
+                                </mesh>
+                                {/* Outline Mesh */}
+                                <mesh>
+                                    <sphereGeometry args={[3, 32, 32]} />
+                                    <meshBasicMaterial color="white" side={THREE.BackSide} />
+                                </mesh>
+                            </group>
+                        ))}
+                    </Canvas>
+                </div>
+
+                {showChromosome3DDistance && (
+                    <div style={{ height: '30%', overflow: 'auto' }}>
+                        <Chromosome3DDistance
+                            selectedSphereList={selectedSphereList}
+                        />
+                    </div>
+                )}
+            </div>
+        </>
     );
 };
