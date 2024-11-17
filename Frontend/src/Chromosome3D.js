@@ -1,15 +1,18 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei';
-import { Button } from 'antd';
+import { Button, ColorPicker } from 'antd';
 import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
 
 export const Chromosome3D = ({ chromosome3DExampleData }) => {
-    const spheresRef = useRef([]);
     const scaleFactor = 0.15;
     const canvasRef = useRef();
     const controlsRef = useRef();
+
+    const [hoveredIndex, setHoveredIndex] = useState(null);
+    const [selectedIndex, setSelectedIndex] = useState(null);
+    const [selectedSphereList, setSelectedSphereList] = useState({});
 
     const coordinates = useMemo(() => {
         return chromosome3DExampleData.map((data) => {
@@ -21,7 +24,6 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
     }, [chromosome3DExampleData]);
 
     const download = () => {
-        // Function to handle download, for example exporting the canvas as an image
         const link = document.createElement('a');
         link.href = canvasRef.current.toDataURL();
         link.download = 'chromosome_3d.png';
@@ -31,6 +33,15 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
     const resetView = () => {
         if (controlsRef.current) {
             controlsRef.current.reset();
+        }
+    };
+
+    const handleColorChange = (color) => {
+        if (selectedIndex !== null) {
+            setSelectedSphereList({
+                ...selectedSphereList,
+                selectedIndex: color
+            });
         }
     };
 
@@ -45,6 +56,11 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                 display: 'flex',
                 gap: '10px',
             }}>
+                <ColorPicker
+                    color={selectedSphereList.selectedIndex}
+                    disabled={selectedIndex === null}
+                    onChange={handleColorChange}
+                />
                 <Button
                     style={{
                         fontSize: 15,
@@ -78,11 +94,33 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                 <pointLight position={[10, 20, 10]} intensity={1} />
 
                 {coordinates.map((coord, index) => (
-                    <group key={index} position={coord}>
+                    <group
+                        key={index}
+                        position={coord}
+                        onPointerOver={(e) => {
+                            e.stopPropagation();
+                            setHoveredIndex(index);
+                        }}
+                        onPointerOut={(e) => {
+                            e.stopPropagation();
+                            setHoveredIndex(null);
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedIndex(index);
+                            console.log(index, selectedIndex);
+                        }}
+                    >
                         {/* Sphere Mesh */}
-                        <mesh ref={(el) => spheresRef.current.push(el)}>
+                        <mesh>
                             <sphereGeometry args={[2.8, 32, 32]} />
-                            <meshStandardMaterial color="red" />
+                            <meshStandardMaterial
+                                color={
+                                    hoveredIndex === index || selectedIndex === index
+                                        ? 'yellow'
+                                        : 'red'
+                                }
+                            />
                         </mesh>
                         {/* Outline Mesh */}
                         <mesh>
