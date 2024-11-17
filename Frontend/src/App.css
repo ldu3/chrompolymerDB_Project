@@ -66,3 +66,18 @@ body {
 .ant-tabs-tabpane {
   height: 100% !important;
 }
+
+.ant-tabs-nav-list {
+  margin: 0 !important;
+}
+
+.ant-tabs-tab {
+  margin-left: 15px !important;
+  font-size: 12px !important;
+}
+
+.ant-tabs-extra-content {
+  width: 50%;
+  display: flex;
+  justify-content: flex-end;
+}

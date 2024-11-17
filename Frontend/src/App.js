@@ -319,16 +319,27 @@ function App() {
                     style={{ width: '100%', height: '100%' }}
                     onChange={sampleChange}
                     tabBarExtraContent={
-                      <Button
-                        style={{
-                          fontSize: 15,
-                          cursor: "pointer",
-                          marginRight: 5,
-                        }}
-                        size="small"
-                        icon={<MinusOutlined />}
-                        onClick={handleRemoveChromosome3D}
-                      />
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginRight: '5px' }}>
+                        <span className="controlGroupText">Cell Line:</span>
+                        <Select
+                          value={cellLineName}
+                          style={{
+                            marginRight: 10,
+                          }}
+                          size="small"
+                          onChange={cellLineChange}
+                          options={cellLineList}
+                        />
+                        <Button
+                          style={{
+                            fontSize: 15,
+                            cursor: "pointer",
+                          }}
+                          size="small"
+                          icon={<MinusOutlined />}
+                          onClick={handleRemoveChromosome3D}
+                        />
+                      </div>
                     }
                     items={new Array(3).fill(null).map((_, i) => {
                       const id = i;
