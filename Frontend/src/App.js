@@ -145,11 +145,12 @@ function App() {
       })
         .then(res => res.json())
         .then(data => {
-          if (data) {
+          if (data.length > 0) {
             setComparisonCellLineList(data);
             setChromosome3DComparisonShowing(true);
           } else {
             warning('noComparison3DData');
+            setChromosome3DComparisonShowing(false);
           }
         });
     }

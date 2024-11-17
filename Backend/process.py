@@ -359,24 +359,15 @@ def comparison_cell_line_list(cell_line, chromosome_name, sequences):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # cur.execute(
-    #     """
-    #     SELECT DISTINCT cell_line
-    #     FROM sequence
-    #     WHERE chrID = %s
-    #     AND start_value <= %s
-    #     AND end_value >= %s
-    # """,
-    #     (chromosome_name, sequences["start"], sequences["end"]),
-    # )
     cur.execute(
         """
         SELECT DISTINCT cell_line
         FROM sequence
-        WHERE start_value <= %s
+        WHERE chrID = %s
+        AND start_value <= %s
         AND end_value >= %s
     """,
-        (sequences["start"], sequences["end"]),
+        (chromosome_name, sequences["start"], sequences["end"]),
     )
 
     rows = cur.fetchall()
