@@ -31,23 +31,14 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
 
         const { start: selectedStart, end: selectedEnd } = selectedChromosomeSequence;
 
-        // Filter genes that have overlap with selectedChromosomeSequence
-        const filteredGenes = geneList.filter(({ start_location, end_location }) => {
-            return (
-                (start_location >= selectedStart && start_location <= selectedEnd) ||
-                (end_location >= selectedStart && end_location <= selectedEnd) ||
-                (start_location <= selectedStart && end_location >= selectedEnd)
-            );
-        });
-
         // Map genes to the range of selectedChromosomeSequence
-        const genesToRender = filteredGenes.map((gene) => ({
+        const genesToRender = geneList.map((gene) => ({
             ...gene,
             displayStart: Math.max(gene.start_location, selectedStart),
             displayEnd: Math.min(gene.end_location, selectedEnd),
         }));
 
-        const margin = { top: 20, right: 20, bottom: 20, left: 50 };
+        const margin = { top: 20, right: 20, bottom: 20, left: 60 };
 
         svg.attr("width", svgWidth).attr("height", svgHeight);
 
