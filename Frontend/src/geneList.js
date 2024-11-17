@@ -109,7 +109,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                 })
                 .on("mouseout", (event) => {
                     d3.select(event.target)
-                        .style("stroke-width", 1);
+                        .style("stroke-width", 0.8);
                     const tooltip = d3.select(tooltipRef.current);
                     tooltip.style("opacity", 0)
                         .style("visibility", "hidden");
