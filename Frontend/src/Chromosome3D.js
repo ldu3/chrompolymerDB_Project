@@ -5,7 +5,7 @@ import { OrbitControls } from '@react-three/drei';
 import { Button } from 'antd';
 import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
 
-export const Chromosome3D = ({ chromosome3DExampleData, chromosome3DComprationShowing }) => {
+export const Chromosome3D = ({ chromosome3DExampleData }) => {
     const spheresRef = useRef([]);
     const scaleFactor = 0.15;
     const canvasRef = useRef();
@@ -18,7 +18,7 @@ export const Chromosome3D = ({ chromosome3DExampleData, chromosome3DComprationSh
             const z = data.z * scaleFactor;
             return new THREE.Vector3(x, y, z);
         });
-    }, [chromosome3DExampleData, chromosome3DComprationShowing]);
+    }, [chromosome3DExampleData]);
 
     const download = () => {
         // Function to handle download, for example exporting the canvas as an image
