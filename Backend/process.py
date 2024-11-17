@@ -240,44 +240,48 @@ def example_chromosome_3d_data(cell_line, chromosome_name, sequences, sample_id)
             AND cell_line = %s
             AND ibp >= %s
             AND ibp <= %s
+            AND jbp >= %s
+            AND jbp <= %s
         """,
-            (chromosome_name, cell_line, sequences["start"], sequences["end"]),
+            (chromosome_name, cell_line, sequences["start"], sequences["end"], sequences["start"], sequences["end"]),
         )
         original_data = cur.fetchall()
 
-        # column_names = [desc[0] for desc in cur.description]
-        original_df = pd.DataFrame(original_data, columns=["chrid", "fdr", "ibp", "jbp", "fq"])
+        if original_data:
+            original_df = pd.DataFrame(original_data, columns=["chrid", "fdr", "ibp", "jbp", "fq"])
 
-        filtered_df = get_spe_inter(original_df)
-        fold_inputs = get_fold_inputs(filtered_df)
+            filtered_df = get_spe_inter(original_df)
+            fold_inputs = get_fold_inputs(filtered_df)
 
-        txt_data = fold_inputs.to_csv(index=False, sep="\t", header=False)
-        custom_name = f"{cell_line}.{chromosome_name}.{sequences['start']}.{sequences['end']}"
+            txt_data = fold_inputs.to_csv(index=False, sep="\t", header=False)
+            custom_name = f"{cell_line}.{chromosome_name}.{sequences['start']}.{sequences['end']}"
 
-        # Ensure the custom path exists, create it if it doesn't
-        os.makedirs(temp_folding_input_path, exist_ok=True)
+            # Ensure the custom path exists, create it if it doesn't
+            os.makedirs(temp_folding_input_path, exist_ok=True)
 
-        # Define the full path where the file will be stored
-        custom_file_path = os.path.join(temp_folding_input_path, custom_name + ".txt")
+            # Define the full path where the file will be stored
+            custom_file_path = os.path.join(temp_folding_input_path, custom_name + ".txt")
 
-        # Write the file to the custom path
-        with open(custom_file_path, 'w') as temp_file:
-            temp_file.write(txt_data)
+            # Write the file to the custom path
+            with open(custom_file_path, 'w') as temp_file:
+                temp_file.write(txt_data)
 
-        script = "./sBIF.sh"
-        n_samples = 3
-        n_samples_per_run = 1
-        is_download = "false"
-        subprocess.run(
-            ["bash", script, str(n_samples), str(n_samples_per_run), str(is_download)],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
+            script = "./sBIF.sh"
+            n_samples = 3
+            n_samples_per_run = 1
+            is_download = "false"
+            subprocess.run(
+                ["bash", script, str(n_samples), str(n_samples_per_run), str(is_download)],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
 
-        os.remove(custom_file_path)
+            os.remove(custom_file_path)
 
-        return checking_existing_data(conn, chromosome_name, cell_line, sequences, sample_id)
+            return checking_existing_data(conn, chromosome_name, cell_line, sequences, sample_id)
+        else:
+            return []
 
 
 """
