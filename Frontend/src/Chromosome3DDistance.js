@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
 import { Button } from 'antd';
@@ -33,6 +33,29 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
         setShowChromosome3DDistance(false);
     }
 
+    const Line = ({ start, end }) => {
+        const geometryRef = useRef();
+    
+        useEffect(() => {
+            if (geometryRef.current) {
+                geometryRef.current.setAttribute(
+                    'position',
+                    new THREE.Float32BufferAttribute([
+                        start.x, start.y, start.z,
+                        end.x, end.y, end.z,
+                    ], 3)
+                );
+            }
+        }, [start, end]);
+    
+        return (
+            <line>
+                <bufferGeometry ref={geometryRef} />
+                <lineBasicMaterial color="white" />
+            </line>
+        );
+    };
+
     return (
         <>
             <div style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -63,7 +86,7 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                     />
                 </div>
 
-                <Canvas style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [0, 0, 80], fov: 50 }}>
+                <Canvas style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [0, 0, 100], fov: 100 }}>
 
                     {/* Light sources */}
                     <ambientLight intensity={1} />
@@ -106,20 +129,9 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
 
                                 return (
                                     <group key={`${indexA}-${indexB}`}>
-                                        <line>
-                                            <bufferGeometry>
-                                                <bufferAttribute
-                                                    attach="attributes-position"
-                                                    count={2}
-                                                    array={new Float32Array([
-                                                        positionA.x, positionA.y, positionA.z,
-                                                        positionB.x, positionB.y, positionB.z,
-                                                    ])}
-                                                    itemSize={3}
-                                                />
-                                            </bufferGeometry>
-                                            <lineBasicMaterial color="white" />
-                                        </line>
+                                        {/* Line */}
+                                        <Line start={positionA} end={positionB} />
+
                                         {/* Distance Text */}
                                         <Text
                                             position={[midPoint.x, midPoint.y, midPoint.z]}
