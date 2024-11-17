@@ -346,3 +346,42 @@ def download_full_chromosome_3d_data(cell_line, chromosome_name, sequences):
     os.remove(custom_name)
 
     return "Success send download full chromosome 3D data request"
+
+
+"""
+Returns currently existing other cell line list in given chromosome name and sequences
+"""
+def comparison_cell_line_list(cell_line, chromosome_name, sequences):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT DISTINCT cell_line
+        FROM sequence
+        WHERE chrID = %s
+        AND start_value <= %s
+        AND end_value >= %s
+    """,
+        (chromosome_name, sequences["start"], sequences["end"]),
+    )
+
+    rows = cur.fetchall()
+
+    label_mapping = {
+        "IMR": "Lung",
+        "K": "Blood Leukemia",
+        "GM": "Lymphoblastoid Cell Line",
+    }
+
+    options = [
+        {
+            "value": row["cell_line"],
+            "label": label_mapping.get(row["cell_line"], "Unknown"),
+        }
+        for row in rows
+        if row["cell_line"] != cell_line
+    ]
+    conn.close()
+
+    return options

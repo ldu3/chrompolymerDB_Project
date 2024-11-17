@@ -22,7 +22,14 @@ function App() {
   const [messageApi, contextHolder] = message.useMessage();
   const [heatmapLoading, setHeatmapLoading] = useState(false);
   const [chromosome3DLoading, setChromosome3DLoading] = useState(false);
+
+  // 3D Chromosome Comparison settings
   const [chromosome3DComparisonShowing, setChromosome3DComparisonShowing] = useState(false);
+  const [comparisonCellLineList, setComparisonCellLineList] = useState([]);
+  const [comparisonCellLine, setComparisonCellLine] = useState(null);
+  const [comparisonCellLine3DData, setComparisonCellLine3DData] = useState([]);
+  const [comparisonCellLine3DSampleID, setComparisonCellLine3DSampleID] = useState(0);
+  const [comparisonCellLine3DLoading, setComparisonCellLine3DLoading] = useState(false);
 
   useEffect(() => {
     fetch('/getCellLines')
@@ -103,25 +110,51 @@ function App() {
     }
   };
 
-  const fetchExampleChromos3DData = (sample_id, sampleChange) => {
-    if (cellLineName && chromosomeName && selectedChromosomeSequence) {
+  const fetchExampleChromos3DData = (cell_line, sample_id, sampleChange, isComparison) => {
+    if (cell_line && chromosomeName && selectedChromosomeSequence) {
       fetch("/getExampleChromos3DData", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence, sample_id: sample_id })
+        body: JSON.stringify({ cell_line: cell_line, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence, sample_id: sample_id })
       })
         .then(res => res.json())
         .then(data => {
-          setChromosome3DExampleData(data);
-          if (sampleChange === "submit") {
-            setChromosome3DLoading(false);
+          if (isComparison) {
+            if (data.length === 0) {
+              warning('noComparison3DData');
+            } else {
+              setComparisonCellLine3DData(data);
+              setChromosome3DComparisonShowing(true);
+            }
+          } else {
+            setChromosome3DExampleData(data);
+            if (sampleChange === "submit") {
+              setChromosome3DLoading(false);
+            }
           }
         });
     }
   };
 
+  const fetchComparisonCellLineList = () => {
+    if (chromosomeName && selectedChromosomeSequence) {
+      fetch("/getComparisonCellLineList", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence })
+      })
+        .then(res => res.json())
+        .then(data => {
+          setComparisonCellLineList(data);
+        });
+    }
+  };
+
+  // Warning message
   const warning = (type) => {
     if (type === 'overrange') {
       messageApi.open({
@@ -144,8 +177,16 @@ function App() {
         duration: 1.5,
       });
     }
+    if (type === 'noComparison3DData') {
+      messageApi.open({
+        type: 'warning',
+        content: 'No Cell Line with the same chromosome and sequence',
+        duration: 1.5,
+      });
+    }
   };
 
+  // Cell Line selection change
   const cellLineChange = value => {
     setCellLineName(value);
     setChromosomeName(null);
@@ -156,21 +197,14 @@ function App() {
     fetchChromosomeList(value);
   };
 
+  // Chromosome selection change
   const chromosomeChange = value => {
     setChromosomeName(value);
     setChromosome3DExampleData([]);
     fetchChromosomeSize(value);
   };
 
-  const submit = () => {
-    if (selectedChromosomeSequence.end - selectedChromosomeSequence.start < 4000000) {
-      setHeatmapLoading(true);
-    }
-    setChromosome3DLoading(true);
-    fetchChromosomeData();
-    fetchExampleChromos3DData(chromosome3DExampleID, "submit");
-  };
-
+  // Chromosome sequence change
   const chromosomeSequenceChange = (position, value) => {
     const newValue = Number(value);
 
@@ -196,22 +230,48 @@ function App() {
     }
   };
 
-  const sampleChange = (key) => {
+  // 3D Original Chromosome sample change
+  const originalSampleChange = (key) => {
     setChromosome3DExampleID(key);
-    fetchExampleChromos3DData(key, "sampleChange");
+    fetchExampleChromos3DData(cellLineName, key, "sampleChange", false);
   };
 
+  // 3D Comparison Chromosome sample change
+  const comparisonSampleChange = (key) => {
+    setComparisonCellLine3DSampleID(key);
+    fetchExampleChromos3DData(comparisonCellLine, key, "sampleChange", true);
+  };
+
+  // Add 3D Chromosome Comparison
   const handleAddChromosome3D = () => {
-    setChromosome3DComparisonShowing(true);
+    fetchComparisonCellLineList();
   };
 
+  // Remove 3D Chromosome Comparison
   const handleRemoveChromosome3D = () => {
     setChromosome3DComparisonShowing(false);
+  };
+
+  // Comparison Cell Line change
+  const comparisonCellLineChange = (value) => {
+    setComparisonCellLine(value);
+    fetchExampleChromos3DData(comparisonCellLine, comparisonCellLine3DSampleID, "sampleChange", true);
+  };
+
+  // Submit button click
+  const submit = () => {
+    if (selectedChromosomeSequence.end - selectedChromosomeSequence.start < 4000000) {
+      setHeatmapLoading(true);
+    }
+    setChromosome3DLoading(true);
+    fetchChromosomeData();
+    fetchExampleChromos3DData(cellLineName, chromosome3DExampleID, "submit", false);
   };
 
   return (
     <div className="App">
       {contextHolder}
+      {/* header part */}
       <div className="controlHeader">
         <div className="controlGroup">
           <span className="controlGroupText">Cell Line:</span>
@@ -252,7 +312,10 @@ function App() {
           totalChromosomeSequences={totalChromosomeSequences}
         />
       </div>
+
+      {/* main content part */}
       <div className='content'>
+        {/* Heatmap */}
         {heatmapLoading ? (
           <Spin spinning={true} size="large" style={{ width: '30%', height: '100%', borderRight: "1px solid #eaeaea", margin: 0 }} />
         ) : (
@@ -272,6 +335,7 @@ function App() {
           )
         )}
 
+        {/* Original 3D chromosome */}
         {chromosome3DLoading ? (
           <Spin spinning={true} size="large" style={{ width: '70%', height: '100%', margin: 0 }} />
         ) : (
@@ -282,7 +346,7 @@ function App() {
                   size="small"
                   defaultActiveKey={chromosome3DExampleID}
                   style={{ width: '100%', height: '100%' }}
-                  onChange={sampleChange}
+                  onChange={originalSampleChange}
                   tabBarExtraContent={
                     <Button
                       style={{
@@ -311,24 +375,26 @@ function App() {
                 />
               </div>
 
+              {/* Comparison 3D chromosome */}
               {chromosome3DComparisonShowing && (
                 <div style={{ width: '49.9%' }}>
                   <Tabs
                     size="small"
                     defaultActiveKey={chromosome3DExampleID}
                     style={{ width: '100%', height: '100%' }}
-                    onChange={sampleChange}
+                    onChange={comparisonSampleChange}
                     tabBarExtraContent={
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginRight: '5px' }}>
                         <span className="controlGroupText">Cell Line:</span>
                         <Select
-                          value={cellLineName}
+                          value={comparisonCellLine}
                           style={{
+                            minWidth: 150,
                             marginRight: 10,
                           }}
                           size="small"
-                          onChange={cellLineChange}
-                          options={cellLineList}
+                          onChange={comparisonCellLineChange}
+                          options={comparisonCellLineList}
                         />
                         <Button
                           style={{
@@ -348,7 +414,7 @@ function App() {
                         key: id,
                         children: (
                           <Chromosome3D
-                            chromosome3DExampleData={chromosome3DExampleData}
+                            chromosome3DExampleData={comparisonCellLine3DData}
                             chromosome3DComparisonShowing={chromosome3DComparisonShowing}
                           />
                         ),
