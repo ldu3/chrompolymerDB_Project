@@ -1,9 +1,13 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Text, OrbitControls, Stats } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { Button } from 'antd';
+import { Text, OrbitControls } from '@react-three/drei';
+import { ReloadOutlined, MinusOutlined } from "@ant-design/icons";
 
-export const Chromosome3DDistance = ({ selectedSphereList }) => {
+export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDistance }) => {
+    const controlsRef = useRef();
+
     const spheresData = useMemo(() => {
         return Object.values(selectedSphereList).map(({ position, color }) => {
             const { x, y, z } = position;
@@ -19,75 +23,121 @@ export const Chromosome3DDistance = ({ selectedSphereList }) => {
         return pointA.distanceTo(pointB);
     };
 
+    const resetView = () => {
+        if (controlsRef.current) {
+            controlsRef.current.reset();
+        }
+    };
+
+    const handleChromosome3DDistanceClose = () => {
+        setShowChromosome3DDistance(false);
+    }
+
     return (
-        <Canvas style={{ height: '100%', backgroundColor: '#222' }} camera={{ position: [0, 0, 100], fov: 75 }}>
+        <>
+            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                {/* Container for buttons */}
+                <div style={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    zIndex: 10,
+                    display: 'flex',
+                    gap: '10px',
+                }}>
+                    <Button
+                        style={{
+                            fontSize: 15,
+                            cursor: "pointer",
+                        }}
+                        icon={<ReloadOutlined />}
+                        onClick={resetView}
+                    />
+                    <Button
+                        style={{
+                            fontSize: 15,
+                            cursor: "pointer",
+                        }}
+                        icon={<MinusOutlined />}
+                        onClick={handleChromosome3DDistanceClose}
+                    />
+                </div>
 
-            {/* Light sources */}
-            <ambientLight intensity={1} />
-            <pointLight position={[10, 20, 10]} intensity={2} />
+                <Canvas style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [0, 0, 100], fov: 75 }}>
 
-            <OrbitControls />
+                    {/* Light sources */}
+                    <ambientLight intensity={1} />
+                    <pointLight position={[10, 20, 10]} intensity={2} />
 
-            {/* Render spheres with their respective colors */}
-            {spheresData.map(({ position, color }, index) => {
-                return (
-                    <group
-                        key={index}
-                        position={position}
-                    >
-                        <mesh>
-                            <sphereGeometry args={[2.5, 32, 32]} />
-                            <meshStandardMaterial color={color} />
-                        </mesh>
-                        <mesh>
-                            <sphereGeometry args={[2.7, 32, 32]} />
-                            <meshBasicMaterial color="white" side={THREE.BackSide} />
-                        </mesh>
-                    </group>
-                );
-            })}
+                    <OrbitControls
+                        ref={controlsRef}
+                        enableZoom={true}
+                        enableRotate={true}
+                        enablePan={true}
+                    />
 
-            {/* Draw lines and distances between spheres */}
-            {spheresData.map(({ position: positionA }, indexA) => {
-                return spheresData.map(({ position: positionB }, indexB) => {
-                    if (indexA < indexB) {
-                        const distance = calculateDistance(positionA, positionB);
-                        const midPoint = new THREE.Vector3()
-                            .addVectors(positionA, positionB)
-                            .multiplyScalar(0.5);
-
+                    {/* Render spheres with their respective colors */}
+                    {spheresData.map(({ position, color }, index) => {
                         return (
-                            <group key={`${indexA}-${indexB}`}>
-                                <line>
-                                    <bufferGeometry>
-                                        <bufferAttribute
-                                            attach="attributes-position"
-                                            count={2}
-                                            array={new Float32Array([
-                                                positionA.x, positionA.y, positionA.z,
-                                                positionB.x, positionB.y, positionB.z,
-                                            ])}
-                                            itemSize={3}
-                                        />
-                                    </bufferGeometry>
-                                    <lineBasicMaterial color="white" />
-                                </line>
-                                {/* Distance Text */}
-                                <Text
-                                    position={[midPoint.x, midPoint.y, midPoint.z]}
-                                    fontSize={5}
-                                    color="white"
-                                    anchorX="center"
-                                    anchorY="middle"
-                                >
-                                    {distance.toFixed(2)}
-                                </Text>
+                            <group
+                                key={index}
+                                position={position}
+                            >
+                                <mesh>
+                                    <sphereGeometry args={[2.5, 32, 32]} />
+                                    <meshStandardMaterial color={color} />
+                                </mesh>
+                                <mesh>
+                                    <sphereGeometry args={[2.7, 32, 32]} />
+                                    <meshBasicMaterial color="white" side={THREE.BackSide} />
+                                </mesh>
                             </group>
                         );
-                    }
-                    return null;
-                });
-            })}
-        </Canvas>
+                    })}
+
+                    {/* Draw lines and distances between spheres */}
+                    {spheresData.map(({ position: positionA }, indexA) => {
+                        return spheresData.map(({ position: positionB }, indexB) => {
+                            if (indexA < indexB) {
+                                const distance = calculateDistance(positionA, positionB);
+                                const midPoint = new THREE.Vector3()
+                                    .addVectors(positionA, positionB)
+                                    .multiplyScalar(0.5);
+
+                                return (
+                                    <group key={`${indexA}-${indexB}`}>
+                                        <line>
+                                            <bufferGeometry>
+                                                <bufferAttribute
+                                                    attach="attributes-position"
+                                                    count={2}
+                                                    array={new Float32Array([
+                                                        positionA.x, positionA.y, positionA.z,
+                                                        positionB.x, positionB.y, positionB.z,
+                                                    ])}
+                                                    itemSize={3}
+                                                />
+                                            </bufferGeometry>
+                                            <lineBasicMaterial color="white" />
+                                        </line>
+                                        {/* Distance Text */}
+                                        <Text
+                                            position={[midPoint.x, midPoint.y, midPoint.z]}
+                                            fontSize={5}
+                                            color="white"
+                                            anchorX="center"
+                                            anchorY="middle"
+                                        >
+                                            {distance.toFixed(2)}
+                                        </Text>
+                                    </group>
+                                );
+                            }
+                            return null;
+                        });
+                    })}
+                </Canvas>
+            </div>
+        </>
     );
 };
