@@ -79,7 +79,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             (_, i) => adjustedStart + i * step
         );
 
-        const colorScale = d3.scaleSequential(d3.interpolateYlOrBr)
+        const colorScale = d3.scaleSequential(d3.interpolateCividis)
             .domain([0, d3.max(chromosomeData, d => d.fq)]);
 
         const xScale = d3.scaleBand()
