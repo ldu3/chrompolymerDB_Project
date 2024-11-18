@@ -6,8 +6,10 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
     const containerRef = useRef();
     const [svgWidth, setSvgWidth] = useState(0);
     const [svgHeight, setSvgHeight] = useState(0);
+    const [scrollEnabled, setScrollEnabled] = useState(false);
 
     const tooltipRef = useRef();
+    const initialHeightRef = useRef(null);
 
     useEffect(() => {
         const handleResize = () => {
@@ -80,6 +82,22 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
             if (!placed) layers.push([gene]);
         });
 
+        // Store the initial height once
+        if (initialHeightRef.current === null) {
+            initialHeightRef.current = svgHeight;
+        }
+
+        // Check if scrolling is needed based on total height
+        const totalHeight = layers.length * layerHeight + margin.top;
+        console.log(totalHeight, svgHeight);
+
+        if (totalHeight > initialHeightRef.current) {
+            setScrollEnabled(true);
+            setSvgHeight(totalHeight);
+        } else {
+            setScrollEnabled(false);
+        }
+
         // Add x-axis tick lines
         const axis = d3.axisBottom(xAxisScale)
             .tickValues(axisValues.filter((_, i) => i % 15 === 0))
@@ -136,7 +154,16 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
     }, [geneList, selectedChromosomeSequence, svgWidth, svgHeight]);
 
     return (
-        <div ref={containerRef} style={{ width: '100%', height: '30%', borderRight: "1px solid #eaeaea", borderTop: "1px solid #eaeaea" }}>
+        <div
+            ref={containerRef}
+            style={{
+                width: '100%',
+                height: '30%',
+                borderRight: "1px solid #eaeaea",
+                borderTop: "1px solid #eaeaea",
+                overflowY: scrollEnabled ? 'auto' : 'hidden',
+            }}
+        >
             <svg ref={svgRef}></svg>
             <div
                 ref={tooltipRef}
