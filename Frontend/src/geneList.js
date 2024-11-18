@@ -29,22 +29,35 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
 
         if (svgWidth === 0) return;
 
-        const { start: selectedStart, end: selectedEnd } = selectedChromosomeSequence;
+        const { start, end } = selectedChromosomeSequence;
+        const step = 5000;
+        const adjustedStart = Math.floor(start / step) * step;
+        const adjustedEnd = Math.ceil(end / step) * step;
+
+        const axisValues = Array.from(
+            { length: Math.floor((adjustedEnd - adjustedStart) / step) + 1 },
+            (_, i) => adjustedStart + i * step
+        );
 
         // Map genes to the range of selectedChromosomeSequence
         const genesToRender = geneList.map((gene) => ({
             ...gene,
-            displayStart: Math.max(gene.start_location, selectedStart),
-            displayEnd: Math.min(gene.end_location, selectedEnd),
+            displayStart: Math.max(gene.start_location, start),
+            displayEnd: Math.min(gene.end_location, end),
         }));
 
-        const margin = { top: 20, right: 20, bottom: 20, left: 60 };
+        console.log(selectedChromosomeSequence, axisValues[0], axisValues[axisValues.length - 1], genesToRender, '/////')
+        const margin = { top: 20, right: 10, bottom: 50, left: 60 };
 
         svg.attr("width", svgWidth).attr("height", svgHeight);
 
-        const xScale = d3
-            .scaleLinear()
-            .domain([selectedStart, selectedEnd])
+        const xAxisScale = d3.scaleBand()
+            .domain(axisValues)
+            .range([margin.left, svgWidth - margin.right])
+            .padding(0.1);
+
+        const xScaleLinear = d3.scaleLinear()
+            .domain([adjustedStart, adjustedEnd])
             .range([margin.left, svgWidth - margin.right]);
 
         // Calculate height based on the number of layers
@@ -68,6 +81,21 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
             if (!placed) layers.push([gene]);
         });
 
+        // Add x-axis tick lines
+        const axis = d3.axisBottom(xAxisScale)
+            .tickValues(axisValues.filter((_, i) => i % 15 === 0))
+            .tickFormat(() => "")
+            .tickSize(-svgHeight);
+
+        svg.append('g')
+            .attr('transform', `translate(0, ${svgHeight})`)
+            .call(axis)
+            .selectAll("line")
+            .attr("stroke", "#999");
+
+        svg.selectAll('.domain')
+            .attr('stroke', '#999');
+
         // Gene sequences
         layers.forEach((layer, layerIndex) => {
             svg
@@ -75,32 +103,32 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                 .data(layer)
                 .enter()
                 .append("rect")
-                .attr("x", (d) => xScale(d.displayStart))
+                .attr("x", (d) => xScaleLinear(d.displayStart))
                 .attr("y", margin.top + layerIndex * layerHeight)
-                .attr("width", (d) => xScale(d.displayEnd) - xScale(d.displayStart))
+                .attr("width", (d) => xScaleLinear(d.displayEnd) - xScaleLinear(d.displayStart))
                 .attr("height", layerHeight - 4)
                 .attr("fill", "#69b3a2")
                 .attr("stroke", "#333")
-                .attr("stroke-width", 0.8)
+                .attr("stroke-width", 0.2)
                 .style("transition", "all 0.3s ease")
                 .on("mouseover", (event, d) => {
                     d3.select(event.target)
-                        .style("stroke-width", 2);
+                        .style("stroke-width", 1);
 
                     const tooltip = d3.select(tooltipRef.current);
                     tooltip.style("opacity", 0.8)
                         .style("visibility", "visible")
                         .html(`
-                        <strong>Gene Symbol:</strong> ${d.symbol || d.gene_name}<br>
-                        <strong>Start:</strong> ${d.start_location}<br>
-                        <strong>End:</strong> ${d.end_location}
-                        `)
+                            <strong>Gene Symbol:</strong> ${d.symbol || d.gene_name}<br>
+                            <strong>Start:</strong> ${d.start_location}<br>
+                            <strong>End:</strong> ${d.end_location}
+                            `)
                         .style("left", `${event.pageX + 10}px`)
                         .style("top", `${event.pageY + 10}px`);
                 })
                 .on("mouseout", (event) => {
                     d3.select(event.target)
-                        .style("stroke-width", 0.8);
+                        .style("stroke-width", 0.2);
                     const tooltip = d3.select(tooltipRef.current);
                     tooltip.style("opacity", 0)
                         .style("visibility", "hidden");
@@ -109,7 +137,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
     }, [geneList, selectedChromosomeSequence, svgWidth, svgHeight]);
 
     return (
-        <div ref={containerRef} style={{ width: '100%', height: '30%', borderTop: "1px solid #eaeaea", overflowY: "auto" }}>
+        <div ref={containerRef} style={{ width: '100%', height: '30%', borderRight: "1px solid #eaeaea", borderTop: "1px solid #eaeaea", overflowY: "auto" }}>
             <svg ref={svgRef}></svg>
             <div
                 ref={tooltipRef}
