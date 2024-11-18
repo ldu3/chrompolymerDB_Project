@@ -4,32 +4,19 @@ import * as d3 from "d3";
 export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
     const svgRef = useRef();
     const containerRef = useRef();
-    const [svgWidth, setSvgWidth] = useState(0);
-    const [svgHeight, setSvgHeight] = useState(0);
     const [scrollEnabled, setScrollEnabled] = useState(false);
 
     const tooltipRef = useRef();
     const initialHeightRef = useRef(null);
 
     useEffect(() => {
-        const handleResize = () => {
-            setSvgWidth(containerRef.current.offsetWidth);
-            setSvgHeight(containerRef.current.offsetHeight);
-        };
+        const width = containerRef.current.offsetWidth;
+        const height = containerRef.current.offsetHeight;
 
-        handleResize();
-        window.addEventListener("resize", handleResize);
+        const margin = { top: 20, right: 10, bottom: 0, left: 60 };
 
-        return () => {
-            window.removeEventListener("resize", handleResize);
-        };
-    }, []);
-
-    useEffect(() => {
         const svg = d3.select(svgRef.current);
         svg.selectAll("*").remove();
-
-        if (svgWidth === 0) return;
 
         const { start, end } = selectedChromosomeSequence;
         const step = 5000;
@@ -48,18 +35,16 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
             displayEnd: Math.min(gene.end_location, end),
         }));
 
-        const margin = { top: 20, right: 10, bottom: 50, left: 60 };
-
-        svg.attr("width", svgWidth).attr("height", svgHeight);
+        svg.attr("width", width).attr("height", height);
 
         const xAxisScale = d3.scaleBand()
             .domain(axisValues)
-            .range([margin.left, svgWidth - margin.right])
+            .range([margin.left, width - margin.right])
             .padding(0.1);
 
         const xScaleLinear = d3.scaleLinear()
             .domain([adjustedStart, adjustedEnd])
-            .range([margin.left, svgWidth - margin.right]);
+            .range([margin.left, width - margin.right]);
 
         // Calculate height based on the number of layers
         const layerHeight = 20;
@@ -84,7 +69,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
 
         // Store the initial height once
         if (initialHeightRef.current === null) {
-            initialHeightRef.current = svgHeight;
+            initialHeightRef.current = height;
         }
 
         // Check if scrolling is needed based on total height
@@ -92,7 +77,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
 
         if (totalHeight > initialHeightRef.current) {
             setScrollEnabled(true);
-            setSvgHeight(totalHeight);
+            width = totalHeight;
         } else {
             setScrollEnabled(false);
         }
@@ -101,10 +86,10 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
         const axis = d3.axisBottom(xAxisScale)
             .tickValues(axisValues.filter((_, i) => i % 15 === 0))
             .tickFormat(() => "")
-            .tickSize(-svgHeight);
+            .tickSize(-height);
 
         svg.append('g')
-            .attr('transform', `translate(0, ${svgHeight})`)
+            .attr('transform', `translate(0, ${height})`)
             .call(axis)
             .selectAll("line")
             .attr("stroke", "#DCDCDC");
@@ -150,14 +135,14 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                         .style("visibility", "hidden");
                 });
         });
-    }, [geneList, svgWidth, svgHeight]);
+    }, [geneList]);
 
     return (
         <div
             ref={containerRef}
             style={{
                 width: '100%',
-                height: '30%',
+                height: 'calc(30% - 1px)',
                 borderRight: "1px solid #eaeaea",
                 borderTop: "1px solid #eaeaea",
                 overflowY: scrollEnabled ? 'auto' : 'hidden',
