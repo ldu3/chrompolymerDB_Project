@@ -10,8 +10,8 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
     const initialHeightRef = useRef(null);
 
     useEffect(() => {
-        const width = containerRef.current.offsetWidth;
-        const height = containerRef.current.offsetHeight;
+        let width = containerRef.current.offsetWidth;
+        let height = containerRef.current.offsetHeight;
 
         const margin = { top: 20, right: 10, bottom: 0, left: 60 };
 
@@ -142,7 +142,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
             ref={containerRef}
             style={{
                 width: '100%',
-                height: 'calc(30% - 1px)',
+                height: 'calc(28% - 1px)',
                 borderRight: "1px solid #eaeaea",
                 borderTop: "1px solid #eaeaea",
                 overflowY: scrollEnabled ? 'auto' : 'hidden',

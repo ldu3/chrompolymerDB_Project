@@ -8,8 +8,8 @@ body {
   display: flex;
   flex-direction: column;
   text-align: center;
-  height: 100%;
-  width: 100%;
+  height: calc(100vh - 16px);
+  width: calc(100vw - 16px);
 }
 
 .controlHeader {
@@ -34,7 +34,7 @@ body {
 .content {
   display: flex;
   margin-top: 8px;
-  height:calc(97vh - 80px);
+  height:calc(100% - 90px);
   border: 1px solid #eaeaea;
   border-radius: 8px;
 }

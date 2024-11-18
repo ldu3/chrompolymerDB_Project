@@ -55,6 +55,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             .attr('height', height + margin.top + margin.bottom)
             .style('position', 'relative')
             .style('z-index', 1)
+            .style('font-size', 10)
             .style('pointer-events', 'none')
             .append('g')
             .attr('transform', `translate(${margin.left}, ${margin.top})`);
@@ -158,7 +159,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
     return (
         <div style={{display: 'flex', flexDirection: 'column', width: '30%', height: '100%'}}>
-            <div ref={containerRef} style={{ width: '100%', height: '70%', borderRight: "1px solid #eaeaea", position: 'relative' }}>
+            <div ref={containerRef} style={{ width: '100%', height: '72%', borderRight: "1px solid #eaeaea", position: 'relative' }}>
                 <Button
                     style={{
                         position: 'absolute',
