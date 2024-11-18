@@ -97,10 +97,10 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 .tickValues(axisValues.filter((_, i) => i % 15 === 0))
                 .tickFormat(d => {
                     if (d >= 1000000) {
-                        return `${(d / 1000000).toFixed(2)}M`;
+                        return `${(d / 1000000).toFixed(3)}M`;
                     };
                     if (d > 10000 && d < 1000000) {
-                        return `${(d / 10000).toFixed(2)}W`;
+                        return `${(d / 10000).toFixed(3)}W`;
                     }
                     return d;
                 }))
@@ -115,10 +115,10 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 .tickValues(axisValues.filter((_, i) => i % 15 === 0))
                 .tickFormat(d => {
                     if (d >= 1000000) {
-                        return `${(d / 1000000).toFixed(2)}M`;
+                        return `${(d / 1000000).toFixed(3)}M`;
                     };
                     if (d > 10000 && d < 1000000) {
-                        return `${(d / 10000).toFixed(2)}W`;
+                        return `${(d / 10000).toFixed(3)}W`;
                     }
                     return d;
                 }));

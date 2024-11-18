@@ -46,7 +46,6 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
             displayEnd: Math.min(gene.end_location, end),
         }));
 
-        console.log(selectedChromosomeSequence, axisValues[0], axisValues[axisValues.length - 1], genesToRender, '/////')
         const margin = { top: 20, right: 10, bottom: 50, left: 60 };
 
         svg.attr("width", svgWidth).attr("height", svgHeight);
@@ -91,10 +90,10 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
             .attr('transform', `translate(0, ${svgHeight})`)
             .call(axis)
             .selectAll("line")
-            .attr("stroke", "#999");
+            .attr("stroke", "#DCDCDC");
 
         svg.selectAll('.domain')
-            .attr('stroke', '#999');
+            .attr('stroke', '#DCDCDC');
 
         // Gene sequences
         layers.forEach((layer, layerIndex) => {
@@ -120,8 +119,8 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                         .style("visibility", "visible")
                         .html(`
                             <strong>Gene Symbol:</strong> ${d.symbol || d.gene_name}<br>
-                            <strong>Start:</strong> ${d.start_location}<br>
-                            <strong>End:</strong> ${d.end_location}
+                            <strong>Start:</strong> ${d.displayStart}<br>
+                            <strong>End:</strong> ${d.displayEnd}
                             `)
                         .style("left", `${event.pageX + 10}px`)
                         .style("top", `${event.pageY + 10}px`);
@@ -137,7 +136,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
     }, [geneList, selectedChromosomeSequence, svgWidth, svgHeight]);
 
     return (
-        <div ref={containerRef} style={{ width: '100%', height: '30%', borderRight: "1px solid #eaeaea", borderTop: "1px solid #eaeaea", overflowY: "auto" }}>
+        <div ref={containerRef} style={{ width: '100%', height: '30%', borderRight: "1px solid #eaeaea", borderTop: "1px solid #eaeaea" }}>
             <svg ref={svgRef}></svg>
             <div
                 ref={tooltipRef}
