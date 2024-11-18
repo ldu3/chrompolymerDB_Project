@@ -89,7 +89,6 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
 
         // Check if scrolling is needed based on total height
         const totalHeight = layers.length * layerHeight + margin.top;
-        console.log(totalHeight, svgHeight);
 
         if (totalHeight > initialHeightRef.current) {
             setScrollEnabled(true);
@@ -151,7 +150,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                         .style("visibility", "hidden");
                 });
         });
-    }, [geneList, selectedChromosomeSequence, svgWidth, svgHeight]);
+    }, [geneList, svgWidth, svgHeight]);
 
     return (
         <div
