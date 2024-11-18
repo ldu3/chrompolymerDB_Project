@@ -72,9 +72,6 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
 
         // Check if scrolling is needed based on total height
         const totalHeight = (layers.length - 1) * layerHeight + (layerHeight - 4) + margin.top;
-        console.log('Container Height:', containerRef.current.offsetHeight);
-        console.log('SVG Height:', svgRef.current.getBoundingClientRect().height);
-        console.log('Total Height:', totalHeight);
 
         if (totalHeight > initialHeightRef.current) {
             setScrollEnabled(true);
@@ -150,6 +147,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                 borderTop: "1px solid #eaeaea",
                 boxSizing: "border-box",
                 overflowY: scrollEnabled ? 'auto' : 'hidden',
+                overflowX: "hidden",
             }}
         >
             <svg ref={svgRef}></svg>
