@@ -35,8 +35,6 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
             displayEnd: Math.min(gene.end_location, end),
         }));
 
-        svg.attr("width", width).attr("height", height);
-
         const xAxisScale = d3.scaleBand()
             .domain(axisValues)
             .range([margin.left, width - margin.right])
@@ -73,11 +71,14 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
         }
 
         // Check if scrolling is needed based on total height
-        const totalHeight = layers.length * layerHeight + margin.top;
+        const totalHeight = (layers.length - 1) * layerHeight + (layerHeight - 4) + margin.top;
+        console.log('Container Height:', containerRef.current.offsetHeight);
+        console.log('SVG Height:', svgRef.current.getBoundingClientRect().height);
+        console.log('Total Height:', totalHeight);
 
         if (totalHeight > initialHeightRef.current) {
             setScrollEnabled(true);
-            width = totalHeight;
+            height = totalHeight;
         } else {
             setScrollEnabled(false);
         }
@@ -87,6 +88,8 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
             .tickValues(axisValues.filter((_, i) => i % 15 === 0))
             .tickFormat(() => "")
             .tickSize(-height);
+
+        svg.attr("width", width).attr("height", height);
 
         svg.append('g')
             .attr('transform', `translate(0, ${height})`)
@@ -125,7 +128,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
                             <strong>End:</strong> ${d.displayEnd}
                             `)
                         .style("left", `${event.pageX + 10}px`)
-                        .style("top", `${event.pageY + 10}px`);
+                        .style("top", `${event.pageY - 20}px`);
                 })
                 .on("mouseout", (event) => {
                     d3.select(event.target)
@@ -142,9 +145,10 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
             ref={containerRef}
             style={{
                 width: '100%',
-                height: 'calc(28% - 1px)',
+                height: '28%',
                 borderRight: "1px solid #eaeaea",
                 borderTop: "1px solid #eaeaea",
+                boxSizing: "border-box",
                 overflowY: scrollEnabled ? 'auto' : 'hidden',
             }}
         >
