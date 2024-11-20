@@ -12,7 +12,7 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
         return Object.values(selectedSphereList).map(({ position, color }) => {
             const { x, y, z } = position;
             return {
-                position: new THREE.Vector3(x, y, z),
+                position: new THREE.Vector3(x / 0.15, y / 0.15, z / 0.15),
                 color,
             };
         });
