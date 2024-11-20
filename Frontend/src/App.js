@@ -320,7 +320,7 @@ function App() {
             value={cellLineName}
             size="small"
             style={{
-              width: "15%",
+              width: "18%",
               marginRight: 20
             }}
             onChange={cellLineChange}

@@ -45,9 +45,9 @@ def cell_lines_list():
     rows = cur.fetchall()
 
     label_mapping = {
-        "IMR": "Lung",
-        "K": "Blood Leukemia",
-        "GM": "Lymphoblastoid Cell Line",
+        "IMR": "Lung(IMR90)",
+        "K": "Blood Leukemia(k562)",
+        "GM": "Lymphoblastoid Cell Line(GM12878)",
     }
     options = [
         {
@@ -373,9 +373,9 @@ def comparison_cell_line_list(cell_line, chromosome_name, sequences):
     rows = cur.fetchall()
 
     label_mapping = {
-        "IMR": "Lung",
-        "K": "Blood Leukemia",
-        "GM": "Lymphoblastoid Cell Line",
+        "IMR": "Lung(IMR90)",
+        "K": "Blood Leukemia(k562)",
+        "GM": "Lymphoblastoid Cell Line(GM12878)",
     }
 
     options = [
