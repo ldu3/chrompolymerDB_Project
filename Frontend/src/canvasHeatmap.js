@@ -79,8 +79,9 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             (_, i) => adjustedStart + i * step
         );
 
-        const colorScale = d3.scaleSequential(d3.interpolateCividis)
-            .domain([0, d3.max(chromosomeData, d => d.fq)]);
+        const colorScale = d3.scaleSequential(
+            t => d3.interpolateReds(t * 0.8 + 0.2)
+        ).domain([0, d3.max(chromosomeData, d => d.fq)]);
 
         const xScale = d3.scaleBand()
             .domain(axisValues)
@@ -158,7 +159,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
     }, [chromosomeData, totalChromosomeSequences]);
 
     return (
-        <div style={{display: 'flex', flexDirection: 'column', width: '30%', height: '100%'}}>
+        <div style={{ display: 'flex', flexDirection: 'column', width: '30%', height: '100%' }}>
             <div ref={containerRef} style={{ width: '100%', height: '72%', borderRight: "1px solid #eaeaea", position: 'relative' }}>
                 <Button
                     style={{
@@ -175,7 +176,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 <canvas ref={canvasRef} style={{ position: 'absolute', zIndex: 0 }} />
                 <svg id="axis"></svg>
             </div>
-            <GeneList 
+            <GeneList
                 geneList={geneList}
                 selectedChromosomeSequence={selectedChromosomeSequence}
             />
