@@ -29,9 +29,26 @@ def get_db_connection():
     )
     return conn
 
+"""
+Return the list of genes
+"""
+def gene_names_list():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT DISTINCT symbol
+        FROM gene
+    """
+    )
+    rows = cur.fetchall()
+    options = [{"value": row["symbol"], "label": row["symbol"]} for row in rows]
+    conn.close()
+    return options
+
 
 """
-Returns the list of cell line in the given data path
+Returns the list of cell line
 """
 def cell_lines_list():
     conn = get_db_connection()

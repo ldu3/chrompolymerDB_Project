@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Select, Input, Button, message, Empty, Spin, Tabs } from 'antd';
+import { Select, Input, Button, message, Empty, Spin, Tabs, Switch } from 'antd';
 import './App.css';
 // import { Heatmap } from './heatmap.js';
 import { Heatmap } from './canvasHeatmap.js';
@@ -9,9 +9,13 @@ import { PlusOutlined, MinusOutlined } from "@ant-design/icons";
 
 
 function App() {
+  const [isCellLineMode, setIsCellLineMode] = useState(true);
+  const [geneNameList, setGeneNameList] = useState([]);
   const [cellLineList, setCellLineList] = useState([]);
+  const [geneList, setGeneList] = useState([]);
   const [chromosList, setChromosList] = useState([]);
   const [cellLineName, setCellLineName] = useState(null);
+  const [geneName, setGeneName] = useState(null);
   const [chromosomeName, setChromosomeName] = useState(null);
   const [chromosomeSize, setChromosomeSize] = useState(0);
   const [totalChromosomeSequences, setTotalChromosomeSequences] = useState([]);
@@ -22,7 +26,6 @@ function App() {
   const [messageApi, contextHolder] = message.useMessage();
   const [heatmapLoading, setHeatmapLoading] = useState(false);
   const [chromosome3DLoading, setChromosome3DLoading] = useState(false);
-  const [geneList, setGeneList] = useState([]);
 
   // 3D Chromosome Comparison settings
   const [chromosome3DComparisonShowing, setChromosome3DComparisonShowing] = useState(false);
@@ -33,11 +36,11 @@ function App() {
   const [comparisonCellLine3DLoading, setComparisonCellLine3DLoading] = useState(false);
 
   useEffect(() => {
-    fetch('/getCellLines')
-      .then(res => res.json())
-      .then(data => {
-        setCellLineList(data);
-      });
+    if (isCellLineMode) {
+      fetchCellLineList();
+    } else {
+      fetchGeneNameList();
+    }
   }, []);
 
   useEffect(() => {
@@ -61,6 +64,22 @@ function App() {
       setSelectedChromosomeSequence({ start: totalChromosomeSequences[0].start, end: totalChromosomeSequences[0].start });
     }
   }, [totalChromosomeSequences]);
+
+  const fetchGeneNameList = () => {
+    fetch('/getGeneNameList')
+      .then(res => res.json())
+      .then(data => {
+        setGeneNameList(data);
+      });
+  }
+
+  const fetchCellLineList = () => {
+    fetch('/getCellLines')
+      .then(res => res.json())
+      .then(data => {
+        setCellLineList(data);
+      });
+  };
 
   const fetchChromosomeList = (value) => {
     fetch('/getChromosList', {
@@ -206,6 +225,17 @@ function App() {
     }
   };
 
+  // Mode change (Cell Line / Gene)
+  const modeChange = checked => {
+    setIsCellLineMode(checked);
+    if (checked) {
+      fetchCellLineList();
+    } else {
+      fetchGeneNameList();
+    }
+    console.log(checked, '////')
+  };
+
   // Cell Line selection change
   const cellLineChange = value => {
     setCellLineName(value);
@@ -217,6 +247,11 @@ function App() {
     setComparisonCellLine3DData([]);
     fetchChromosomeList(value);
     setChromosome3DComparisonShowing(false);
+  };
+
+  // Gene selection change
+  const geneNameChange = value => {
+    setGeneName(value);
   };
 
   // Chromosome selection change
@@ -315,34 +350,57 @@ function App() {
       {/* header part */}
       <div className="controlHeader">
         <div className="controlGroup">
-          <span className="controlGroupText">Cell Line:</span>
-          <Select
-            value={cellLineName}
-            size="small"
-            style={{
-              width: "18%",
-              marginRight: 20
-            }}
-            onChange={cellLineChange}
-            options={cellLineList}
-          />
-          <>
-            <span className="controlGroupText">Chromosome:</span>
-            <Select
-              value={chromosomeName}
-              size="small"
-              style={{
-                width: "10%",
-                marginRight: 20
-              }}
-              onChange={chromosomeChange}
-              options={chromosList}
-            />
-          </>
-          <span className="controlGroupText">Sequences:</span>
-          <Input size="small" style={{ width: "10%", marginRight: 10 }} placeholder="Start" onChange={(e) => chromosomeSequenceChange('start', e.target.value)} value={selectedChromosomeSequence.start} />
-          <span className="controlGroupText">~</span>
-          <Input size="small" style={{ width: "10%", marginRight: 20 }} placeholder="End" onChange={(e) => chromosomeSequenceChange('end', e.target.value)} value={selectedChromosomeSequence.end} />
+          <div className='switchWrapper'>
+            <Switch checkedChildren="Cell Line" unCheckedChildren="Gene" checked={isCellLineMode} onChange={modeChange} size='small' style={{
+              width: "100%",
+              marginLeft: 18,
+              backgroundColor: isCellLineMode ? '#74C365' : '#ED9121'
+            }} />
+          </div>
+          {isCellLineMode ? (
+            <>
+              <span className="controlGroupText">Cell Line:</span>
+              <Select
+                value={cellLineName}
+                size="small"
+                style={{
+                  width: "18%",
+                  marginRight: 20
+                }}
+                onChange={cellLineChange}
+                options={cellLineList}
+              />
+              <span className="controlGroupText">Chromosome:</span>
+              <Select
+                value={chromosomeName}
+                size="small"
+                style={{
+                  width: "10%",
+                  marginRight: 20
+                }}
+                onChange={chromosomeChange}
+                options={chromosList}
+              />
+              <span className="controlGroupText">Sequences:</span>
+              <Input size="small" style={{ width: "10%", marginRight: 10 }} placeholder="Start" onChange={(e) => chromosomeSequenceChange('start', e.target.value)} value={selectedChromosomeSequence.start} />
+              <span className="controlGroupText">~</span>
+              <Input size="small" style={{ width: "10%", marginRight: 20 }} placeholder="End" onChange={(e) => chromosomeSequenceChange('end', e.target.value)} value={selectedChromosomeSequence.end} />
+            </>
+          ) : (
+            <>
+              <span className="controlGroupText">Gene:</span>
+              <Select
+                value={geneName}
+                size="small"
+                style={{
+                  width: "10%",
+                  marginRight: 20
+                }}
+                onChange={geneNameChange}
+                options={geneNameList}
+              />
+            </>
+          )}
           <Button size="small" color="primary" variant="outlined" onClick={submit}>Check</Button>
         </div>
         <ChromosomeBar

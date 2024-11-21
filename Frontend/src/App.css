@@ -32,6 +32,11 @@ body {
   font-size: 12px;
 }
 
+.switchWrapper {
+  position: absolute;
+  left: 0;
+}
+
 .content {
   display: flex;
   margin-top: 8px;
