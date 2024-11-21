@@ -96,7 +96,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
         svg.append('g')
             .attr('transform', `translate(0, ${height})`)
             .call(d3.axisBottom(xScale)
-                .tickValues(axisValues.filter((_, i) => i % 50 === 0))
+                .tickValues(axisValues.filter((_, i) => i % 30 === 0))
                 .tickFormat(d => {
                     if (d >= 1000000) {
                         return `${(d / 1000000).toFixed(3)}M`;
@@ -114,7 +114,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
         svg.append('g')
             .call(d3.axisLeft(yScale)
-                .tickValues(axisValues.filter((_, i) => i % 50 === 0))
+                .tickValues(axisValues.filter((_, i) => i % 30 === 0))
                 .tickFormat(d => {
                     if (d >= 1000000) {
                         return `${(d / 1000000).toFixed(3)}M`;
