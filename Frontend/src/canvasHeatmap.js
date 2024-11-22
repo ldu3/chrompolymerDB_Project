@@ -205,6 +205,11 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 <svg ref={axisSvgRef} style={{position: 'absolute', zIndex: 1, pointerEvents: 'none' }} />
                 <svg ref={brushSvgRef} style={{ zIndex: 2, pointerEvents: 'all' }} />
             </div>
+            {minDimension > 0 && <GeneList
+                geneList={geneList}
+                selectedChromosomeSequence={selectedChromosomeSequence}
+                minDimension={minDimension}
+            />}
         </div>
     );
 };
