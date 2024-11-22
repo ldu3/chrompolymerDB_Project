@@ -11,7 +11,14 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
     const download = () => {
         if (chromosomeData) {
-            const csvData = chromosomeData.map(row =>
+            const filteredData = chromosomeData.filter(row => row.fdr < 0.05);
+
+            if (filteredData.length === 0) {
+                alert("no suitable data (fdr < 0.05)");
+                return;
+            }
+
+            const csvData = filteredData.map(row =>
                 `${row.cell_line},${row.chrid},${row.ibp},${row.jbp},${row.fq},${row.fdr}`
             ).join('\n');
 
