@@ -11,6 +11,8 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
     const axisSvgRef = useRef(null);
     const [minDimension, setMinDimension] = useState(0);
     const [brushedRange, setBrushedRange] = useState(null);
+    const [currentChromosomeSequence, setCurrentChromosomeSequence] = useState(selectedChromosomeSequence);
+    const [currentChromosomeData, setCurrentChromosomeData] = useState(chromosomeData);
 
     const download = () => {
         if (chromosomeData) {
@@ -40,6 +42,45 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
         }
     };
 
+    const handleWheel = (event) => {
+        event.preventDefault();
+
+        const zoomFactor = 0.03;  // Adjust the zoom sensitivity (0.1 is just an example)
+        let newStart = currentChromosomeSequence.start;
+        let newEnd = currentChromosomeSequence.end;
+        console.log(newStart, newEnd, "start and end");
+        const rangeLength = newEnd - newStart;
+        const zoomIn = event.deltaY < 0;  // Zoom in if the scroll is up (deltaY < 0)
+        const zoomOut = event.deltaY > 0; // Zoom out if the scroll is down (deltaY > 0)
+
+        if (zoomIn) {
+            // Zoom in by reducing the range
+            newStart = Math.max(newStart + rangeLength * zoomFactor, selectedChromosomeSequence.start);  // Prevent going below 0
+            newEnd = Math.min(newEnd - rangeLength * zoomFactor, selectedChromosomeSequence.end); // Prevent exceeding max end
+            console.log(newStart, newEnd);
+        } else if (zoomOut) {
+            // Zoom out by increasing the range
+            newStart = Math.max(newStart - rangeLength * zoomFactor, selectedChromosomeSequence.start); // Prevent going below 0
+            newEnd = Math.min(newEnd + rangeLength * zoomFactor, selectedChromosomeSequence.end); // Prevent exceeding max end
+        }
+
+        setCurrentChromosomeSequence({
+            start: parseInt(newStart),
+            end: parseInt(newEnd)
+        });
+    };
+
+    useEffect(() => {
+        // Add wheel event listener to handle zoom
+        const container = containerRef.current;
+        container.addEventListener('wheel', handleWheel, { passive: false });
+
+        // Cleanup the event listener
+        return () => {
+            container.removeEventListener('wheel', handleWheel);
+        };
+    }, [currentChromosomeSequence]);
+
     useEffect(() => {
         const parentWidth = containerRef.current.offsetWidth;
         const parentHeight = containerRef.current.offsetHeight;
@@ -49,6 +90,14 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
         const width = Math.min(parentWidth, parentHeight) - margin.left - margin.right;
         const height = Math.min(parentWidth, parentHeight) - margin.top - margin.bottom;
 
+        const zoomedChromosomeData = chromosomeData.filter(item => {
+            const { ibp, jbp } = item;
+            return ibp >= currentChromosomeSequence.start && ibp <= currentChromosomeSequence.end &&
+                jbp >= currentChromosomeSequence.start && jbp <= currentChromosomeSequence.end;
+        });
+
+        setCurrentChromosomeData(zoomedChromosomeData);
+
         // Draw canvas
         const canvas = canvasRef.current;
         const context = canvas.getContext('2d');
@@ -57,7 +106,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
         context.clearRect(0, 0, canvas.width, canvas.height);
 
-        const { start, end } = selectedChromosomeSequence;
+        const { start, end } = currentChromosomeSequence;
         const step = 5000;
         const adjustedStart = Math.floor(start / step) * step;
         const adjustedEnd = Math.ceil(end / step) * step;
@@ -79,11 +128,11 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
         const colorScale = d3.scaleSequential(
             t => d3.interpolateReds(t * 0.8 + 0.2)
-        ).domain([0, d3.max(chromosomeData, d => d.fq)]);
+        ).domain([0, d3.max(zoomedChromosomeData, d => d.fq)]);
 
         const fqMap = new Map();
 
-        chromosomeData.forEach(d => {
+        zoomedChromosomeData.forEach(d => {
             fqMap.set(`X:${d.ibp}, Y:${d.jbp}`, { fq: d.fq, fdr: d.fdr });
             fqMap.set(`X:${d.jbp}, Y:${d.ibp}`, { fq: d.fq, fdr: d.fdr });
         });
@@ -176,10 +225,10 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                         return pos >= x0 && pos <= x1;
                     });
                     console.log(brushedX);
-                    setBrushedRange({ start: brushedX[0], end: brushedX[brushedX.length - 1] }); 
+                    setBrushedRange({ start: brushedX[0], end: brushedX[brushedX.length - 1] });
                 })
             );
-    }, [chromosomeData, minDimension]);
+    }, [minDimension, currentChromosomeSequence]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', width: '35%', height: '100%' }}>
@@ -207,7 +256,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             {minDimension > 0 && (
                 <GeneList
                     geneList={geneList}
-                    selectedChromosomeSequence={selectedChromosomeSequence}
+                    selectedChromosomeSequence={currentChromosomeSequence}
                     minDimension={minDimension}
                 />
             )}
