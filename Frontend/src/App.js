@@ -233,7 +233,6 @@ function App() {
     } else {
       fetchGeneNameList();
     }
-    console.log(checked, '////')
   };
 
   // Cell Line selection change
@@ -269,33 +268,18 @@ function App() {
 
   // Chromosome sequence change
   const chromosomeSequenceChange = (position, value) => {
-    const newValue = Number(value);
+    const newValue = value !== "" && !isNaN(value) ? Number(value) : 0;
+    
     setChromosome3DComparisonShowing(false);
     setComparisonCellLine(null);
     setComparisonCellLine3DSampleID(0);
     setComparisonCellLineList([]);
     setComparisonCellLine3DData([]);
 
-    if (position === 'start') {
-      if (selectedChromosomeSequence.end < newValue) {
-        warning('smallend');
-      } else {
-
-        setSelectedChromosomeSequence(prevState => ({
-          ...prevState,
-          start: newValue,
-        }));
-      }
-    } else {
-      if (newValue - selectedChromosomeSequence.start > 4000000) {
-        warning('overrange');
-      } else {
-        setSelectedChromosomeSequence(prevState => ({
-          ...prevState,
-          end: newValue,
-        }));
-      }
-    }
+    setSelectedChromosomeSequence((prevState) => ({
+      ...prevState,
+      [position]: newValue,
+    }));
   };
 
   // 3D Original Chromosome sample change
@@ -329,19 +313,26 @@ function App() {
 
   // Submit button click
   const submit = () => {
-    if (selectedChromosomeSequence.end - selectedChromosomeSequence.start < 4000000) {
+    if (selectedChromosomeSequence.end - selectedChromosomeSequence.start > 4000000) {
+      warning('overrange');
+    } else if (selectedChromosomeSequence.start >= selectedChromosomeSequence.end) {
+      warning('smallend');
+    } else if (!cellLineName || !chromosomeName) {
+      warning('noData');
+    } else {
       setHeatmapLoading(true);
+      setChromosome3DLoading(true);
+      
+      setChromosome3DComparisonShowing(false);
+      setComparisonCellLine3DSampleID(0);
+      setComparisonCellLineList([]);
+      setComparisonCellLine3DData([]);
+      setChromosome3DExampleID(0);
+      setChromosome3DExampleData([]);
+      fetchChromosomeData();
+      fetchGeneList();
+      fetchExampleChromos3DData(cellLineName, chromosome3DExampleID, "submit", false);
     }
-    setChromosome3DComparisonShowing(false);
-    setComparisonCellLine3DSampleID(0);
-    setComparisonCellLineList([]);
-    setComparisonCellLine3DData([]);
-    setChromosome3DExampleID(0);
-    setChromosome3DExampleData([]);
-    setChromosome3DLoading(true);
-    fetchChromosomeData();
-    fetchGeneList();
-    fetchExampleChromos3DData(cellLineName, chromosome3DExampleID, "submit", false);
   };
 
   return (
