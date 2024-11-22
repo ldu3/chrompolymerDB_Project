@@ -86,17 +86,28 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                     />
                 </div>
 
-                <Canvas style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [0, 0, 100], fov: 50 }}>
-
-                    {/* Light sources */}
-                    <ambientLight intensity={1} />
-                    <pointLight position={[10, 20, 10]} intensity={2} />
+                <Canvas shadows style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [100, 0, 150], fov: 50 }}>
 
                     <OrbitControls
                         ref={controlsRef}
                         enableZoom={true}
                         enableRotate={true}
                         enablePan={true}
+                    />
+
+                    {/* Light sources */}
+                    <ambientLight intensity={0.8} />
+                    <directionalLight
+                        position={[10, 20, 10]}
+                        intensity={1}
+                        castShadow
+                    />
+                    <spotLight
+                        position={[30, 50, 50]}
+                        angle={0.3}
+                        penumbra={1}
+                        intensity={1}
+                        castShadow
                     />
 
                     {/* Render spheres with their respective colors */}
@@ -108,7 +119,13 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                             >
                                 <mesh>
                                     <sphereGeometry args={[2.5, 32, 32]} />
-                                    <meshStandardMaterial color={color} />
+                                    <meshStandardMaterial 
+                                        receiveShadow
+                                        castShadow
+                                        color={color}
+                                        metalness={0.3}
+                                        roughness={0.1}
+                                        emissiveIntensity={0.3} />
                                 </mesh>
                                 <mesh>
                                     <sphereGeometry args={[2.7, 32, 32]} />

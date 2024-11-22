@@ -200,7 +200,7 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
             </div>
 
             {showChromosome3DDistance && (
-                <div style={{ height: '40%', marginTop: 2 }}>
+                <div style={{ height: '35%', marginTop: 2 }}>
                     <Chromosome3DDistance
                         setShowChromosome3DDistance={setShowChromosome3DDistance}
                         selectedSphereList={selectedSphereList}
