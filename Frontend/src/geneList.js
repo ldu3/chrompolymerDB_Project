@@ -30,11 +30,15 @@ export const GeneList = ({ geneList, currentChromosomeSequence, minDimension }) 
         );
 
         // Map genes to the range of currentChromosomeSequence
-        const genesToRender = geneList.map((gene) => ({
-            ...gene,
-            displayStart: Math.max(gene.start_location, start),
-            displayEnd: Math.min(gene.end_location, end),
-        }));
+        const genesToRender = geneList
+            .filter((gene) =>
+                gene.start_location <= end && gene.end_location >= start
+            )
+            .map((gene) => ({
+                ...gene,
+                displayStart: Math.max(gene.start_location, start),
+                displayEnd: Math.min(gene.end_location, end),
+            }));
 
         const xAxisScale = d3.scaleBand()
             .domain(axisValues)
@@ -87,11 +91,11 @@ export const GeneList = ({ geneList, currentChromosomeSequence, minDimension }) 
         // Dynamically determine the tick count based on the range
         let tickCount;
         if (range < 1000000) {
-            tickCount = Math.max(Math.floor(range / 5000), 5);
+            tickCount = Math.max(Math.floor(range / 20000), 5);
         } else if (range >= 1000000 && range <= 10000000) {
             tickCount = Math.max(Math.floor(range / 50000), 5);
         } else {
-            tickCount = 30; 
+            tickCount = 30;
         }
 
         tickCount = Math.min(tickCount, 30);

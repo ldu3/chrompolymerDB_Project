@@ -148,7 +148,7 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
         // Dynamically determine the tick count based on the range
         let tickCount;
         if (range < 1000000) {
-            tickCount = Math.max(Math.floor(range / 5000), 5);
+            tickCount = Math.max(Math.floor(range / 20000), 5);
         } else if (range >= 1000000 && range <= 10000000) {
             tickCount = Math.max(Math.floor(range / 50000), 5);
         } else {
