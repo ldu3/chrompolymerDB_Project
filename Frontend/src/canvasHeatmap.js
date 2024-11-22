@@ -44,7 +44,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
     useEffect(() => {
         const parentWidth = containerRef.current.offsetWidth;
         const parentHeight = containerRef.current.offsetHeight;
-        const margin = { top: 35, right: 10, bottom: 50, left: 60 };
+        const margin = { top: 45, right: 10, bottom: 45, left: 60 };
 
         setMinDimension(Math.min(parentWidth, parentHeight));
         const width = Math.min(parentWidth, parentHeight) - margin.left - margin.right;
@@ -137,7 +137,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
         } else if (range >= 1000000 && range <= 10000000) {
             tickCount = Math.max(Math.floor(range / 50000), 5);
         } else {
-            tickCount = 30; 
+            tickCount = 30;
         }
 
         tickCount = Math.min(tickCount, 30);
@@ -212,30 +212,31 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 justifyContent: 'center',
                 alignItems: 'center',
             }}>
-                <Button
-                    style={{
-                        position: 'absolute',
-                        top: 2,
-                        right: 40,
-                        fontSize: 15,
-                        cursor: "pointer",
-                        zIndex: 10,
-                    }}
-                    icon={<ReloadOutlined />}
-                    onClick={() => setCurrentChromosomeSequence(selectedChromosomeSequence)}
-                />
-                <Button
-                    style={{
-                        position: 'absolute',
-                        top: 2,
-                        right: 2,
-                        fontSize: 15,
-                        cursor: "pointer",
-                        zIndex: 10,
-                    }}
-                    icon={<DownloadOutlined />}
-                    onClick={download}
-                />
+                <div style={{
+                    position: 'absolute', top: 0, right: 0, zIndex: 10, display: 'flex', gap: '10px', width: '100%', justifyContent: 'flex-end', padding: "5px 0 5px 0", borderBottom: "1px solid #eaeaea"
+                }}>
+                    <Button
+                        size='small'
+                        style={{
+                            fontSize: 15,
+                            cursor: "pointer",
+                        }}
+                        icon={<ReloadOutlined />}
+                        onClick={() => setCurrentChromosomeSequence(selectedChromosomeSequence)}
+                    />
+                    <Button
+                    size='small'
+                        style={{
+                            fontSize: 15,
+                            cursor: "pointer",
+                        }}
+                        icon={<DownloadOutlined />}
+                        onClick={download}
+                    />
+                    <Button size='small' style={{marginRight: 5}}>
+                        Generate 3D Structure
+                    </Button>
+                </div>
                 <canvas ref={canvasRef} style={{ position: 'absolute', zIndex: 0 }} />
                 <svg ref={axisSvgRef} style={{ position: 'absolute', zIndex: 1, pointerEvents: 'none' }} />
                 <svg ref={brushSvgRef} style={{ position: 'absolute', zIndex: 2, pointerEvents: 'all' }} />
