@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
-export const GeneList = ({ geneList, selectedChromosomeSequence, minDimension }) => {
+export const GeneList = ({ geneList, currentChromosomeSequence, minDimension }) => {
     const svgRef = useRef();
     const containerRef = useRef();
     const [scrollEnabled, setScrollEnabled] = useState(false);
@@ -19,7 +19,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence, minDimension })
         const svg = d3.select(svgRef.current);
         svg.selectAll("*").remove();
 
-        const { start, end } = selectedChromosomeSequence;
+        const { start, end } = currentChromosomeSequence;
         const step = 5000;
         const adjustedStart = Math.floor(start / step) * step;
         const adjustedEnd = Math.ceil(end / step) * step;
@@ -29,7 +29,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence, minDimension })
             (_, i) => adjustedStart + i * step
         );
 
-        // Map genes to the range of selectedChromosomeSequence
+        // Map genes to the range of currentChromosomeSequence
         const genesToRender = geneList.map((gene) => ({
             ...gene,
             displayStart: Math.max(gene.start_location, start),
@@ -81,9 +81,24 @@ export const GeneList = ({ geneList, selectedChromosomeSequence, minDimension })
             setScrollEnabled(false);
         }
 
+        // Calculate the range of the current chromosome sequence
+        const range = currentChromosomeSequence.end - currentChromosomeSequence.start;
+
+        // Dynamically determine the tick count based on the range
+        let tickCount;
+        if (range < 1000000) {
+            tickCount = Math.max(Math.floor(range / 5000), 5);
+        } else if (range >= 1000000 && range <= 10000000) {
+            tickCount = Math.max(Math.floor(range / 50000), 5);
+        } else {
+            tickCount = 30; 
+        }
+
+        tickCount = Math.min(tickCount, 30);
+
         // Add x-axis tick lines
         const axis = d3.axisBottom(xAxisScale)
-            .tickValues(axisValues.filter((_, i) => i % 30 === 0))
+            .tickValues(axisValues.filter((_, i) => i % tickCount === 0))
             .tickFormat(() => "")
             .tickSize(-height);
 
@@ -136,7 +151,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence, minDimension })
                         .style("visibility", "hidden");
                 });
         });
-    }, [geneList]);
+    }, [geneList, currentChromosomeSequence]);
 
     return (
         <div

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
+import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
 import { GeneList } from './geneList.js';
 import * as d3 from 'd3';
 
@@ -10,7 +10,6 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
     const brushSvgRef = useRef(null);
     const axisSvgRef = useRef(null);
     const [minDimension, setMinDimension] = useState(0);
-    const [brushedRange, setBrushedRange] = useState(null);
     const [currentChromosomeSequence, setCurrentChromosomeSequence] = useState(selectedChromosomeSequence);
     const [currentChromosomeData, setCurrentChromosomeData] = useState(chromosomeData);
 
@@ -41,43 +40,6 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             URL.revokeObjectURL(url);
         }
     };
-
-    const handleWheel = (event) => {
-        event.preventDefault();
-
-        const zoomFactor = 0.03;
-        let newStart = currentChromosomeSequence.start;
-        let newEnd = currentChromosomeSequence.end;
-        console.log(newStart, newEnd, "start and end");
-        const rangeLength = newEnd - newStart;
-        const zoomIn = event.deltaY < 0;
-        const zoomOut = event.deltaY > 0;
-
-        if (zoomIn) {
-            newStart = Math.max(newStart + rangeLength * zoomFactor, selectedChromosomeSequence.start);
-            newEnd = Math.min(newEnd - rangeLength * zoomFactor, selectedChromosomeSequence.end);
-            console.log(newStart, newEnd);
-        } else if (zoomOut) {
-            newStart = Math.max(newStart - rangeLength * zoomFactor, selectedChromosomeSequence.start);
-            newEnd = Math.min(newEnd + rangeLength * zoomFactor, selectedChromosomeSequence.end);
-        }
-
-        setCurrentChromosomeSequence({
-            start: parseInt(newStart),
-            end: parseInt(newEnd)
-        });
-    };
-
-    useEffect(() => {
-        // Add wheel event listener to handle zoom
-        const container = containerRef.current;
-        container.addEventListener('wheel', handleWheel, { passive: false });
-
-        // Cleanup the event listener
-        return () => {
-            container.removeEventListener('wheel', handleWheel);
-        };
-    }, [currentChromosomeSequence]);
 
     useEffect(() => {
         const parentWidth = containerRef.current.offsetWidth;
@@ -165,11 +127,26 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
         axisSvg.selectAll('*').remove();
 
+        // Calculate the range of the current chromosome sequence
+        const range = currentChromosomeSequence.end - currentChromosomeSequence.start;
+
+        // Dynamically determine the tick count based on the range
+        let tickCount;
+        if (range < 1000000) {
+            tickCount = Math.max(Math.floor(range / 5000), 5);
+        } else if (range >= 1000000 && range <= 10000000) {
+            tickCount = Math.max(Math.floor(range / 50000), 5);
+        } else {
+            tickCount = 30; 
+        }
+
+        tickCount = Math.min(tickCount, 30);
+
         // X-axis
         axisSvg.append('g')
             .attr('transform', `translate(${margin.left}, ${margin.top + height})`)
             .call(d3.axisBottom(xScale)
-                .tickValues(axisValues.filter((_, i) => i % 30 === 0))
+                .tickValues(axisValues.filter((_, i) => i % tickCount === 0))
                 .tickFormat(d => {
                     if (d >= 1000000) {
                         return `${(d / 1000000).toFixed(3)}M`;
@@ -189,7 +166,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
         axisSvg.append('g')
             .attr('transform', `translate(${margin.left}, ${margin.top})`)
             .call(d3.axisLeft(yScale)
-                .tickValues(axisValues.filter((_, i) => i % 30 === 0))
+                .tickValues(axisValues.filter((_, i) => i % tickCount === 0))
                 .tickFormat(d => {
                     if (d >= 1000000) {
                         return `${(d / 1000000).toFixed(3)}M`;
@@ -213,7 +190,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 .extent([[margin.left, margin.top], [width + margin.left, height + margin.top]])
                 .on('end', ({ selection }) => {
                     if (!selection) {
-                        setBrushedRange(null);
+                        setCurrentChromosomeSequence(null);
                         return;
                     }
 
@@ -223,7 +200,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                         return pos >= x0 && pos <= x1;
                     });
                     console.log(brushedX);
-                    setBrushedRange({ start: brushedX[0], end: brushedX[brushedX.length - 1] });
+                    setCurrentChromosomeSequence({ start: brushedX[0], end: brushedX[brushedX.length - 1] });
                 })
             );
     }, [minDimension, currentChromosomeSequence]);
@@ -235,6 +212,18 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 justifyContent: 'center',
                 alignItems: 'center',
             }}>
+                <Button
+                    style={{
+                        position: 'absolute',
+                        top: 2,
+                        right: 40,
+                        fontSize: 15,
+                        cursor: "pointer",
+                        zIndex: 10,
+                    }}
+                    icon={<ReloadOutlined />}
+                    onClick={() => setCurrentChromosomeSequence(selectedChromosomeSequence)}
+                />
                 <Button
                     style={{
                         position: 'absolute',
@@ -254,7 +243,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             {minDimension > 0 && (
                 <GeneList
                     geneList={geneList}
-                    selectedChromosomeSequence={currentChromosomeSequence}
+                    currentChromosomeSequence={currentChromosomeSequence}
                     minDimension={minDimension}
                 />
             )}
