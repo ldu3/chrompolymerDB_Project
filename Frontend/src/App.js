@@ -202,6 +202,13 @@ function App() {
         duration: 1.5,
       });
     }
+    if (type === 'overSelectedRange') {
+      messageApi.open({
+        type: 'warning',
+        content: 'Please input the range within the selected sequence',
+        duration: 1.5,
+      });
+    }
     if (type === 'smallend') {
       messageApi.open({
         type: 'warning',
@@ -411,6 +418,7 @@ function App() {
         ) : (
           chromosomeData.length > 0 ? (
             <Heatmap
+              warning={warning}
               geneList={geneList}
               cellLineName={cellLineName}
               chromosomeName={chromosomeName}

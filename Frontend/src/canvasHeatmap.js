@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button } from "antd";
+import { Button, Input } from "antd";
 import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
 import { GeneList } from './geneList.js';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList }) => {
+export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const brushSvgRef = useRef(null);
@@ -40,6 +40,21 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             URL.revokeObjectURL(url);
         }
     };
+
+    const currentChromosomeSequenceChange = (position, value) => {
+        const newValue = value !== "" && !isNaN(value) ? Number(value) : 0;
+        
+        if(position === 'start' && newValue < selectedChromosomeSequence.start) {
+            warning("overSelectedRange");
+        } else if(position === 'end' && newValue > selectedChromosomeSequence.end) {
+            warning("overSelectedRange");
+        } else {
+            setCurrentChromosomeSequence((prevState) => ({
+                ...prevState,
+                [position]: newValue,
+            }));
+        }
+    }
 
     useEffect(() => {
         const parentWidth = containerRef.current.offsetWidth;
@@ -213,27 +228,41 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 alignItems: 'center',
             }}>
                 <div style={{
-                    position: 'absolute', top: 0, right: 0, zIndex: 10, display: 'flex', gap: '10px', width: '100%', justifyContent: 'flex-end', padding: "5px 0 5px 0", borderBottom: "1px solid #eaeaea"
+                    position: 'absolute', top: 0, right: 0, zIndex: 10, display: 'flex', gap: '10px', width: '100%', justifyContent: 'flex-end', padding: "5px 0 5px 0", borderBottom: "1px solid #eaeaea", alignItems: 'center'
                 }}>
+                    <span style={{ fontSize: 12 }}>Current Sequence:</span>
+                    <Input
+                        size='small'
+                        style={{ width: 100, fontSize: 12 }}
+                        value={currentChromosomeSequence.start}
+                        onChange={(e) => currentChromosomeSequenceChange('start', e.target.value)}
+                    />
+                    <span style={{ fontSize: 12 }}>~</span>
+                    <Input
+                        size='small'
+                        style={{ width: 100, fontSize: 12 }}
+                        value={currentChromosomeSequence.end}
+                        onChange={(e) => currentChromosomeSequenceChange('end', e.target.value)}
+                    />
                     <Button
                         size='small'
                         style={{
-                            fontSize: 15,
+                            fontSize: 12,
                             cursor: "pointer",
                         }}
                         icon={<ReloadOutlined />}
                         onClick={() => setCurrentChromosomeSequence(selectedChromosomeSequence)}
                     />
                     <Button
-                    size='small'
+                        size='small'
                         style={{
-                            fontSize: 15,
+                            fontSize: 12,
                             cursor: "pointer",
                         }}
                         icon={<DownloadOutlined />}
                         onClick={download}
                     />
-                    <Button size='small' style={{marginRight: 5}}>
+                    <Button size='small' color="primary" variant="outlined" style={{ marginRight: 5, fontSize: 12 }}>
                         Generate 3D Structure
                     </Button>
                 </div>
