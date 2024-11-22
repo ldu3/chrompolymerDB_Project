@@ -123,7 +123,7 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                 </Button>
             </div>
 
-            <div style={{ height: showChromosome3DDistance ? '60%' : '100%', transition: 'height 0.3s ease' }}>
+            <div style={{ height: showChromosome3DDistance ? '65%' : '100%', transition: 'height 0.3s ease' }}>
                 <Canvas
                     ref={canvasRef}
                     camera={{ position: [0, 0, 230], fov: 75 }}

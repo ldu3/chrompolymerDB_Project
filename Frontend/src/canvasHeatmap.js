@@ -34,7 +34,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
     useEffect(() => {
         const parentWidth = containerRef.current.offsetWidth;
-        const margin = { top: 35, right: 10, bottom: 50, left: 60 };
+        const margin = { top: 0, right: 10, bottom: 50, left: 60 };
 
         const width = parentWidth - margin.left - margin.right;
         const height = parentWidth - margin.top - margin.bottom;
@@ -159,7 +159,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
     }, [chromosomeData, totalChromosomeSequences]);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', width: '30%', height: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', width: '35%', height: '100%' }}>
             <div ref={containerRef} style={{ width: '100%', height: '72%', borderRight: "1px solid #eaeaea", position: 'relative' }}>
                 <Button
                     style={{

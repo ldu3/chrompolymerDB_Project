@@ -63,7 +63,7 @@ def cell_lines_list():
 
     label_mapping = {
         "IMR": "Lung(IMR90)",
-        "K": "Blood Leukemia(k562)",
+        "K": "Blood Leukemia(K562)",
         "GM": "Lymphoblastoid Cell Line(GM12878)",
     }
     options = [
@@ -391,7 +391,7 @@ def comparison_cell_line_list(cell_line, chromosome_name, sequences):
 
     label_mapping = {
         "IMR": "Lung(IMR90)",
-        "K": "Blood Leukemia(k562)",
+        "K": "Blood Leukemia(K562)",
         "GM": "Lymphoblastoid Cell Line(GM12878)",
     }
 
