@@ -46,8 +46,8 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
         const margin = { top: 35, right: 10, bottom: 50, left: 60 };
 
         setMinDimension(Math.min(parentWidth, parentHeight));
-        const width = minDimension - margin.left - margin.right;
-        const height = minDimension - margin.top - margin.bottom;
+        const width = Math.min(parentWidth, parentHeight) - margin.left - margin.right;
+        const height = Math.min(parentWidth, parentHeight) - margin.top - margin.bottom;
 
         // Draw canvas
         const canvas = canvasRef.current;
@@ -188,7 +188,11 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', width: '35%', height: '100%' }}>
-            <div ref={containerRef} style={{ width: '100%', height: '72%', borderRight: "1px solid #eaeaea", position: 'relative' }}>
+            <div ref={containerRef} style={{
+                width: '100%', height: '72%', borderRight: "1px solid #eaeaea", position: 'relative', display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
                 <Button
                     style={{
                         position: 'absolute',
@@ -202,14 +206,16 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                     onClick={download}
                 />
                 <canvas ref={canvasRef} style={{ position: 'absolute', zIndex: 0 }} />
-                <svg ref={axisSvgRef} style={{position: 'absolute', zIndex: 1, pointerEvents: 'none' }} />
-                <svg ref={brushSvgRef} style={{ zIndex: 2, pointerEvents: 'all' }} />
+                <svg ref={axisSvgRef} style={{ position: 'absolute', zIndex: 1, pointerEvents: 'none' }} />
+                <svg ref={brushSvgRef} style={{ position: 'absolute', zIndex: 2, pointerEvents: 'all' }} />
             </div>
-            {minDimension > 0 && <GeneList
-                geneList={geneList}
-                selectedChromosomeSequence={selectedChromosomeSequence}
-                minDimension={minDimension}
-            />}
+            {minDimension > 0 && (
+                <GeneList
+                    geneList={geneList}
+                    selectedChromosomeSequence={selectedChromosomeSequence}
+                    minDimension={minDimension}
+                />
+            )}
         </div>
     );
 };

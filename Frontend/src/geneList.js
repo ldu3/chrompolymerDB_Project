@@ -83,7 +83,7 @@ export const GeneList = ({ geneList, selectedChromosomeSequence, minDimension })
 
         // Add x-axis tick lines
         const axis = d3.axisBottom(xAxisScale)
-            .tickValues(axisValues.filter((_, i) => i % 15 === 0))
+            .tickValues(axisValues.filter((_, i) => i % 30 === 0))
             .tickFormat(() => "")
             .tickSize(-height);
 
