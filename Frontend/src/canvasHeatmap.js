@@ -7,7 +7,10 @@ import * as d3 from 'd3';
 export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
+    const brushSvgRef = useRef(null);
+    const axisSvgRef = useRef(null);
     const [minDimension, setMinDimension] = useState(0);
+    const [selectedRange, setSelectedRange] = useState(null);
 
     const download = () => {
         if (chromosomeData) {
@@ -25,20 +28,17 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             const header = 'cell_line,chrid,ibp,jbp,fq,fdr\n';
             const csvContent = header + csvData;
 
-            // create a blob object and set MIME type to text/csv
             const blob = new Blob([csvContent], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
 
-            // create a temporary download link and trigger click
             const link = document.createElement('a');
             link.href = url;
             link.download = `${cellLineName}.${chromosomeName}.${selectedChromosomeSequence.start}.${selectedChromosomeSequence.end}.csv`;
             link.click();
 
-            // realease the URL resource
             URL.revokeObjectURL(url);
         }
-    }
+    };
 
     useEffect(() => {
         const parentWidth = containerRef.current.offsetWidth;
@@ -49,7 +49,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
         const width = minDimension - margin.left - margin.right;
         const height = minDimension - margin.top - margin.bottom;
 
-        // Set up the canvas
+        // Draw canvas
         const canvas = canvasRef.current;
         const context = canvas.getContext('2d');
         canvas.width = width + margin.left + margin.right;
@@ -57,28 +57,6 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
         context.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Set up the axis
-        d3.select('#axis').selectAll('*').remove();
-
-        const svg = d3.select('#axis')
-            .attr('width', width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom)
-            .style('position', 'relative')
-            .style('z-index', 1)
-            .style('font-size', 10)
-            .style('pointer-events', 'none')
-            .append('g')
-            .attr('transform', `translate(${margin.left}, ${margin.top})`);
-
-        // Convert to numbers
-        chromosomeData.forEach(d => {
-            d.ibp = +d.ibp;
-            d.jbp = +d.jbp;
-            d.fq = +d.fq;
-            d.fdr = +d.fdr;
-        });
-
-        // Define scales based on chromosomeSequence length and step size
         const { start, end } = selectedChromosomeSequence;
         const step = 5000;
         const adjustedStart = Math.floor(start / step) * step;
@@ -88,10 +66,6 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             { length: Math.floor((adjustedEnd - adjustedStart) / step) + 1 },
             (_, i) => adjustedStart + i * step
         );
-
-        const colorScale = d3.scaleSequential(
-            t => d3.interpolateReds(t * 0.8 + 0.2)
-        ).domain([0, d3.max(chromosomeData, d => d.fq)]);
 
         const xScale = d3.scaleBand()
             .domain(axisValues)
@@ -103,39 +77,10 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             .range([height, 0])
             .padding(0.1);
 
-        svg.append('g')
-            .attr('transform', `translate(0, ${height})`)
-            .call(d3.axisBottom(xScale)
-                .tickValues(axisValues.filter((_, i) => i % 30 === 0))
-                .tickFormat(d => {
-                    if (d >= 1000000) {
-                        return `${(d / 1000000).toFixed(3)}M`;
-                    };
-                    if (d > 10000 && d < 1000000) {
-                        return `${(d / 10000).toFixed(3)}W`;
-                    }
-                    return d;
-                }))
-            .selectAll("text")
-            .style("text-anchor", "end")
-            .attr("transform", "rotate(-45)")
-            .attr("dx", "-1em")
-            .attr("dy", "0em");
+        const colorScale = d3.scaleSequential(
+            t => d3.interpolateReds(t * 0.8 + 0.2)
+        ).domain([0, d3.max(chromosomeData, d => d.fq)]);
 
-        svg.append('g')
-            .call(d3.axisLeft(yScale)
-                .tickValues(axisValues.filter((_, i) => i % 30 === 0))
-                .tickFormat(d => {
-                    if (d >= 1000000) {
-                        return `${(d / 1000000).toFixed(3)}M`;
-                    };
-                    if (d > 10000 && d < 1000000) {
-                        return `${(d / 10000).toFixed(3)}W`;
-                    }
-                    return d;
-                }));
-
-        // Map for storing frequency values with symmetry
         const fqMap = new Map();
 
         chromosomeData.forEach(d => {
@@ -166,7 +111,80 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 context.fillRect(x, y, width, height);
             });
         });
-    }, [chromosomeData, totalChromosomeSequences, minDimension]);
+
+        const axisSvg = d3.select(axisSvgRef.current)
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom);
+
+        axisSvg.selectAll('*').remove();
+
+        // X-axis
+        axisSvg.append('g')
+            .attr('transform', `translate(${margin.left}, ${margin.top + height})`)
+            .call(d3.axisBottom(xScale)
+                .tickValues(axisValues.filter((_, i) => i % 30 === 0))
+                .tickFormat(d => {
+                    if (d >= 1000000) {
+                        return `${(d / 1000000).toFixed(3)}M`;
+                    }
+                    if (d > 10000 && d < 1000000) {
+                        return `${(d / 10000).toFixed(3)}W`;
+                    }
+                    return d;
+                }))
+            .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("transform", "rotate(-45)")
+            .attr("dx", "-1em")
+            .attr("dy", "0em");
+
+        // Y-axis
+        axisSvg.append('g')
+            .attr('transform', `translate(${margin.left}, ${margin.top})`)
+            .call(d3.axisLeft(yScale)
+                .tickValues(axisValues.filter((_, i) => i % 30 === 0))
+                .tickFormat(d => {
+                    if (d >= 1000000) {
+                        return `${(d / 1000000).toFixed(3)}M`;
+                    }
+                    if (d > 10000 && d < 1000000) {
+                        return `${(d / 10000).toFixed(3)}W`;
+                    }
+                    return d;
+                }));
+
+        // Brush for selecting range
+        const brushSvg = d3.select(brushSvgRef.current)
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom);
+
+        brushSvg.selectAll('*').remove();
+
+        brushSvg.append('g')
+            .attr('class', 'brush')
+            .call(d3.brush()
+                .extent([[margin.left, margin.top], [width + margin.left, height + margin.top]])
+                .on('end', ({ selection }) => {
+                    if (!selection) {
+                        setSelectedRange(null);
+                        return;
+                    }
+
+                    const [[x0, y0], [x1, y1]] = selection;
+                    const brushedX = axisValues.filter(val => {
+                        const pos = margin.left + xScale(val) + xScale.bandwidth() / 2;
+                        return pos >= x0 && pos <= x1;
+                    });
+
+                    const brushedY = axisValues.filter(val => {
+                        const pos = margin.top + yScale(val) + yScale.bandwidth() / 2;
+                        return pos >= y0 && pos <= y1;
+                    });
+
+                    setSelectedRange({ x: brushedX, y: brushedY });
+                })
+            );
+    }, [chromosomeData, selectedChromosomeSequence, minDimension]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', width: '35%', height: '100%' }}>
@@ -181,16 +199,12 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                         zIndex: 10,
                     }}
                     icon={<DownloadOutlined />}
-                    onClick={() => download()}
+                    onClick={download}
                 />
                 <canvas ref={canvasRef} style={{ position: 'absolute', zIndex: 0 }} />
-                <svg id="axis"></svg>
+                <svg ref={axisSvgRef} style={{position: 'absolute', zIndex: 1, pointerEvents: 'none' }} />
+                <svg ref={brushSvgRef} style={{ zIndex: 2, pointerEvents: 'all' }} />
             </div>
-            {minDimension > 0 && <GeneList
-                geneList={geneList}
-                selectedChromosomeSequence={selectedChromosomeSequence}
-                minDimension={minDimension}
-            />}
         </div>
     );
 };
