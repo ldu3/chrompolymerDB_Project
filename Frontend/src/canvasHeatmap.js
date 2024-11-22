@@ -10,7 +10,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
     const brushSvgRef = useRef(null);
     const axisSvgRef = useRef(null);
     const [minDimension, setMinDimension] = useState(0);
-    const [selectedRange, setSelectedRange] = useState(null);
+    const [brushedRange, setBrushedRange] = useState(null);
 
     const download = () => {
         if (chromosomeData) {
@@ -162,29 +162,24 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
         brushSvg.append('g')
             .attr('class', 'brush')
-            .call(d3.brush()
+            .call(d3.brushX()
                 .extent([[margin.left, margin.top], [width + margin.left, height + margin.top]])
                 .on('end', ({ selection }) => {
                     if (!selection) {
-                        setSelectedRange(null);
+                        setBrushedRange(null);
                         return;
                     }
 
-                    const [[x0, y0], [x1, y1]] = selection;
+                    const [x0, x1] = selection;
                     const brushedX = axisValues.filter(val => {
                         const pos = margin.left + xScale(val) + xScale.bandwidth() / 2;
                         return pos >= x0 && pos <= x1;
                     });
-
-                    const brushedY = axisValues.filter(val => {
-                        const pos = margin.top + yScale(val) + yScale.bandwidth() / 2;
-                        return pos >= y0 && pos <= y1;
-                    });
-
-                    setSelectedRange({ x: brushedX, y: brushedY });
+                    console.log(brushedX);
+                    setBrushedRange({ start: brushedX[0], end: brushedX[brushedX.length - 1] }); 
                 })
             );
-    }, [chromosomeData, selectedChromosomeSequence, minDimension]);
+    }, [chromosomeData, minDimension]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', width: '35%', height: '100%' }}>
