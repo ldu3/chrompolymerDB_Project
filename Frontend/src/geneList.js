@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
-export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
+export const GeneList = ({ geneList, selectedChromosomeSequence, minDimension }) => {
     const svgRef = useRef();
     const containerRef = useRef();
     const [scrollEnabled, setScrollEnabled] = useState(false);
@@ -10,7 +10,8 @@ export const GeneList = ({ geneList, selectedChromosomeSequence }) => {
     const initialHeightRef = useRef(null);
 
     useEffect(() => {
-        let width = containerRef.current.offsetWidth;
+        // let width = containerRef.current.offsetWidth;
+        let width = minDimension;
         let height = containerRef.current.offsetHeight;
 
         const margin = { top: 20, right: 10, bottom: 0, left: 60 };

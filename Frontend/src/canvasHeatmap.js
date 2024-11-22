@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 import { GeneList } from './geneList.js';
@@ -7,6 +7,7 @@ import * as d3 from 'd3';
 export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
+    const [minDimension, setMinDimension] = useState(0);
 
     const download = () => {
         if (chromosomeData) {
@@ -34,10 +35,12 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
 
     useEffect(() => {
         const parentWidth = containerRef.current.offsetWidth;
-        const margin = { top: 0, right: 10, bottom: 50, left: 60 };
+        const parentHeight = containerRef.current.offsetHeight;
+        const margin = { top: 35, right: 10, bottom: 50, left: 60 };
 
-        const width = parentWidth - margin.left - margin.right;
-        const height = parentWidth - margin.top - margin.bottom;
+        setMinDimension(Math.min(parentWidth, parentHeight));
+        const width = minDimension - margin.left - margin.right;
+        const height = minDimension - margin.top - margin.bottom;
 
         // Set up the canvas
         const canvas = canvasRef.current;
@@ -108,9 +111,9 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 }))
             .selectAll("text")
             .style("text-anchor", "end")
-            .attr("transform", "rotate(-90)")
+            .attr("transform", "rotate(-45)")
             .attr("dx", "-1em")
-            .attr("dy", "-0.5em");
+            .attr("dy", "0em");
 
         svg.append('g')
             .call(d3.axisLeft(yScale)
@@ -156,7 +159,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 context.fillRect(x, y, width, height);
             });
         });
-    }, [chromosomeData, totalChromosomeSequences]);
+    }, [chromosomeData, totalChromosomeSequences, minDimension]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', width: '35%', height: '100%' }}>
@@ -176,10 +179,11 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 <canvas ref={canvasRef} style={{ position: 'absolute', zIndex: 0 }} />
                 <svg id="axis"></svg>
             </div>
-            <GeneList
+            {minDimension > 0 && <GeneList
                 geneList={geneList}
                 selectedChromosomeSequence={selectedChromosomeSequence}
-            />
+                minDimension={minDimension}
+            />}
         </div>
     );
 };
