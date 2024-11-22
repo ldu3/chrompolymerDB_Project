@@ -125,6 +125,7 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
 
             <div style={{ height: showChromosome3DDistance ? '65%' : '100%', transition: 'height 0.3s ease' }}>
                 <Canvas
+                    shadows
                     ref={canvasRef}
                     camera={{ position: [0, 0, 230], fov: 75 }}
                     style={{ width: '100%', height: '100%', backgroundColor: '#333' }}
@@ -136,8 +137,19 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                         enablePan={true}
                     />
 
-                    <ambientLight intensity={1} />
-                    <pointLight position={[10, 20, 10]} intensity={1} />
+                    <ambientLight intensity={0.8} />
+                    <directionalLight
+                        position={[10, 20, 10]}
+                        intensity={1}
+                        castShadow
+                    />
+                    <spotLight
+                        position={[30, 50, 50]}
+                        angle={0.3}
+                        penumbra={1}
+                        intensity={1}
+                        castShadow
+                    />
 
                     {coordinates.map((coord, index) => (
                         <group
@@ -164,12 +176,17 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                             <mesh>
                                 <sphereGeometry args={[2.8, 32, 32]} />
                                 <meshStandardMaterial
+                                    receiveShadow
+                                    castShadow
                                     color={
                                         selectedSphereList[index]?.color ||
                                         (hoveredIndex === index || selectedIndex === index
-                                            ? 'yellow'
-                                            : 'red')
+                                            ? '#F7E7CE'
+                                            : '#FB607F')
                                     }
+                                    metalness={0.3}
+                                    roughness={0.1}
+                                    emissiveIntensity={0.3}
                                 />
                             </mesh>
                             {/* Outline Mesh */}

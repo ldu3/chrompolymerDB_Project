@@ -86,7 +86,7 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                     />
                 </div>
 
-                <Canvas style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [0, 0, 100], fov: 100 }}>
+                <Canvas style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [0, 0, 100], fov: 50 }}>
 
                     {/* Light sources */}
                     <ambientLight intensity={1} />

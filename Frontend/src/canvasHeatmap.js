@@ -230,7 +230,6 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
                 <div style={{
                     position: 'absolute', top: 0, right: 0, zIndex: 10, display: 'flex', gap: '10px', width: '100%', justifyContent: 'flex-end', padding: "5px 0 5px 0", borderBottom: "1px solid #eaeaea", alignItems: 'center'
                 }}>
-                    <span style={{ fontSize: 12 }}>Current Sequence:</span>
                     <Input
                         size='small'
                         style={{ width: 100, fontSize: 12 }}
@@ -263,7 +262,7 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
                         onClick={download}
                     />
                     <Button size='small' color="primary" variant="outlined" style={{ marginRight: 5, fontSize: 12 }}>
-                        Generate 3D Structure
+                        Generate 3D
                     </Button>
                 </div>
                 <canvas ref={canvasRef} style={{ position: 'absolute', zIndex: 0 }} />

@@ -483,7 +483,7 @@ function App() {
                     onChange={comparisonSampleChange}
                     tabBarExtraContent={
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginRight: '5px' }}>
-                        <span className="controlGroupText">Cell Line:</span>
+                        {/* <span className="controlGroupText">Cell Line:</span> */}
                         <Select
                           value={comparisonCellLine}
                           style={{
