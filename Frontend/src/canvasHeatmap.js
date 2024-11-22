@@ -45,23 +45,21 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
     const handleWheel = (event) => {
         event.preventDefault();
 
-        const zoomFactor = 0.03;  // Adjust the zoom sensitivity (0.1 is just an example)
+        const zoomFactor = 0.03;
         let newStart = currentChromosomeSequence.start;
         let newEnd = currentChromosomeSequence.end;
         console.log(newStart, newEnd, "start and end");
         const rangeLength = newEnd - newStart;
-        const zoomIn = event.deltaY < 0;  // Zoom in if the scroll is up (deltaY < 0)
-        const zoomOut = event.deltaY > 0; // Zoom out if the scroll is down (deltaY > 0)
+        const zoomIn = event.deltaY < 0;
+        const zoomOut = event.deltaY > 0;
 
         if (zoomIn) {
-            // Zoom in by reducing the range
-            newStart = Math.max(newStart + rangeLength * zoomFactor, selectedChromosomeSequence.start);  // Prevent going below 0
-            newEnd = Math.min(newEnd - rangeLength * zoomFactor, selectedChromosomeSequence.end); // Prevent exceeding max end
+            newStart = Math.max(newStart + rangeLength * zoomFactor, selectedChromosomeSequence.start);
+            newEnd = Math.min(newEnd - rangeLength * zoomFactor, selectedChromosomeSequence.end);
             console.log(newStart, newEnd);
         } else if (zoomOut) {
-            // Zoom out by increasing the range
-            newStart = Math.max(newStart - rangeLength * zoomFactor, selectedChromosomeSequence.start); // Prevent going below 0
-            newEnd = Math.min(newEnd + rangeLength * zoomFactor, selectedChromosomeSequence.end); // Prevent exceeding max end
+            newStart = Math.max(newStart - rangeLength * zoomFactor, selectedChromosomeSequence.start);
+            newEnd = Math.min(newEnd + rangeLength * zoomFactor, selectedChromosomeSequence.end);
         }
 
         setCurrentChromosomeSequence({
