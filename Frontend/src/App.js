@@ -51,7 +51,7 @@ function App() {
 
   useEffect(() => {
     if (totalChromosomeSequences.length > 0) {
-      if(isCellLineMode) {
+      if (isCellLineMode) {
         setSelectedChromosomeSequence({ start: totalChromosomeSequences[0].start, end: totalChromosomeSequences[0].end });
       } else {
         setSelectedChromosomeSequence({ start: geneSize.start - 1500000, end: geneSize.end + 1500000 });
@@ -256,6 +256,13 @@ function App() {
         duration: 1.5,
       });
     }
+    if (type === 'noCellLine') {
+      messageApi.open({
+        type: 'warning',
+        content: 'Select cell line first',
+        duration: 1.5,
+      });
+    }
     if (type === 'noData') {
       messageApi.open({
         type: 'warning',
@@ -301,8 +308,12 @@ function App() {
 
   // Gene selection change
   const geneNameChange = value => {
-    setGeneName(value);
-    fetchChromosomeSizeByGeneName(value);
+    if (!cellLineName) {
+      warning('noCellLine');
+    } else {
+      setGeneName(value);
+      fetchChromosomeSizeByGeneName(value);
+    }
   };
 
   const geneNameSearch = value => {
