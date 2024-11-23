@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
-export const GeneList = ({ geneList, currentChromosomeSequence, minDimension }) => {
+export const GeneList = ({ geneList, currentChromosomeSequence, minDimension, setCurrentChromosomeSequence, geneName, setGeneName }) => {
     const svgRef = useRef();
     const containerRef = useRef();
     const [scrollEnabled, setScrollEnabled] = useState(false);
@@ -128,10 +128,13 @@ export const GeneList = ({ geneList, currentChromosomeSequence, minDimension }) 
                 .attr("y", margin.top + layerIndex * layerHeight)
                 .attr("width", (d) => xScaleLinear(d.displayEnd) - xScaleLinear(d.displayStart))
                 .attr("height", layerHeight - 4)
-                .attr("fill", "#69b3a2")
+                .attr("fill", (d) => (d.symbol === geneName ? "#ff5733" : "#69b3a2"))
                 .attr("stroke", "#333")
                 .attr("stroke-width", 0.2)
                 .style("transition", "all 0.3s ease")
+                // .on("click", (event, d) => {
+                //     setGeneName(d.symbol);
+                // })
                 .on("mouseover", (event, d) => {
                     d3.select(event.target)
                         .style("stroke-width", 1);
@@ -155,7 +158,7 @@ export const GeneList = ({ geneList, currentChromosomeSequence, minDimension }) 
                         .style("visibility", "hidden");
                 });
         });
-    }, [geneList, currentChromosomeSequence]);
+    }, [geneList, currentChromosomeSequence, geneName]);
 
     return (
         <div

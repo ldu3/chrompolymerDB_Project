@@ -4,7 +4,7 @@ import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
 import { GeneList } from './geneList.js';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList, setSelectedChromosomeSequence, chromosome3DExampleID, fetchExampleChromos3DData, setChromosome3DLoading }) => {
+export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList, setSelectedChromosomeSequence, chromosome3DExampleID, fetchExampleChromos3DData, setChromosome3DLoading, setGeneName, geneName, geneSize }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const brushSvgRef = useRef(null);
@@ -224,7 +224,40 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
                     setCurrentChromosomeSequence({ start: brushedX[0], end: brushedX[brushedX.length - 1] });
                 })
             );
-    }, [minDimension, currentChromosomeSequence]);
+
+        let adjustedGeneStart, adjustedGeneEnd, adjustedBoundariedGeneEnd;
+
+        if (geneSize) {
+            adjustedGeneStart = Math.floor(geneSize.start / step) * step;
+            adjustedGeneEnd = Math.ceil(geneSize.end / step) * step;
+            // adjustedBoundariedGeneEnd = Math.ceil(selectedChromosomeSequence.end / step) * step;
+
+            // console.log(selectedChromosomeSequence, adjustedGeneStart, adjustedGeneEnd, adjustedBoundariedGeneEnd);
+        }
+
+        // Draw gene range lines if geneSize exists
+        if (geneSize && xScale(adjustedGeneStart) !== undefined && xScale(adjustedGeneEnd) !== undefined) {
+            const geneStartPos = margin.left + xScale(adjustedGeneStart);
+            const geneEndPos = margin.left + xScale(adjustedGeneEnd);
+            // const geneEndPos = Math.min(margin.left + xScale(adjustedGeneEnd), margin.left + xScale(adjustedBoundariedGeneEnd));
+
+            axisSvg.append('line')
+                .attr('x1', geneStartPos)
+                .attr('x2', geneStartPos)
+                .attr('y1', margin.top)
+                .attr('y2', margin.top + height)
+                .attr('stroke', '#999')
+                .attr('stroke-width', 2);
+
+            axisSvg.append('line')
+                .attr('x1', geneEndPos)
+                .attr('x2', geneEndPos)
+                .attr('y1', margin.top)
+                .attr('y2', margin.top + height)
+                .attr('stroke', '#999')
+                .attr('stroke-width', 2);
+        }
+    }, [minDimension, currentChromosomeSequence, geneSize]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', width: '35%', height: '100%' }}>
@@ -280,6 +313,9 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
                     geneList={geneList}
                     currentChromosomeSequence={currentChromosomeSequence}
                     minDimension={minDimension}
+                    geneName={geneName}
+                    setCurrentChromosomeSequence={setCurrentChromosomeSequence}
+                    setGeneName={setGeneName}
                 />
             )}
         </div>

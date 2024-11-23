@@ -495,11 +495,14 @@ function App() {
               cellLineName={cellLineName}
               chromosomeName={chromosomeName}
               chromosomeData={chromosomeData}
+              geneSize={geneSize}
               totalChromosomeSequences={totalChromosomeSequences}
               selectedChromosomeSequence={selectedChromosomeSequence}
               chromosome3DExampleID={chromosome3DExampleID}
+              geneName={geneName}
               setSelectedChromosomeSequence={setSelectedChromosomeSequence}
               setChromosome3DLoading={setChromosome3DLoading}
+              setGeneName={setGeneName}
             />
           ) : (
             <Empty
