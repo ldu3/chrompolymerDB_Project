@@ -17,7 +17,7 @@ function App() {
   const [cellLineName, setCellLineName] = useState(null);
   const [geneName, setGeneName] = useState(null);
   const [chromosomeName, setChromosomeName] = useState(null);
-  const [chromosomeSize, setChromosomeSize] = useState(0);
+  const [chromosomeSize, setChromosomeSize] = useState({ start: 0, end: 0 });
   const [totalChromosomeSequences, setTotalChromosomeSequences] = useState([]);
   const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: 0, end: 0 });
   const [chromosomeData, setChromosomeData] = useState([]);
@@ -36,11 +36,10 @@ function App() {
   const [comparisonCellLine3DLoading, setComparisonCellLine3DLoading] = useState(false);
 
   useEffect(() => {
-    if (isCellLineMode) {
-      fetchCellLineList();
-    } else {
+    if (!isCellLineMode) {
       fetchGeneNameList();
     }
+    fetchCellLineList();
   }, []);
 
   useEffect(() => {
@@ -105,9 +104,26 @@ function App() {
     })
       .then(res => res.json())
       .then(data => {
-        setChromosomeSize(data);
+        setChromosomeSize({start: 1, end: data});
       });
   };
+
+  const fetchChromosomeSizeByGeneName = (value) => {
+    fetch("/getChromosSizeByGeneName", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ gene_name: value })
+    })
+      .then(res => res.json())
+      .then(data => {
+        const chromosomeName = `chr${data.chromosome}`;
+        console.log(chromosomeName, data);
+        setChromosomeName(chromosomeName);
+        setChromosomeSize({start: data.start_location, end: data.end_location});
+      })
+  }
 
   const fetchChromosomeData = () => {
     if (selectedChromosomeSequence.end - selectedChromosomeSequence.start > 4000000) {
@@ -170,6 +186,20 @@ function App() {
         });
     }
   };
+
+  const fetchGeneNameBySearch = (value) => {
+    fetch("/geneListSearch", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ search: value })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setGeneNameList(data);
+      });
+  }
 
   const fetchComparisonCellLineList = () => {
     if (chromosomeName && selectedChromosomeSequence) {
@@ -235,9 +265,12 @@ function App() {
   // Mode change (Cell Line / Gene)
   const modeChange = checked => {
     setIsCellLineMode(checked);
-    if (checked) {
-      fetchCellLineList();
-    } else {
+    setGeneName(null);
+    setChromosomeName(null);
+    setChromosomeSize({ start: 0, end: 0 });
+    setSelectedChromosomeSequence({ start: 0, end: 0 });
+    fetchCellLineList();
+    if (!checked) {
       fetchGeneNameList();
     }
   };
@@ -246,7 +279,7 @@ function App() {
   const cellLineChange = value => {
     setCellLineName(value);
     setChromosomeName(null);
-    setChromosomeSize(0);
+    setChromosomeSize({ start: 0, end: 0 });
     setSelectedChromosomeSequence({ start: 0, end: 0 });
     setChromosomeData([]);
     setChromosome3DExampleData([]);
@@ -258,7 +291,12 @@ function App() {
   // Gene selection change
   const geneNameChange = value => {
     setGeneName(value);
+    fetchChromosomeSizeByGeneName(value);
   };
+
+  const geneNameSearch = value => {
+    fetchGeneNameBySearch(value);
+  }
 
   // Chromosome selection change
   const chromosomeChange = value => {
@@ -276,7 +314,7 @@ function App() {
   // Chromosome sequence change
   const chromosomeSequenceChange = (position, value) => {
     const newValue = value !== "" && !isNaN(value) ? Number(value) : 0;
-    
+
     setChromosome3DComparisonShowing(false);
     setComparisonCellLine(null);
     setComparisonCellLine3DSampleID(0);
@@ -329,7 +367,7 @@ function App() {
     } else {
       setHeatmapLoading(true);
       setChromosome3DLoading(true);
-      
+
       setChromosome3DComparisonShowing(false);
       setComparisonCellLine3DSampleID(0);
       setComparisonCellLineList([]);
@@ -386,8 +424,20 @@ function App() {
             </>
           ) : (
             <>
+              <span className="controlGroupText">Cell Line:</span>
+              <Select
+                value={cellLineName}
+                size="small"
+                style={{
+                  width: "18%",
+                  marginRight: 20
+                }}
+                onChange={cellLineChange}
+                options={cellLineList}
+              />
               <span className="controlGroupText">Gene:</span>
               <Select
+                showSearch
                 value={geneName}
                 size="small"
                 style={{
@@ -395,6 +445,7 @@ function App() {
                   marginRight: 20
                 }}
                 onChange={geneNameChange}
+                onSearch={geneNameSearch}
                 options={geneNameList}
               />
             </>

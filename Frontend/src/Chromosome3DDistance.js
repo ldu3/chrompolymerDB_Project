@@ -86,7 +86,7 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                     />
                 </div>
 
-                <Canvas shadows style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [100, 0, 150], fov: 50 }}>
+                <Canvas shadows style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [150, 50, 20], fov: 50 }}>
 
                     <OrbitControls
                         ref={controlsRef}

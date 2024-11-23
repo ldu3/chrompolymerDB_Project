@@ -39,6 +39,7 @@ def gene_names_list():
         """
         SELECT DISTINCT symbol
         FROM gene
+        WHERE chromosome = '12' OR chromosome = '17'
     """
     )
     rows = cur.fetchall()
@@ -46,6 +47,25 @@ def gene_names_list():
     conn.close()
     return options
 
+"""
+Return the gene name list in searching specific letters
+"""
+def gene_names_list_search(search):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT DISTINCT symbol
+        FROM gene
+        WHERE symbol ILIKE %s
+        AND (chromosome = '12' OR chromosome = '17')
+    """,
+        (f"%{search}%",),
+    )
+    rows = cur.fetchall()
+    options = [{"value": row["symbol"], "label": row["symbol"]} for row in rows]
+    conn.close()
+    return options
 
 """
 Returns the list of cell line
@@ -157,6 +177,52 @@ def chromosome_sequences(cell_line, chromosome_name):
 
     conn.close()
     return ranges
+
+
+"""
+Returns the gene sequences in the given cell line, and chromosome name
+"""
+def chromosome_sequences_by_gene(cell_line, chromosome_name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT start_value, end_value
+        FROM sequence
+        WHERE cell_line = %s
+        AND chrID = %s
+        ORDER BY start_value
+    """,
+        (cell_line, chromosome_name),
+    )
+
+    ranges = [
+        {"start": row["start_value"], "end": row["end_value"]} for row in cur.fetchall()
+    ]
+
+    conn.close()
+    return ranges
+
+"""
+Return the chromosome size in the given gene name
+"""
+def chromosome_size_by_gene_name(gene_name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT chromosome, start_location, end_location
+        FROM gene
+        WHERE symbol = %s
+    """,
+        (gene_name,),
+    )
+
+    gene = cur.fetchone()
+    conn.close()
+    return gene
 
 
 """

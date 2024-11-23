@@ -9,8 +9,8 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
 
     useEffect(() => {
         if (selectedChromosomeSequence.start !== undefined && selectedChromosomeSequence.end !== undefined) {
-            const min_start = chromosomeSize ? 1 : 0;
-            const max_end = chromosomeSize ? chromosomeSize : 0;
+            const min_start = chromosomeSize.start;
+            const max_end = chromosomeSize.end;
             const seqs = totalChromosomeSequences;
             const height = 30;
             const margin = { top: 10, bottom: 20, left: 10, right: 10 };
