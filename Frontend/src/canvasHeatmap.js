@@ -4,7 +4,7 @@ import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
 import { GeneList } from './geneList.js';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList }) => {
+export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList, setSelectedChromosomeSequence, chromosome3DExampleID, fetchExampleChromos3DData, setChromosome3DLoading }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const brushSvgRef = useRef(null);
@@ -43,10 +43,10 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
 
     const currentChromosomeSequenceChange = (position, value) => {
         const newValue = value !== "" && !isNaN(value) ? Number(value) : 0;
-        
-        if(position === 'start' && newValue < selectedChromosomeSequence.start) {
+
+        if (position === 'start' && newValue < selectedChromosomeSequence.start) {
             warning("overSelectedRange");
-        } else if(position === 'end' && newValue > selectedChromosomeSequence.end) {
+        } else if (position === 'end' && newValue > selectedChromosomeSequence.end) {
             warning("overSelectedRange");
         } else {
             setCurrentChromosomeSequence((prevState) => ({
@@ -55,6 +55,12 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
             }));
         }
     }
+
+    const generate3DChromosome = () => {
+        setSelectedChromosomeSequence(currentChromosomeSequence);
+        setChromosome3DLoading(true);
+        fetchExampleChromos3DData(cellLineName, chromosome3DExampleID, "submit", false);
+    };
 
     useEffect(() => {
         const parentWidth = containerRef.current.offsetWidth;
@@ -261,7 +267,7 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
                         icon={<DownloadOutlined />}
                         onClick={download}
                     />
-                    <Button size='small' color="primary" variant="outlined" style={{ marginRight: 5, fontSize: 12 }}>
+                    <Button size='small' color="primary" variant="outlined" onClick={generate3DChromosome} style={{ marginRight: 5, fontSize: 12 }}>
                         Generate 3D
                     </Button>
                 </div>

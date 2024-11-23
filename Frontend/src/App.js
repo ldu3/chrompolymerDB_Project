@@ -365,7 +365,6 @@ function App() {
       warning('noData');
     } else {
       setHeatmapLoading(true);
-      setChromosome3DLoading(true);
 
       setChromosome3DComparisonShowing(false);
       setComparisonCellLine3DSampleID(0);
@@ -375,7 +374,6 @@ function App() {
       setChromosome3DExampleData([]);
       fetchChromosomeData();
       fetchGeneList();
-      fetchExampleChromos3DData(cellLineName, chromosome3DExampleID, "submit", false);
     }
   };
 
@@ -469,12 +467,16 @@ function App() {
           chromosomeData.length > 0 ? (
             <Heatmap
               warning={warning}
+              fetchExampleChromos3DData={fetchExampleChromos3DData}
               geneList={geneList}
               cellLineName={cellLineName}
               chromosomeName={chromosomeName}
               chromosomeData={chromosomeData}
               totalChromosomeSequences={totalChromosomeSequences}
               selectedChromosomeSequence={selectedChromosomeSequence}
+              chromosome3DExampleID={chromosome3DExampleID}
+              setSelectedChromosomeSequence={setSelectedChromosomeSequence}
+              setChromosome3DLoading={setChromosome3DLoading}
             />
           ) : (
             <Empty
