@@ -18,6 +18,7 @@ function App() {
   const [geneName, setGeneName] = useState(null);
   const [chromosomeName, setChromosomeName] = useState(null);
   const [chromosomeSize, setChromosomeSize] = useState({ start: 0, end: 0 });
+  const [geneSize, setGeneSize] = useState({ start: 0, end: 0 });
   const [totalChromosomeSequences, setTotalChromosomeSequences] = useState([]);
   const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: 0, end: 0 });
   const [chromosomeData, setChromosomeData] = useState([]);
@@ -44,25 +45,33 @@ function App() {
 
   useEffect(() => {
     if (cellLineName && chromosomeName) {
-      fetch('/getChromosSequence', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName })
-      })
-        .then(res => res.json())
-        .then(data => {
-          setTotalChromosomeSequences(data);
-        });
+      fetchChromosomeSequences();
     }
   }, [cellLineName, chromosomeName]);
 
   useEffect(() => {
     if (totalChromosomeSequences.length > 0) {
-      setSelectedChromosomeSequence({ start: totalChromosomeSequences[0].start, end: totalChromosomeSequences[0].start });
+      if(isCellLineMode) {
+        setSelectedChromosomeSequence({ start: totalChromosomeSequences[0].start, end: totalChromosomeSequences[0].end });
+      } else {
+        setSelectedChromosomeSequence({ start: geneSize.start - 1500000, end: geneSize.end + 1500000 });
+      }
     }
   }, [totalChromosomeSequences]);
+
+  const fetchChromosomeSequences = () => {
+    fetch('/getChromosSequence', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setTotalChromosomeSequences(data);
+      });
+  }
 
   const fetchGeneNameList = () => {
     fetch('/getGeneNameList')
@@ -104,7 +113,7 @@ function App() {
     })
       .then(res => res.json())
       .then(data => {
-        setChromosomeSize({start: 1, end: data});
+        setChromosomeSize({ start: 1, end: data });
       });
   };
 
@@ -120,7 +129,9 @@ function App() {
       .then(data => {
         const chromosomeName = `chr${data.chromosome}`;
         setChromosomeName(chromosomeName);
-        setChromosomeSize({start: data.start_location, end: data.end_location});
+        fetchChromosomeSize(chromosomeName);
+        setSelectedChromosomeSequence({ start: data.start_location - 1500000, end: data.end_location + 1500000 });
+        setGeneSize({ start: data.start_location, end: data.end_location });
       })
   }
 
@@ -268,6 +279,7 @@ function App() {
     setChromosomeName(null);
     setChromosomeSize({ start: 0, end: 0 });
     setSelectedChromosomeSequence({ start: 0, end: 0 });
+    setChromosomeData([]);
     fetchCellLineList();
     if (!checked) {
       fetchGeneNameList();

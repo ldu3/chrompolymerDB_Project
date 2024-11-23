@@ -180,31 +180,6 @@ def chromosome_sequences(cell_line, chromosome_name):
 
 
 """
-Returns the gene sequences in the given cell line, and chromosome name
-"""
-def chromosome_sequences_by_gene(cell_line, chromosome_name):
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    cur.execute(
-        """
-        SELECT start_value, end_value
-        FROM sequence
-        WHERE cell_line = %s
-        AND chrID = %s
-        ORDER BY start_value
-    """,
-        (cell_line, chromosome_name),
-    )
-
-    ranges = [
-        {"start": row["start_value"], "end": row["end_value"]} for row in cur.fetchall()
-    ]
-
-    conn.close()
-    return ranges
-
-"""
 Return the chromosome size in the given gene name
 """
 def chromosome_size_by_gene_name(gene_name):

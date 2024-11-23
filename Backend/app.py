@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, render_template
-from process import gene_names_list, cell_lines_list, chromosome_size, chromosomes_list, chromosome_sequences, chromosome_data, example_chromosome_3d_data, comparison_cell_line_list, gene_list, gene_names_list_search, chromosome_size_by_gene_name, chromosome_sequences_by_gene
+from process import gene_names_list, cell_lines_list, chromosome_size, chromosomes_list, chromosome_sequences, chromosome_data, example_chromosome_3d_data, comparison_cell_line_list, gene_list, gene_names_list_search, chromosome_size_by_gene_name
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -43,12 +43,6 @@ def get_ChromosSequences():
     cell_line = request.json['cell_line']
     chromosome_name = request.json['chromosome_name']
     return jsonify(chromosome_sequences(cell_line, chromosome_name))
-
-@app.route('/getChromosSequenceByGene', methods=['POST'])
-def get_ChromosSequencesByGene():
-    cell_line = request.json['cell_line']
-    chromosome_name = request.json['chromosome_name']
-    return jsonify(chromosome_sequences_by_gene(cell_line, chromosome_name))
 
 
 @app.route('/getChromosData', methods=['POST'])

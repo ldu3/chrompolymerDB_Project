@@ -12,9 +12,7 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
             const min_start = chromosomeSize.start;
             const max_end = chromosomeSize.end;
             
-            const seqs = totalChromosomeSequences.filter(item => 
-                item.start >= chromosomeSize.start && item.end <= chromosomeSize.end
-            );
+            const seqs = totalChromosomeSequences;
 
             const height = 30;
             const margin = { top: 10, bottom: 20, left: 10, right: 10 };
