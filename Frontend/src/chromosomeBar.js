@@ -11,7 +11,11 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
         if (selectedChromosomeSequence.start !== undefined && selectedChromosomeSequence.end !== undefined) {
             const min_start = chromosomeSize.start;
             const max_end = chromosomeSize.end;
-            const seqs = totalChromosomeSequences;
+            
+            const seqs = totalChromosomeSequences.filter(item => 
+                item.start >= chromosomeSize.start && item.end <= chromosomeSize.end
+            );
+
             const height = 30;
             const margin = { top: 10, bottom: 20, left: 10, right: 10 };
             const width = parentRef.current ? parentRef.current.clientWidth - margin.left - margin.right : 0;

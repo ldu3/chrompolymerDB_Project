@@ -119,7 +119,6 @@ function App() {
       .then(res => res.json())
       .then(data => {
         const chromosomeName = `chr${data.chromosome}`;
-        console.log(chromosomeName, data);
         setChromosomeName(chromosomeName);
         setChromosomeSize({start: data.start_location, end: data.end_location});
       })
