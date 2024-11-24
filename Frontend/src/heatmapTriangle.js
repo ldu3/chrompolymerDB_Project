@@ -16,11 +16,17 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
         const width = Math.min(parentWidth, parentHeight) - margin.left - margin.right;
         const height = Math.min(parentWidth, parentHeight) - margin.top - margin.bottom;
 
-        canvas.width = width + margin.left + margin.right;
-        canvas.height = height + margin.top + margin.bottom;
+        canvas.width = (width + margin.left + margin.right) * Math.sqrt(2);
+        canvas.height = (height + margin.top + margin.bottom) / Math.sqrt(2);
 
         context.clearRect(0, 0, canvas.width, canvas.height);
 
+        // Apply rotation transformation
+        context.save();
+        context.translate(canvas.width / 2, canvas.height);
+        context.rotate((Math.PI / 180) * -135);
+        context.translate(-width / 2, -height / 2);
+        
         const { start, end } = selectedChromosomeSequence;
         const step = 5000;
         const adjustedStart = Math.floor(start / step) * step;
@@ -41,13 +47,11 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
             .range([height, 0])
             .padding(0.1);
 
-        // Create a color scale for fq values using D3
         const colorScale = d3.scaleSequential(
             t => d3.interpolateReds(t * 0.8 + 0.2)
         ).domain([0, d3.max(chromosomeData, d => d.fq)]);
 
         const fqMap = new Map();
-
         chromosomeData.forEach(d => {
             fqMap.set(`X:${d.ibp}, Y:${d.jbp}`, { fq: d.fq, fdr: d.fdr });
         });
@@ -65,6 +69,8 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
                 context.fillRect(x, y, width, height);
             });
         });
+
+        context.restore();
     }, [chromosomeData]);
 
     return (
