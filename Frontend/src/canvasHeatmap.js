@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Input } from "antd";
-import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
+import { Button, Input, Modal } from "antd";
+import { DownloadOutlined, ReloadOutlined, FullscreenOutlined } from "@ant-design/icons";
 import { GeneList } from './geneList.js';
+import { HeatmapTriangle } from './heatmapTriangle.js';
 import * as d3 from 'd3';
 
 export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList, setSelectedChromosomeSequence, chromosome3DExampleID, fetchExampleChromos3DData, setChromosome3DLoading, setGeneName, geneName, geneSize }) => {
@@ -12,6 +13,7 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
     const [minDimension, setMinDimension] = useState(0);
     const [currentChromosomeSequence, setCurrentChromosomeSequence] = useState(selectedChromosomeSequence);
     const [currentChromosomeData, setCurrentChromosomeData] = useState(chromosomeData);
+    const [halfHeatMapModalVisible, setHalfHeatMapModalVisible] = useState(false);
 
     const download = () => {
         if (chromosomeData) {
@@ -61,6 +63,10 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
         setChromosome3DLoading(true);
         fetchExampleChromos3DData(cellLineName, chromosome3DExampleID, "submit", false);
     };
+
+    const openHalfHeatMapModal = () => {
+        setHalfHeatMapModalVisible(true);
+    }
 
     useEffect(() => {
         const parentWidth = containerRef.current.offsetWidth;
@@ -220,26 +226,21 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
                         const pos = margin.left + xScale(val) + xScale.bandwidth() / 2;
                         return pos >= x0 && pos <= x1;
                     });
-                    console.log(brushedX);
                     setCurrentChromosomeSequence({ start: brushedX[0], end: brushedX[brushedX.length - 1] });
                 })
             );
 
-        let adjustedGeneStart, adjustedGeneEnd, adjustedBoundariedGeneEnd;
+        let adjustedGeneStart, adjustedGeneEnd;
 
         if (geneSize) {
             adjustedGeneStart = Math.floor(geneSize.start / step) * step;
             adjustedGeneEnd = Math.ceil(geneSize.end / step) * step;
-            // adjustedBoundariedGeneEnd = Math.ceil(selectedChromosomeSequence.end / step) * step;
-
-            // console.log(selectedChromosomeSequence, adjustedGeneStart, adjustedGeneEnd, adjustedBoundariedGeneEnd);
         }
 
         // Draw gene range lines if geneSize exists
         if (geneSize && xScale(adjustedGeneStart) !== undefined && xScale(adjustedGeneEnd) !== undefined) {
             const geneStartPos = margin.left + xScale(adjustedGeneStart);
             const geneEndPos = margin.left + xScale(adjustedGeneEnd);
-            // const geneEndPos = Math.min(margin.left + xScale(adjustedGeneEnd), margin.left + xScale(adjustedBoundariedGeneEnd));
 
             axisSvg.append('line')
                 .attr('x1', geneStartPos)
@@ -291,6 +292,15 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
                         icon={<ReloadOutlined />}
                         onClick={() => setCurrentChromosomeSequence(selectedChromosomeSequence)}
                     />
+                    <Button 
+                        size='small'
+                        style={{
+                            fontSize: 12,
+                            cursor: "pointer",
+                        }}
+                        icon={<FullscreenOutlined />}
+                        onClick={openHalfHeatMapModal}
+                    />
                     <Button
                         size='small'
                         style={{
@@ -304,6 +314,12 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
                         Generate 3D
                     </Button>
                 </div>
+                <Modal open={halfHeatMapModalVisible} onOk={() => setHalfHeatMapModalVisible(false)} onCancel={() => setHalfHeatMapModalVisible(false)} width={1000}>
+                    <HeatmapTriangle
+                        selectedChromosomeSequence={selectedChromosomeSequence}
+                        chromosomeData={chromosomeData}
+                    />
+                </Modal>
                 <canvas ref={canvasRef} style={{ position: 'absolute', zIndex: 0 }} />
                 <svg ref={axisSvgRef} style={{ position: 'absolute', zIndex: 1, pointerEvents: 'none' }} />
                 <svg ref={brushSvgRef} style={{ position: 'absolute', zIndex: 2, pointerEvents: 'all' }} />
