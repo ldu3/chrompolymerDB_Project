@@ -18,7 +18,38 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
         });
     }, [selectedSphereList]);
 
-    // Calculate distance between two points
+    const center = useMemo(() => {
+        if (spheresData.length === 0) return new THREE.Vector3();
+
+        // Create a group and add spheres to it
+        const group = new THREE.Group();
+        spheresData.forEach(({ position }) => {
+            const sphere = new THREE.Mesh(
+                new THREE.SphereGeometry(2.5, 32, 32),
+                new THREE.MeshBasicMaterial()
+            );
+            sphere.position.copy(position);
+            group.add(sphere);
+        });
+
+        // Calculate the bounding box and center
+        const box = new THREE.Box3().setFromObject(group);
+        const calculatedCenter = new THREE.Vector3();
+        box.getCenter(calculatedCenter);
+        console.log(calculatedCenter);
+        return calculatedCenter;
+    }, [spheresData]);
+
+    useEffect(() => {
+        if (controlsRef.current && center) {
+            const controls = controlsRef.current;
+
+            // Set OrbitControls target to center
+            controls.target.copy(center);
+            controls.update();
+        }
+    }, [center]);
+
     const calculateDistance = (pointA, pointB) => {
         return pointA.distanceTo(pointB);
     };
@@ -31,11 +62,11 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
 
     const handleChromosome3DDistanceClose = () => {
         setShowChromosome3DDistance(false);
-    }
+    };
 
     const Line = ({ start, end }) => {
         const geometryRef = useRef();
-    
+
         useEffect(() => {
             if (geometryRef.current) {
                 geometryRef.current.setAttribute(
@@ -47,7 +78,7 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                 );
             }
         }, [start, end]);
-    
+
         return (
             <line>
                 <bufferGeometry ref={geometryRef} />
@@ -59,7 +90,6 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
     return (
         <>
             <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                {/* Container for buttons */}
                 <div style={{
                     position: 'absolute',
                     top: 10,
@@ -86,16 +116,20 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                     />
                 </div>
 
-                <Canvas shadows style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [150, 50, 20], fov: 50 }}>
-
+                <Canvas shadows style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [0, 0, 150], fov: 50 }} onCreated={() => {
+                    if (controlsRef.current) {
+                        controlsRef.current.update();
+                    }
+                }}>
                     <OrbitControls
                         ref={controlsRef}
                         enableZoom={true}
                         enableRotate={true}
-                        enablePan={true}
+                        enablePan={false}
+                        maxDistance={300}
+                        minDistance={100}
                     />
 
-                    {/* Light sources */}
                     <ambientLight intensity={0.8} />
                     <directionalLight
                         position={[10, 20, 10]}
@@ -110,34 +144,27 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                         castShadow
                     />
 
-                    {/* Render spheres with their respective colors */}
-                    {spheresData.map(({ position, color }, index) => {
-                        return (
-                            <group
-                                key={index}
-                                position={position}
-                            >
-                                <mesh>
-                                    <sphereGeometry args={[2.5, 32, 32]} />
-                                    <meshStandardMaterial 
-                                        receiveShadow
-                                        castShadow
-                                        color={color}
-                                        metalness={0.3}
-                                        roughness={0.1}
-                                        emissiveIntensity={0.3} />
-                                </mesh>
-                                <mesh>
-                                    <sphereGeometry args={[2.7, 32, 32]} />
-                                    <meshBasicMaterial color="white" side={THREE.BackSide} />
-                                </mesh>
-                            </group>
-                        );
-                    })}
+                    {spheresData.map(({ position, color }, index) => (
+                        <group key={index} position={position}>
+                            <mesh>
+                                <sphereGeometry args={[2.5, 32, 32]} />
+                                <meshStandardMaterial
+                                    receiveShadow
+                                    castShadow
+                                    color={color}
+                                    metalness={0.3}
+                                    roughness={0.1}
+                                    emissiveIntensity={0.3} />
+                            </mesh>
+                            <mesh>
+                                <sphereGeometry args={[2.7, 32, 32]} />
+                                <meshBasicMaterial color="white" side={THREE.BackSide} />
+                            </mesh>
+                        </group>
+                    ))}
 
-                    {/* Draw lines and distances between spheres */}
-                    {spheresData.map(({ position: positionA }, indexA) => {
-                        return spheresData.map(({ position: positionB }, indexB) => {
+                    {spheresData.map(({ position: positionA }, indexA) => (
+                        spheresData.map(({ position: positionB }, indexB) => {
                             if (indexA < indexB) {
                                 const distance = calculateDistance(positionA, positionB);
                                 const midPoint = new THREE.Vector3()
@@ -146,10 +173,7 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
 
                                 return (
                                     <group key={`${indexA}-${indexB}`}>
-                                        {/* Line */}
                                         <Line start={positionA} end={positionB} />
-
-                                        {/* Distance Text */}
                                         <Text
                                             position={[midPoint.x, midPoint.y, midPoint.z]}
                                             fontSize={5}
@@ -163,8 +187,8 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                                 );
                             }
                             return null;
-                        });
-                    })}
+                        })
+                    ))}
                 </Canvas>
             </div>
         </>
