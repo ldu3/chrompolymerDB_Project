@@ -7,6 +7,7 @@ import { ReloadOutlined, MinusOutlined } from "@ant-design/icons";
 
 export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDistance }) => {
     const controlsRef = useRef();
+    const cameraRef = useRef();
 
     const spheresData = useMemo(() => {
         return Object.values(selectedSphereList).map(({ position, color }) => {
@@ -20,8 +21,6 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
 
     const center = useMemo(() => {
         if (spheresData.length === 0) return new THREE.Vector3();
-
-        // Create a group and add spheres to it
         const group = new THREE.Group();
         spheresData.forEach(({ position }) => {
             const sphere = new THREE.Mesh(
@@ -32,27 +31,18 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
             group.add(sphere);
         });
 
-        // Calculate the bounding box and center
         const box = new THREE.Box3().setFromObject(group);
         const calculatedCenter = new THREE.Vector3();
         box.getCenter(calculatedCenter);
-        console.log(calculatedCenter);
         return calculatedCenter;
     }, [spheresData]);
 
     useEffect(() => {
         if (controlsRef.current && center) {
-            const controls = controlsRef.current;
-
-            // Set OrbitControls target to center
-            controls.target.copy(center);
-            controls.update();
+            controlsRef.current.target.copy(center);
+            controlsRef.current.update();
         }
     }, [center]);
-
-    const calculateDistance = (pointA, pointB) => {
-        return pointA.distanceTo(pointB);
-    };
 
     const resetView = () => {
         if (controlsRef.current) {
@@ -60,13 +50,8 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
         }
     };
 
-    const handleChromosome3DDistanceClose = () => {
-        setShowChromosome3DDistance(false);
-    };
-
     const Line = ({ start, end }) => {
         const geometryRef = useRef();
-
         useEffect(() => {
             if (geometryRef.current) {
                 geometryRef.current.setAttribute(
@@ -112,22 +97,27 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                             cursor: "pointer",
                         }}
                         icon={<MinusOutlined />}
-                        onClick={handleChromosome3DDistanceClose}
+                        onClick={() => setShowChromosome3DDistance(false)}
                     />
                 </div>
 
-                <Canvas shadows style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }} camera={{ position: [0, 0, 150], fov: 50 }} onCreated={() => {
-                    if (controlsRef.current) {
-                        controlsRef.current.update();
-                    }
-                }}>
+                <Canvas
+                    shadows
+                    style={{ height: 'calc(100% - 2px)', backgroundColor: '#222' }}
+                    camera={{ position: [0, 0, 100], fov: 50 }}
+                    onCreated={({ camera, gl }) => {
+                        cameraRef.current = camera;
+                        if (controlsRef.current) {
+                            controlsRef.current.update();
+                        }
+                    }}
+                >
                     <OrbitControls
                         ref={controlsRef}
                         enableZoom={true}
                         enableRotate={true}
                         enablePan={false}
-                        maxDistance={300}
-                        minDistance={100}
+                        target={center}
                     />
 
                     <ambientLight intensity={0.8} />
@@ -166,17 +156,15 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                     {spheresData.map(({ position: positionA }, indexA) => (
                         spheresData.map(({ position: positionB }, indexB) => {
                             if (indexA < indexB) {
-                                const distance = calculateDistance(positionA, positionB);
-                                const midPoint = new THREE.Vector3()
-                                    .addVectors(positionA, positionB)
-                                    .multiplyScalar(0.5);
+                                const distance = positionA.distanceTo(positionB);
+                                const midPoint = new THREE.Vector3().addVectors(positionA, positionB).multiplyScalar(0.5);
 
                                 return (
                                     <group key={`${indexA}-${indexB}`}>
                                         <Line start={positionA} end={positionB} />
                                         <Text
                                             position={[midPoint.x, midPoint.y, midPoint.z]}
-                                            fontSize={5}
+                                            fontSize={10}
                                             color="white"
                                             anchorX="center"
                                             anchorY="middle"
