@@ -1,10 +1,48 @@
 import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
+import { Button } from 'antd';
+import { DownloadOutlined } from "@ant-design/icons";
 
 export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const axisSvgRef = useRef(null);
+
+    const downloadImage = () => {
+        const canvas = canvasRef.current;
+        const svg = axisSvgRef.current;
+    
+        const serializer = new XMLSerializer();
+        const svgData = serializer.serializeToString(svg);
+    
+        const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+        const svgURL = URL.createObjectURL(svgBlob);
+    
+        const svgImage = new Image();
+        svgImage.onload = () => {
+            // Create a new canvas to merge canvas and SVG
+            const combinedCanvas = document.createElement("canvas");
+            combinedCanvas.width = canvas.width;
+            combinedCanvas.height = canvas.height + svgImage.height;
+    
+            const combinedContext = combinedCanvas.getContext("2d");
+    
+            combinedContext.drawImage(canvas, 0, 0);
+    
+            combinedContext.drawImage(svgImage, 0, canvas.height);
+    
+            // Convert the combined canvas to an image and trigger download
+            const dataURL = combinedCanvas.toDataURL("image/png");
+            const link = document.createElement("a");
+            link.href = dataURL;
+            link.download = "heatmap_triangle.png";
+            link.click();
+    
+            URL.revokeObjectURL(svgURL);
+        };
+    
+        svgImage.src = svgURL;
+    };    
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -117,7 +155,24 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
     }, [chromosomeData]);
 
     return (
-        <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', width: '100%', height: '100%' }}>
+        <div ref={containerRef} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', width: '100%', height: '100%' }}>
+            <div style={{
+                position: 'absolute',
+                top: 20,
+                right: 20,
+                zIndex: 10,
+                display: 'flex',
+                gap: '10px',
+            }}>
+                <Button
+                    style={{
+                        fontSize: 15,
+                        cursor: "pointer",
+                    }}
+                    icon={<DownloadOutlined />}
+                    onClick={downloadImage}
+                />
+            </div>
             <canvas ref={canvasRef} />
             <svg ref={axisSvgRef} style={{ height: '50px' }} />
         </div>
