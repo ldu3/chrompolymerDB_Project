@@ -17,8 +17,8 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
         const width = Math.min(parentWidth, parentHeight) - margin.left - margin.right;
         const height = Math.min(parentWidth, parentHeight) - margin.top - margin.bottom;
 
-        canvas.width = (width + margin.left + margin.right) * Math.sqrt(2);
-        canvas.height = (height + margin.top + margin.bottom) / Math.sqrt(2);
+        canvas.width = Math.max((width + margin.left + margin.right) * Math.sqrt(2), parentWidth);
+        canvas.height = Math.max((height + margin.top + margin.bottom) / Math.sqrt(2), parentHeight);
 
         context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -52,7 +52,7 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
 
         const transformedXScale = d3.scaleBand()
             .domain(axisValues)
-            .range([0, canvas.width * Math.sqrt(2)])
+            .range([0, canvas.width])
             .padding(0.1);
 
         const colorScale = d3.scaleSequential(
@@ -81,8 +81,7 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
         context.restore();
 
         const axisSvg = d3.select(axisSvgRef.current)
-            .attr('width', "100%")
-            // .attr('height', canvas.height * Math.sqrt(2) + margin.top + margin.bottom);
+            .attr('width', "100%");
 
         axisSvg.selectAll('*').remove();
 
@@ -103,7 +102,7 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
 
         // X-axis
         axisSvg.append('g')
-            .attr('width', '100%')
+            .attr('transform', `translate(${margin.left}, ${margin.top})`)
             .call(d3.axisBottom(transformedXScale)
                 .tickValues(axisValues.filter((_, i) => i % tickCount === 0))
                 .tickFormat(d => {
@@ -117,7 +116,7 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
                 }))
             .selectAll("text")
             .style("text-anchor", "end")
-            // .attr("transform", "rotate(-45)")
+            .attr("transform", "rotate(-45)")
             .attr("dx", "-1em")
             .attr("dy", "0em");
 
