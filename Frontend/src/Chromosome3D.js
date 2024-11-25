@@ -30,33 +30,33 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
     const download = () => {
         if (rendererRef.current && rendererRef.current.gl) {
             const { gl, scene, camera } = rendererRef.current;
-    
+
             const width = window.innerWidth * 2;
             const height = window.innerHeight * 2;
-    
+
             const renderTarget = new THREE.WebGLRenderTarget(width, height, {
                 minFilter: THREE.LinearFilter,
                 magFilter: THREE.LinearFilter,
                 format: THREE.RGBAFormat,
             });
-    
+
             // render the scene to the RenderTarget
             const originalTarget = gl.getRenderTarget();
             gl.setRenderTarget(renderTarget);
             gl.render(scene, camera);
             gl.setRenderTarget(originalTarget);
-    
+
             // extract the pixel data from the RenderTarget
             const pixelBuffer = new Uint8Array(width * height * 4);
             gl.readRenderTargetPixels(renderTarget, 0, 0, width, height, pixelBuffer);
-    
+
             // create a canvas and context to draw the image data
             const canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
             const ctx = canvas.getContext('2d');
             const imageData = ctx.createImageData(width, height);
-    
+
             // copy the pixel data to the ImageData
             for (let i = 0; i < pixelBuffer.length; i++) {
                 imageData.data[i] = pixelBuffer[i];
@@ -67,7 +67,7 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
             link.href = canvas.toDataURL('image/png');
             link.download = 'chromosome_3d.png';
             link.click();
-    
+
             renderTarget.dispose();
         }
     };
@@ -193,51 +193,61 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                         castShadow
                     />
 
-                    {coordinates.map((coord, index) => (
-                        <group
-                            key={index}
-                            position={coord}
-                            onPointerOver={(e) => {
-                                e.stopPropagation();
-                                setHoveredIndex(index);
-                            }}
-                            onPointerOut={(e) => {
-                                e.stopPropagation();
-                                setHoveredIndex(null);
-                            }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedIndex(index);
-                            }}
-                            onDoubleClick={(e) => {
-                                e.stopPropagation();
-                                handleResetSelect(index);
-                            }}
-                        >
-                            {/* Sphere Mesh */}
-                            <mesh>
-                                <sphereGeometry args={[2.8, 32, 32]} />
-                                <meshStandardMaterial
-                                    receiveShadow
-                                    castShadow
-                                    color={
-                                        selectedSphereList[index]?.color ||
-                                        (hoveredIndex === index || selectedIndex === index
-                                            ? '#F7E7CE'
-                                            : '#FB607F')
-                                    }
-                                    metalness={0.3}
-                                    roughness={0.1}
-                                    emissiveIntensity={0.3}
-                                />
-                            </mesh>
-                            {/* Outline Mesh */}
-                            <mesh>
-                                <sphereGeometry args={[3, 32, 32]} />
-                                <meshBasicMaterial color="white" side={THREE.BackSide} />
-                            </mesh>
-                        </group>
-                    ))}
+                    {coordinates.map((coord, index) => {
+                        const isFirst = index === 0;
+                        const isLast = index === coordinates.length - 1;
+
+                        // first bead: green, last bead: blue
+                        const originalColor = isFirst ? '#00FF00' : isLast ? '#0000FF' : null;
+
+                        const currentColor = selectedSphereList[index]?.color ||
+                            (hoveredIndex === index || selectedIndex === index
+                                ? '#F7E7CE'
+                                : isFirst || isLast
+                                    ? originalColor
+                                    : '#FB607F');
+
+                        return (
+                            <group
+                                key={index}
+                                position={coord}
+                                onPointerOver={(e) => {
+                                    e.stopPropagation();
+                                    setHoveredIndex(index);
+                                }}
+                                onPointerOut={(e) => {
+                                    e.stopPropagation();
+                                    setHoveredIndex(null);
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedIndex(index);
+                                }}
+                                onDoubleClick={(e) => {
+                                    e.stopPropagation();
+                                    handleResetSelect(index);
+                                }}
+                            >
+                                {/* Sphere Mesh */}
+                                <mesh>
+                                    <sphereGeometry args={[2.8, 32, 32]} />
+                                    <meshStandardMaterial
+                                        receiveShadow
+                                        castShadow
+                                        color={currentColor}
+                                        metalness={0.3}
+                                        roughness={0.1}
+                                        emissiveIntensity={0.3}
+                                    />
+                                </mesh>
+                                {/* Outline Mesh */}
+                                <mesh>
+                                    <sphereGeometry args={[3, 32, 32]} />
+                                    <meshBasicMaterial color="white" side={THREE.BackSide} />
+                                </mesh>
+                            </group>
+                        );
+                    })}
                 </Canvas>
             </div>
 
