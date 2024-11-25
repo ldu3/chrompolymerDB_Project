@@ -5,7 +5,7 @@ import { GeneList } from './geneList.js';
 import { HeatmapTriangle } from './heatmapTriangle.js';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList, setSelectedChromosomeSequence, chromosome3DExampleID, fetchExampleChromos3DData, setChromosome3DLoading, setGeneName, geneName, geneSize }) => {
+export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList, setSelectedChromosomeSequence, chromosome3DExampleID, fetchExampleChromos3DData, setChromosome3DLoading, setGeneName, geneName, geneSize }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const brushSvgRef = useRef(null);
@@ -295,6 +295,7 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
                 </div>
                 <Modal open={halfHeatMapModalVisible} onOk={() => setHalfHeatMapModalVisible(false)} onCancel={() => setHalfHeatMapModalVisible(false)} footer={null} width={"60vw"} >
                     <HeatmapTriangle
+                        totalChromosomeSequences={totalChromosomeSequences}
                         selectedChromosomeSequence={selectedChromosomeSequence}
                         chromosomeData={chromosomeData}
                     />

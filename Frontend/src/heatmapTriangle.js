@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { Button } from 'antd';
 import { DownloadOutlined } from "@ant-design/icons";
 
-export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) => {
+export const HeatmapTriangle = ({ totalChromosomeSequences, selectedChromosomeSequence, chromosomeData }) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const axisSvgRef = useRef(null);
@@ -98,6 +98,15 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
             fqMap.set(`X:${d.ibp}, Y:${d.jbp}`, { fq: d.fq, fdr: d.fdr });
         });
 
+        const hasData = (ibp, jbp) => {
+            const inRange = totalChromosomeSequences.some(seq =>
+                ibp >= seq.start && ibp <= seq.end &&
+                jbp >= seq.start && jbp <= seq.end
+            );
+
+            return inRange;
+        };
+
         axisValues.forEach(ibp => {
             axisValues.forEach(jbp => {
                 const { fq } = fqMap.get(`X:${ibp}, Y:${jbp}`) || { fq: -1, fdr: -1 };
@@ -107,7 +116,7 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
                 const width = xScale.bandwidth();
                 const height = yScale.bandwidth();
 
-                context.fillStyle = (jbp <= ibp) ? 'white' : colorScale(fq);
+                context.fillStyle = !hasData(ibp, jbp) ? 'white': (jbp <= ibp) ? 'white' : colorScale(fq);
                 context.fillRect(x, y, width, height);
             });
         });
