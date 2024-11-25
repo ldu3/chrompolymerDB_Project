@@ -10,7 +10,7 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
         const canvas = canvasRef.current;
         const context = canvas.getContext('2d');
 
-        const margin = { top: 0, right: 0, bottom: 0, left: 0 };
+        const margin = { top: 2, right: 2, bottom: 2, left: 2 };
         const parentWidth = containerRef.current.offsetWidth;
         const parentHeight = containerRef.current.offsetHeight;
 
@@ -115,8 +115,8 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
                 }))
             .selectAll("text")
             .style("text-anchor", "end")
-            .attr("transform", "rotate(-90)")
-            .attr("dx", "0em")
+            .attr("transform", "rotate(-45)")
+            .attr("dx", "-1em")
             .attr("dy", "0em");
 
     }, [chromosomeData]);
