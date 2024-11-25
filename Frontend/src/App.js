@@ -287,6 +287,7 @@ function App() {
     setChromosomeSize({ start: 0, end: 0 });
     setSelectedChromosomeSequence({ start: 0, end: 0 });
     setChromosomeData([]);
+    setChromosome3DExampleData([]);
     fetchCellLineList();
     if (!checked) {
       fetchGeneNameList();
