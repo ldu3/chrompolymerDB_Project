@@ -22,6 +22,7 @@ function App() {
   const [totalChromosomeSequences, setTotalChromosomeSequences] = useState([]);
   const [selectedChromosomeSequence, setSelectedChromosomeSequence] = useState({ start: 0, end: 0 });
   const [chromosomeData, setChromosomeData] = useState([]);
+  const [validChromosomeValidIbpData, setValidChromosomeValidIbpData] = useState([]);
   const [chromosome3DExampleID, setChromosome3DExampleID] = useState(0);
   const [chromosome3DExampleData, setChromosome3DExampleData] = useState([]);
   const [messageApi, contextHolder] = message.useMessage();
@@ -155,6 +156,20 @@ function App() {
         });
     }
   };
+
+  const fetchValidChromosomeValidIbpData = () => {
+    fetch("/getChromosValidIBPData", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setValidChromosomeValidIbpData(data);
+      });
+  }
 
   const fetchExampleChromos3DData = (cell_line, sample_id, sampleChange, isComparison) => {
     if (cell_line && chromosomeName && selectedChromosomeSequence) {
@@ -397,6 +412,7 @@ function App() {
       setChromosome3DExampleID(0);
       setChromosome3DExampleData([]);
       fetchChromosomeData();
+      fetchValidChromosomeValidIbpData();
       fetchGeneList();
     }
   };
@@ -545,6 +561,8 @@ function App() {
                       children: (
                         <Chromosome3D
                           chromosome3DExampleData={chromosome3DExampleData}
+                          validChromosomeValidIbpData={validChromosomeValidIbpData}
+                          selectedChromosomeSequence={selectedChromosomeSequence}
                         />
                       ),
                     };
@@ -599,6 +617,8 @@ function App() {
                         ) : (
                           <Chromosome3D
                             chromosome3DExampleData={comparisonCellLine3DData}
+                            validChromosomeValidIbpData={validChromosomeValidIbpData}
+                            selectedChromosomeSequence={selectedChromosomeSequence}
                           />
                         ),
                       };

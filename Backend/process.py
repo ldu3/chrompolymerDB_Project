@@ -232,6 +232,39 @@ def chromosome_data(cell_line, chromosome_name, sequences):
 
     return chromosome_sequence
 
+"""
+Returns the existing chromosome data in the given cell line, chromosome name, start, end
+"""
+def chromosome_valid_ibp_data(cell_line, chromosome_name, sequences):
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT DISTINCT ibp
+            FROM non_random_hic
+            WHERE chrID = %s
+            AND cell_line = %s
+            AND ibp >= %s
+            AND ibp <= %s
+            AND jbp >= %s
+            AND jbp <= %s
+        """,
+            (
+                chromosome_name,
+                cell_line,
+                sequences["start"],
+                sequences["end"],
+                sequences["start"],
+                sequences["end"],
+            ),
+        )
+        chromosome_valid_ibps = cur.fetchall()
+        conn.close()
+
+        ibp_values = [ibp["ibp"] for ibp in chromosome_valid_ibps]
+
+        return ibp_values
 
 """
 Returns the example(3) 3D chromosome data in the given cell line, chromosome name, start, end

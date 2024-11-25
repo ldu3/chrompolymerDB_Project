@@ -7,7 +7,7 @@ import { DownloadOutlined, ReloadOutlined, ClearOutlined } from "@ant-design/ico
 import { Chromosome3DDistance } from './Chromosome3DDistance';
 import "./Styles/Chromosome3D.css";
 
-export const Chromosome3D = ({ chromosome3DExampleData }) => {
+export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpData, selectedChromosomeSequence }) => {
     const scaleFactor = 0.15;
     const canvasRef = useRef();
     const controlsRef = useRef();
@@ -18,14 +18,29 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
     const [selectedSphereList, setSelectedSphereList] = useState({});
     const [showChromosome3DDistance, setShowChromosome3DDistance] = useState(false);
 
+    const step = 5000;
+    const newStart = Math.ceil(selectedChromosomeSequence.start / step) * step;
+    const processedChromosomeData = useMemo(() => {
+    
+        return chromosome3DExampleData.map((data, index) => {
+            const marker = newStart + index * step;
+            const isValid = validChromosomeValidIbpData.includes(marker);
+
+            return {
+                ...data,
+                isValid
+            };
+        });
+    }, [chromosome3DExampleData, validChromosomeValidIbpData]);    
+
     const coordinates = useMemo(() => {
-        return chromosome3DExampleData.map((data) => {
+        return processedChromosomeData.map((data) => {
             const x = data.x * scaleFactor;
             const y = data.y * scaleFactor;
             const z = data.z * scaleFactor;
             return new THREE.Vector3(x, y, z);
         });
-    }, [chromosome3DExampleData]);
+    }, [processedChromosomeData]);
 
     const download = () => {
         if (rendererRef.current && rendererRef.current.gl) {
@@ -196,16 +211,19 @@ export const Chromosome3D = ({ chromosome3DExampleData }) => {
                     {coordinates.map((coord, index) => {
                         const isFirst = index === 0;
                         const isLast = index === coordinates.length - 1;
+                        const isValid = processedChromosomeData[index].isValid;
 
                         // first bead: green, last bead: blue
                         const originalColor = isFirst ? '#00FF00' : isLast ? '#0000FF' : null;
 
-                        const currentColor = selectedSphereList[index]?.color ||
-                            (hoveredIndex === index || selectedIndex === index
-                                ? '#F7E7CE'
-                                : isFirst || isLast
-                                    ? originalColor
-                                    : '#FB607F');
+                        const currentColor = isValid
+                            ? (selectedSphereList[index]?.color ||
+                                (hoveredIndex === index || selectedIndex === index
+                                    ? '#F7E7CE'
+                                    : isFirst || isLast
+                                        ? originalColor
+                                        : '#FB607F'))
+                            : 'white'; // Invalid value color: white
 
                         return (
                             <group
