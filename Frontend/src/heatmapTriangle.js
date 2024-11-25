@@ -49,7 +49,7 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
 
         const transformedXScale = d3.scaleBand()
             .domain(axisValues)
-            .range([0, canvas.width])
+            .range([margin.left, canvas.width - margin.right])
             .padding(0.1);
 
         const colorScale = d3.scaleSequential(
@@ -110,9 +110,9 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
                     return d;
                 }))
             .selectAll("text")
-            .style("text-anchor", "end")
-            .attr("transform", "rotate(-90)")
-            .attr("dx", "-1em")
+            .style("text-anchor", "start")
+            .attr("transform", "rotate(45)")
+            .attr("dx", "1em")
             .attr("dy", "0em");
 
     }, [chromosomeData]);
@@ -120,7 +120,7 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
     return (
         <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', width: '100%', height: '100%' }}>
             <canvas ref={canvasRef} />
-            <svg ref={axisSvgRef} style={{ height: '40px' }} />
+            <svg ref={axisSvgRef} style={{ height: '50px' }} />
         </div>
     );
 };
