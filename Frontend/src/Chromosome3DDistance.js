@@ -47,6 +47,8 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
     const resetView = () => {
         if (controlsRef.current) {
             controlsRef.current.reset();
+            controlsRef.current.target.copy(center);
+            controlsRef.current.update();
         }
     };
 
