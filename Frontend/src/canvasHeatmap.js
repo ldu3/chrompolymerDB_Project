@@ -43,21 +43,6 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
         }
     };
 
-    const currentChromosomeSequenceChange = (position, value) => {
-        const newValue = value !== "" && !isNaN(value) ? Number(value) : 0;
-
-        if (position === 'start' && newValue < selectedChromosomeSequence.start) {
-            warning("overSelectedRange");
-        } else if (position === 'end' && newValue > selectedChromosomeSequence.end) {
-            warning("overSelectedRange");
-        } else {
-            setCurrentChromosomeSequence((prevState) => ({
-                ...prevState,
-                [position]: newValue,
-            }));
-        }
-    }
-
     const generate3DChromosome = () => {
         setSelectedChromosomeSequence(currentChromosomeSequence);
         setChromosome3DLoading(true);
@@ -268,51 +253,45 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
                 alignItems: 'center',
             }}>
                 <div style={{
-                    position: 'absolute', top: 0, right: 0, zIndex: 10, display: 'flex', gap: '10px', width: '100%', justifyContent: 'flex-end', padding: "5px 0 5px 0", borderBottom: "1px solid #eaeaea", alignItems: 'center'
+                    position: 'absolute', top: 0, right: 0, zIndex: 10, display: 'flex', gap: '10px', width: '100%', justifyContent: 'space-between', padding: "5px 0 5px 0", borderBottom: "1px solid #eaeaea", alignItems: 'center'
                 }}>
-                    <Input
-                        size='small'
-                        style={{ width: 100, fontSize: 12 }}
-                        value={currentChromosomeSequence.start}
-                        onChange={(e) => currentChromosomeSequenceChange('start', e.target.value)}
-                    />
-                    <span style={{ fontSize: 12 }}>~</span>
-                    <Input
-                        size='small'
-                        style={{ width: 100, fontSize: 12 }}
-                        value={currentChromosomeSequence.end}
-                        onChange={(e) => currentChromosomeSequenceChange('end', e.target.value)}
-                    />
-                    <Button
-                        size='small'
-                        style={{
-                            fontSize: 12,
-                            cursor: "pointer",
-                        }}
-                        icon={<ReloadOutlined />}
-                        onClick={() => setCurrentChromosomeSequence(selectedChromosomeSequence)}
-                    />
-                    <Button 
-                        size='small'
-                        style={{
-                            fontSize: 12,
-                            cursor: "pointer",
-                        }}
-                        icon={<FullscreenOutlined />}
-                        onClick={openHalfHeatMapModal}
-                    />
-                    <Button
-                        size='small'
-                        style={{
-                            fontSize: 12,
-                            cursor: "pointer",
-                        }}
-                        icon={<DownloadOutlined />}
-                        onClick={download}
-                    />
-                    <Button size='small' color="primary" variant="outlined" onClick={generate3DChromosome} style={{ marginRight: 5, fontSize: 12 }}>
-                        Generate 3D
-                    </Button>
+                    <div style={{ fontSize: 12, fontWeight: 'bold', marginLeft: 10 }}>
+                        <span style={{ marginRight: 5 }}>{currentChromosomeSequence.start}</span>
+                        <span style={{ marginRight: 5 }}>~</span>
+                        <span>{currentChromosomeSequence.end}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                        <Button
+                            size='small'
+                            style={{
+                                fontSize: 12,
+                                cursor: "pointer",
+                            }}
+                            icon={<ReloadOutlined />}
+                            onClick={() => setCurrentChromosomeSequence(selectedChromosomeSequence)}
+                        />
+                        <Button
+                            size='small'
+                            style={{
+                                fontSize: 12,
+                                cursor: "pointer",
+                            }}
+                            icon={<FullscreenOutlined />}
+                            onClick={openHalfHeatMapModal}
+                        />
+                        <Button
+                            size='small'
+                            style={{
+                                fontSize: 12,
+                                cursor: "pointer",
+                            }}
+                            icon={<DownloadOutlined />}
+                            onClick={download}
+                        />
+                        <Button size='small' color="primary" variant="outlined" onClick={generate3DChromosome} style={{ marginRight: 5, fontSize: 12 }}>
+                            Generate 3D
+                        </Button>
+                    </div>
                 </div>
                 <Modal open={halfHeatMapModalVisible} onOk={() => setHalfHeatMapModalVisible(false)} onCancel={() => setHalfHeatMapModalVisible(false)} footer={null} width={"60vw"} >
                     <HeatmapTriangle
