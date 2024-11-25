@@ -21,17 +21,18 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
     const step = 5000;
     const newStart = Math.ceil(selectedChromosomeSequence.start / step) * step;
     const processedChromosomeData = useMemo(() => {
-    
+
         return chromosome3DExampleData.map((data, index) => {
             const marker = newStart + index * step;
             const isValid = validChromosomeValidIbpData.includes(marker);
 
             return {
                 ...data,
+                marker,
                 isValid
             };
         });
-    }, [chromosome3DExampleData, validChromosomeValidIbpData]);    
+    }, [chromosome3DExampleData, validChromosomeValidIbpData]);
 
     const coordinates = useMemo(() => {
         return processedChromosomeData.map((data) => {
@@ -41,6 +42,18 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
             return new THREE.Vector3(x, y, z);
         });
     }, [processedChromosomeData]);
+
+    const blendColors = (color1, color2) =>{
+        const color1Obj = new THREE.Color(color1);
+        const color2Obj = new THREE.Color(color2);
+    
+        const blendedColor = new THREE.Color();
+        blendedColor.r = (color1Obj.r + color2Obj.r) / 2;
+        blendedColor.g = (color1Obj.g + color2Obj.g) / 2;
+        blendedColor.b = (color1Obj.b + color2Obj.b) / 2;
+    
+        return blendedColor;
+    } 
 
     const download = () => {
         if (rendererRef.current && rendererRef.current.gl) {
@@ -216,14 +229,22 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
                         // first bead: green, last bead: blue
                         const originalColor = isFirst ? '#00FF00' : isLast ? '#0000FF' : null;
 
+                        // For valid markers, use the color defined by the user or the default
+                        const validColor = selectedSphereList[index]?.color ||
+                            (hoveredIndex === index || selectedIndex === index
+                                ? '#F7E7CE'
+                                : isFirst || isLast
+                                    ? originalColor
+                                    : '#FB607F');
+
+                        // For invalid markers at the start or end, blend with white
                         const currentColor = isValid
-                            ? (selectedSphereList[index]?.color ||
-                                (hoveredIndex === index || selectedIndex === index
-                                    ? '#F7E7CE'
-                                    : isFirst || isLast
-                                        ? originalColor
-                                        : '#FB607F'))
-                            : 'white'; // Invalid value color: white
+                            ? validColor
+                            : isFirst
+                                ? blendColors('#00FF00', '#FFFFFF')  // Blend green and white
+                                : isLast
+                                    ? blendColors('#0000FF', '#FFFFFF')  // Blend blue and white
+                                    : '#FFFFFF';  // Invalid color for non-first/last markers
 
                         return (
                             <group
