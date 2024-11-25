@@ -413,7 +413,7 @@ def download_full_chromosome_3d_data(cell_line, chromosome_name, sequences):
 """
 Returns currently existing other cell line list in given chromosome name and sequences
 """
-def comparison_cell_line_list(cell_line, chromosome_name, sequences):
+def comparison_cell_line_list(cell_line):
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -421,11 +421,7 @@ def comparison_cell_line_list(cell_line, chromosome_name, sequences):
         """
         SELECT DISTINCT cell_line
         FROM sequence
-        WHERE chrID = %s
-        AND start_value <= %s
-        AND end_value >= %s
-    """,
-        (chromosome_name, sequences["start"], sequences["end"]),
+    """
     )
 
     rows = cur.fetchall()

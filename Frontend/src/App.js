@@ -218,7 +218,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence })
+        body: JSON.stringify({ cell_line: cellLineName })
       })
         .then(res => res.json())
         .then(data => {
@@ -567,6 +567,7 @@ function App() {
                           value={comparisonCellLine}
                           style={{
                             minWidth: 150,
+                            maxWidth: 200,
                             marginRight: 10,
                           }}
                           size="small"

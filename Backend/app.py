@@ -65,9 +65,7 @@ def get_ExampleChromos3DData():
 @app.route('/getComparisonCellLineList', methods=['POST'])
 def get_ComparisonCellLines():
     cell_line = request.json['cell_line']
-    chromosome_name = request.json['chromosome_name']
-    sequences = request.json['sequences']
-    return jsonify(comparison_cell_line_list(cell_line, chromosome_name, sequences))
+    return jsonify(comparison_cell_line_list(cell_line))
 
 
 @app.route('/getGeneList', methods=['POST'])
