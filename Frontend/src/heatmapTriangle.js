@@ -26,7 +26,6 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
         context.translate(canvas.width / 2, -canvas.height * 2);
         context.rotate((Math.PI / 180) * 45);
 
-        console.log(parentWidth, parentHeight, width, height, canvas.width, canvas.height);
         const { start, end } = selectedChromosomeSequence;
         const step = 5000;
         const adjustedStart = Math.floor(start / step) * step;
@@ -49,7 +48,7 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
 
         const transformedXScale = d3.scaleBand()
             .domain(axisValues)
-            .range([margin.left, canvas.width - margin.right])
+            .range([0, canvas.width - margin.right])
             .padding(0.1);
 
         const colorScale = d3.scaleSequential(
