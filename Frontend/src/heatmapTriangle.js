@@ -14,8 +14,8 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
         const parentWidth = containerRef.current.offsetWidth;
         const parentHeight = containerRef.current.offsetHeight;
 
-        const width = Math.min(parentWidth, parentHeight) - margin.left - margin.right;
-        const height = Math.min(parentWidth, parentHeight) - margin.top - margin.bottom;
+        const width = (Math.min(parentWidth, parentHeight) - margin.left - margin.right);
+        const height = (Math.min(parentWidth, parentHeight) - margin.top - margin.bottom);
 
         canvas.width = width;
         canvas.height = height;
@@ -24,10 +24,10 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
         // Apply rotation transformation
         context.save();
         context.translate(width / 2, height);
-        context.scale(-1/Math.sqrt(2), 1/Math.sqrt(2));
+        context.scale(-1 / Math.sqrt(2), 1);
         context.rotate((Math.PI / 180) * -135);
         context.translate(-width / 2, -height / 2);
-        
+
         console.log(parentWidth, parentHeight, width, height, canvas.width, canvas.height);
         const { start, end } = selectedChromosomeSequence;
         const step = 5000;
@@ -78,9 +78,10 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
         });
 
         context.restore();
-
+        canvas.style.width = width + 'px';
+        canvas.style.height = height / Math.sqrt(2) + 'px';
         const axisSvg = d3.select(axisSvgRef.current)
-            .attr('width', "100%");
+            .attr('width', width);
 
         axisSvg.selectAll('*').remove();
 
@@ -101,7 +102,7 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
 
         // X-axis
         axisSvg.append('g')
-            .attr('transform', `translate(${margin.left}, ${margin.top})`)
+            .attr('transform', `translate(${(parentWidth - width) / 2 + margin.left}, ${margin.top})`)
             .call(d3.axisBottom(transformedXScale)
                 .tickValues(axisValues.filter((_, i) => i % tickCount === 0))
                 .tickFormat(d => {
@@ -122,11 +123,8 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
     }, [chromosomeData]);
 
     return (
-        <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', width: '100%', height: '100%' }}>
-            <canvas ref={canvasRef} style={{
-                width: '100%', 
-                height: '100%',
-            }} />
+        <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', width: '100%', height: '100%' }}>
+            <canvas ref={canvasRef} />
             <svg ref={axisSvgRef} style={{ width: '100%', height: '40px' }} />
         </div>
     );
