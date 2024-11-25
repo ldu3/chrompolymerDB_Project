@@ -5,7 +5,7 @@ import { GeneList } from './geneList.js';
 import { HeatmapTriangle } from './heatmapTriangle.js';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList, setSelectedChromosomeSequence, chromosome3DExampleID, fetchExampleChromos3DData, setChromosome3DLoading, setGeneName, geneName, geneSize }) => {
+export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList, setSelectedChromosomeSequence, chromosome3DExampleID, setChromosome3DLoading, setGeneName, geneName, geneSize, setChromosome3DExampleData, setComparisonCellLine3DLoading, setComparisonCellLine3DData  }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const brushSvgRef = useRef(null);
@@ -40,6 +40,30 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             link.click();
 
             URL.revokeObjectURL(url);
+        }
+    };
+
+    const fetchExampleChromos3DData = (cell_line, sample_id, sampleChange, isComparison) => {
+        if (cell_line && chromosomeName && selectedChromosomeSequence) {
+            fetch("/getExampleChromos3DData", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ cell_line: cell_line, chromosome_name: chromosomeName, sequences: currentChromosomeSequence, sample_id: sample_id })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (isComparison) {
+                        setComparisonCellLine3DData(data);
+                        setComparisonCellLine3DLoading(false);
+                    } else {
+                        setChromosome3DExampleData(data);
+                        if (sampleChange === "submit") {
+                            setChromosome3DLoading(false);
+                        }
+                    }
+                });
         }
     };
 

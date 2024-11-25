@@ -507,7 +507,7 @@ function App() {
           chromosomeData.length > 0 ? (
             <Heatmap
               warning={warning}
-              fetchExampleChromos3DData={fetchExampleChromos3DData}
+              setChromosome3DExampleData={setChromosome3DExampleData}
               geneList={geneList}
               cellLineName={cellLineName}
               chromosomeName={chromosomeName}
@@ -519,6 +519,8 @@ function App() {
               geneName={geneName}
               setSelectedChromosomeSequence={setSelectedChromosomeSequence}
               setChromosome3DLoading={setChromosome3DLoading}
+              setComparisonCellLine3DData={setComparisonCellLine3DData}
+              setComparisonCellLine3DLoading={setComparisonCellLine3DLoading}
               setGeneName={setGeneName}
             />
           ) : (
