@@ -314,7 +314,7 @@ export const Heatmap = ({ warning, cellLineName, chromosomeName, chromosomeData,
                         Generate 3D
                     </Button>
                 </div>
-                <Modal open={halfHeatMapModalVisible} onOk={() => setHalfHeatMapModalVisible(false)} onCancel={() => setHalfHeatMapModalVisible(false)} footer={null } width={850} >
+                <Modal open={halfHeatMapModalVisible} onOk={() => setHalfHeatMapModalVisible(false)} onCancel={() => setHalfHeatMapModalVisible(false)} footer={null} width={850} >
                     <HeatmapTriangle
                         selectedChromosomeSequence={selectedChromosomeSequence}
                         chromosomeData={chromosomeData}
