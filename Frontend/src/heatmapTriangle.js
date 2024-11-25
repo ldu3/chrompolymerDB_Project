@@ -17,19 +17,18 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
         const width = Math.min(parentWidth, parentHeight) - margin.left - margin.right;
         const height = Math.min(parentWidth, parentHeight) - margin.top - margin.bottom;
 
-        canvas.width = Math.max((width + margin.left + margin.right) * Math.sqrt(2), parentWidth);
-        canvas.height = Math.max((height + margin.top + margin.bottom) / Math.sqrt(2), parentHeight);
-
+        canvas.width = width;
+        canvas.height = height;
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         // Apply rotation transformation
         context.save();
-        context.translate(canvas.width / 2, canvas.height);
-        context.scale(-1, 1);
+        context.translate(width / 2, height);
+        context.scale(-1/Math.sqrt(2), 1/Math.sqrt(2));
         context.rotate((Math.PI / 180) * -135);
         context.translate(-width / 2, -height / 2);
         
-        console.log(width, height, canvas.width, canvas.height);
+        console.log(parentWidth, parentHeight, width, height, canvas.width, canvas.height);
         const { start, end } = selectedChromosomeSequence;
         const step = 5000;
         const adjustedStart = Math.floor(start / step) * step;
@@ -116,14 +115,14 @@ export const HeatmapTriangle = ({ selectedChromosomeSequence, chromosomeData }) 
                 }))
             .selectAll("text")
             .style("text-anchor", "end")
-            .attr("transform", "rotate(-45)")
-            .attr("dx", "-1em")
+            .attr("transform", "rotate(-90)")
+            .attr("dx", "0em")
             .attr("dy", "0em");
 
     }, [chromosomeData]);
 
     return (
-        <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', width: '100%', height: '100%' }}>
+        <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', width: '100%', height: '100%' }}>
             <canvas ref={canvasRef} style={{
                 width: '100%', 
                 height: '100%',
