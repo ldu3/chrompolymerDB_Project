@@ -1,48 +1,50 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { Button } from 'antd';
 import { DownloadOutlined } from "@ant-design/icons";
+import { TriangleGeneList } from './triangleGeneList.js';
 
-export const HeatmapTriangle = ({ totalChromosomeSequences, selectedChromosomeSequence, chromosomeData }) => {
+export const HeatmapTriangle = ({ geneName, currentChromosomeSequence, setGeneName, geneList, setCurrentChromosomeSequence, totalChromosomeSequences, selectedChromosomeSequence, chromosomeData, epigeneticTrackData }) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const axisSvgRef = useRef(null);
+    const [minCanvasDimension, setMinCanvasDimension] = useState(0);
 
     const downloadImage = () => {
         const canvas = canvasRef.current;
         const svg = axisSvgRef.current;
-    
+
         const serializer = new XMLSerializer();
         const svgData = serializer.serializeToString(svg);
-    
+
         const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
         const svgURL = URL.createObjectURL(svgBlob);
-    
+
         const svgImage = new Image();
         svgImage.onload = () => {
             // Create a new canvas to merge canvas and SVG
             const combinedCanvas = document.createElement("canvas");
             combinedCanvas.width = canvas.width;
             combinedCanvas.height = canvas.height + svgImage.height;
-    
+
             const combinedContext = combinedCanvas.getContext("2d");
-    
+
             combinedContext.drawImage(canvas, 0, 0);
-    
+
             combinedContext.drawImage(svgImage, 0, canvas.height);
-    
+
             // Convert the combined canvas to an image and trigger download
             const dataURL = combinedCanvas.toDataURL("image/png");
             const link = document.createElement("a");
             link.href = dataURL;
             link.download = "heatmap_triangle.png";
             link.click();
-    
+
             URL.revokeObjectURL(svgURL);
         };
-    
+
         svgImage.src = svgURL;
-    };    
+    };
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -57,6 +59,8 @@ export const HeatmapTriangle = ({ totalChromosomeSequences, selectedChromosomeSe
 
         canvas.width = width * Math.sqrt(2);
         canvas.height = height / 1.4;
+
+        setMinCanvasDimension(canvas.width);
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         // Apply rotation transformation
@@ -116,7 +120,7 @@ export const HeatmapTriangle = ({ totalChromosomeSequences, selectedChromosomeSe
                 const width = xScale.bandwidth();
                 const height = yScale.bandwidth();
 
-                context.fillStyle = !hasData(ibp, jbp) ? 'white': (jbp <= ibp) ? 'white' : colorScale(fq);
+                context.fillStyle = !hasData(ibp, jbp) ? 'white' : (jbp <= ibp) ? 'white' : colorScale(fq);
                 context.fillRect(x, y, width, height);
             });
         });
@@ -183,7 +187,18 @@ export const HeatmapTriangle = ({ totalChromosomeSequences, selectedChromosomeSe
                 />
             </div>
             <canvas ref={canvasRef} />
-            <svg ref={axisSvgRef} style={{ height: '50px' }} />
+            <svg ref={axisSvgRef} style={{ height: '50px', flexShrink: 0 }} />
+            {minCanvasDimension > 0 && (
+                <TriangleGeneList
+                    geneList={geneList}
+                    epigeneticTrackData={epigeneticTrackData}
+                    currentChromosomeSequence={currentChromosomeSequence}
+                    minCanvasDimension={minCanvasDimension}
+                    geneName={geneName}
+                    setCurrentChromosomeSequence={setCurrentChromosomeSequence}
+                    setGeneName={setGeneName}
+                />
+            )}
         </div>
     );
 };

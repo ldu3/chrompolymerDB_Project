@@ -317,11 +317,18 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                         </Button>
                     </div>
                 </div>
-                <Modal open={halfHeatMapModalVisible} onOk={() => setHalfHeatMapModalVisible(false)} onCancel={() => setHalfHeatMapModalVisible(false)} footer={null} width={"60vw"} >
+                <Modal open={halfHeatMapModalVisible} onOk={() => setHalfHeatMapModalVisible(false)} onCancel={() => setHalfHeatMapModalVisible(false)} footer={null} width={"60vw"} styles={{ body: { overflowY: 'auto', maxHeight: '80vh' } }} >
                     <HeatmapTriangle
+                        geneList={geneList}
                         totalChromosomeSequences={totalChromosomeSequences}
                         selectedChromosomeSequence={selectedChromosomeSequence}
                         chromosomeData={chromosomeData}
+                        currentChromosomeSequence={currentChromosomeSequence}
+                        geneName={geneName}
+                        minDimension={minDimension}
+                        setCurrentChromosomeSequence={setCurrentChromosomeSequence}
+                        setGeneName={setGeneName}
+                        epigeneticTrackData={epigeneticTrackData}
                     />
                 </Modal>
                 <canvas ref={canvasRef} style={{ position: 'absolute', zIndex: 0 }} />
