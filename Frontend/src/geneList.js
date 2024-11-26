@@ -76,9 +76,9 @@ export const GeneList = ({ geneList, currentChromosomeSequence, minDimension, se
         }
 
         const geneListHeight = (layers.length - 1) * layerHeight + (layerHeight - 4) + margin.top;
-        const epigeneticTrackHeight = Object.keys(epigeneticTrackData).length * (layerHeight - 4) + (Object.keys(epigeneticTrackData).length - 1) * 4;
+        const epigeneticTrackHeight = Object.keys(epigeneticTrackData).length * (layerHeight + 10) + (Object.keys(epigeneticTrackData).length - 1) * 4;
         // Check if scrolling is needed based on total height
-        const totalHeight = geneListHeight + epigeneticTrackHeight;
+        const totalHeight = geneListHeight + epigeneticTrackHeight + 20;
 
         if (totalHeight > initialHeightRef.current) {
             setScrollEnabled(true);
