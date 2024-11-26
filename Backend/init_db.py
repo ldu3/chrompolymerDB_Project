@@ -110,6 +110,30 @@ def initialize_tables():
         print("non_random_hic table already exists, skipping creation.")
         return
 
+    if not table_exists(cur, "epigenitic_track"):
+        print("Creating epigenitic_track table...")
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS epigenitic_track ("
+            "etID serial PRIMARY KEY,"
+            "chrID VARCHAR(50) NOT NULL,"
+            "cell_line VARCHAR(50) NOT NULL,"
+            "start_value BIGINT NOT NULL DEFAULT 0,"
+            "end_value BIGINT NOT NULL DEFAULT 0,"
+            "name VARCHAR(50) NOT NULL,"
+            "score INT NOT NULL DEFAULT 0"
+            "strand VARCHAR(1) NOT NULL"
+            "signal_value FLOAT NOT NULL DEFAULT 0.0"
+            "p_value FLOAT NOT NULL DEFAULT 0.0"
+            "q_value FLOAT NOT NULL DEFAULT 0.0"
+            "peak BIGINT NOT NULL DEFAULT 0"
+            ");"
+        )
+        conn.commit()
+        print("epigenitic_track table created successfully.")
+    else:
+        print("epigenitic_track table already exists, skipping creation.")
+        return
+
     if not table_exists(cur, "sequence"):
         print("Creating sequence table...")
         cur.execute(
@@ -229,6 +253,36 @@ def process_non_random_hic_data(chromosome_dir):
             )
 
 
+def process_epigenitic_track_data(cur):
+    """Process and insert epigenitic track data from all bed.gz files in the specified folder."""
+    folder_path = os.path.join(ROOT_DIR, "epigenitic_tracks")
+    for filename in os.listdir(folder_path):
+        # check if the file is a bed.gz file
+        if filename.endswith(".bed.gz"):
+            file_path = os.path.join(folder_path, filename)
+
+            parts = filename.replace(".bed.gz", "").split("_")
+            cell_line = parts[0]
+            epigenetic = parts[1]
+
+            df = pd.read_csv(file_path, sep="\t", header=None)
+            df.columns = ["chrID", "start_value", "end_value", "name", "score", "strand", "signalValue", "pValue", "qValue", "peak"]
+
+            df["cell_line"] = cell_line
+            df["epigenetic"] = epigenetic
+            
+            df = df[["chrID", "cell_line", "start_value", "end_value", "name", "score", "strand", "signalValue", "pValue", "qValue", "peak"]]
+
+            query = """
+
+            INSERT INTO epigenitic_track (chrID, cell_line, start_value, end_value, name, score, strand, signal_value, p_value, q_value, peak)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            """
+
+            data_to_insert = df.to_records(index=False).tolist()
+            psycopg2.extras.execute_batch(cur, query, data_to_insert)
+
+
 def process_sequence_data(cur):
     """Process and insert sequence data from all CSV files in the specified folder."""
     folder_path = os.path.join(ROOT_DIR, "seqs")
@@ -241,8 +295,11 @@ def process_sequence_data(cur):
                 file_path, usecols=["chrID", "cell_line", "start_value", "end_value"]
             )
 
+            df = df[["chrID", "cell_line", "start_value", "end_value"]]
+
             query = """
-            INSERT INTO sequence (cell_line, chrID, start_value, end_value)
+
+            INSERT INTO sequence (chrID, cell_line, start_value, end_value)
             VALUES (%s, %s, %s, %s);
             """
 
@@ -278,6 +335,12 @@ def insert_data():
         print("Inserting sequence data...")
         process_sequence_data(cur)
         print("Sequence data inserted successfully.")
+
+    # Insert epigenitic track data only if the table is empty
+    if not data_exists(cur, "epigenitic_track"):
+        print("Inserting epigenitic track data...")
+        process_epigenitic_track_data(cur)
+        print("Epigenitic track data inserted successfully.")
 
     # Commit changes and close connection
     conn.commit()
