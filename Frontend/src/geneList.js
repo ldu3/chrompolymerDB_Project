@@ -41,11 +41,11 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                 return;
             }
 
-            // let width = containerRef.current.offsetWidth;
-            let width = minDimension;
-            let height = containerRef.current.offsetHeight;
-
             const margin = { top: 20, right: 10, bottom: 0, left: 60 };
+
+            let width = containerRef.current.offsetWidth;
+            // let width = minDimension;
+            let height = containerRef.current.offsetHeight;
 
             const svg = d3.select(svgRef.current);
             svg.selectAll("*").remove();
@@ -73,12 +73,12 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
 
             const xAxisScale = d3.scaleBand()
                 .domain(axisValues)
-                .range([margin.left, width - margin.right])
+                .range([margin.left, minDimension - margin.right])
                 .padding(0.1);
 
             const xScaleLinear = d3.scaleLinear()
                 .domain([adjustedStart, adjustedEnd])
-                .range([margin.left, width - margin.right]);
+                .range([margin.left, minDimension - margin.right]);
 
             // Calculate height based on the number of layers
             const layerHeight = 20;
@@ -142,7 +142,7 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
             svg.attr("width", width).attr("height", height);
 
             svg.append('g')
-                .attr('transform', `translate(0, ${height})`)
+                .attr('transform', `translate(${(width - minDimension) / 2}, ${height})`)
                 .call(axis)
                 .selectAll("line")
                 .attr("stroke", "#DCDCDC");
@@ -156,6 +156,7 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                     .data(layer)
                     .enter()
                     .append("rect")
+                    .attr('transform', `translate(${(width - minDimension) / 2}, 0)`)
                     .attr("x", (d) => xScaleLinear(d.displayStart))
                     .attr("y", margin.top + layerIndex * layerHeight)
                     .attr("width", (d) => xScaleLinear(d.displayEnd) - xScaleLinear(d.displayStart))
@@ -195,7 +196,7 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                 // get the range of the current histogram
                 const startRange = xScaleLinear(currentChromosomeSequence.start);
                 const endRange = xScaleLinear(currentChromosomeSequence.end);
-
+                console.log(epigeneticTrackData[key][0].epigenetic);
                 let previousEndX = startRange;
 
                 const yScale = d3.scaleLinear().domain([0, maxValue]).range([layerHeight - 1, 0]);
@@ -203,7 +204,7 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                 const yAxis = d3.axisLeft(yScale).tickValues([0, maxValue]).tickFormat(d3.format(".1f"));
 
                 svg.append("g")
-                    .attr("transform", `translate(${startRange}, ${margin.top + 20 + geneListHeight + 4 + keyIndex * (layerHeight + 10) - layerHeight})`)
+                    .attr("transform", `translate(${startRange + (width - minDimension) / 2}, ${margin.top + 20 + geneListHeight + 4 + keyIndex * (layerHeight + 10) - layerHeight})`)
                     .call(yAxis)
                     .call(g => g.selectAll(".domain")
                         .style("stroke", "#999")
@@ -216,6 +217,14 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                         .style("fill", "#333")
                         .style('text-anchor', 'end')
                     );
+
+                svg.append("text")
+                    .attr("x", (width - minDimension) / 2 + 5)
+                    .attr("y", margin.top + 20 + geneListHeight + 4 + keyIndex * (layerHeight + 10) - layerHeight + 15)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "10px")
+                    .text(epigeneticTrackData[key][0].epigenetic)
+                    .style("fill", "black");
 
                 epigeneticTrackData[key].forEach((track, trackIndex) => {
                     const { start_value, end_value, peak, signal_value } = track;
@@ -232,6 +241,7 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
 
                     if (clampedStartX > previousEndX) {
                         svg.append("rect")
+                            .attr('transform', `translate(${(width - minDimension) / 2}, 0)`)
                             .attr("x", previousEndX)
                             .attr("y", yPos - signalScale(0))
                             .attr("width", clampedStartX - previousEndX)
@@ -240,6 +250,7 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                     }
 
                     svg.append("rect")
+                        .attr('transform', `translate(${(width - minDimension) / 2}, 0)`)
                         .attr("x", clampedStartX)
                         .attr("y", yPos - signalScale(signal_value))
                         .attr("width", clampedEndX - clampedStartX)
@@ -253,6 +264,7 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                 if (previousEndX < endRange) {
                     const missingSignalHeight = 0.5;
                     svg.append("rect")
+                        .attr('transform', `translate(${(width - minDimension) / 2}, 0)`)
                         .attr("x", previousEndX)
                         .attr("y", margin.top + 20 + geneListHeight + 4 + keyIndex * (layerHeight + 10) - 0.5)
                         .attr("width", endRange - previousEndX)
@@ -260,6 +272,14 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                         .attr("fill", "#333");
                 }
             });
+
+            svg.append("text")
+                .attr("x", width - minDimension - margin.right - 20)
+                .attr("y", geneListHeight / 2)
+                .attr("text-anchor", "middle")
+                .style("font-size", "12px")
+                .text("Gene List")
+                .style("fill", "black");
         }
 
         fetchDataAndRender();
