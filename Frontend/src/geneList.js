@@ -75,8 +75,10 @@ export const GeneList = ({ geneList, currentChromosomeSequence, minDimension, se
             initialHeightRef.current = height;
         }
 
+        const geneListHeight = (layers.length - 1) * layerHeight + (layerHeight - 4) + margin.top;
+        const epigeneticTrackHeight = Object.keys(epigeneticTrackData).length * (layerHeight - 4) + (Object.keys(epigeneticTrackData).length - 1) * 4;
         // Check if scrolling is needed based on total height
-        const totalHeight = (layers.length - 1) * layerHeight + (layerHeight - 4) + margin.top;
+        const totalHeight = geneListHeight + epigeneticTrackHeight;
 
         if (totalHeight > initialHeightRef.current) {
             setScrollEnabled(true);
@@ -114,8 +116,7 @@ export const GeneList = ({ geneList, currentChromosomeSequence, minDimension, se
             .selectAll("line")
             .attr("stroke", "#DCDCDC");
 
-        svg.selectAll('.domain')
-            .attr('stroke', '#DCDCDC');
+        svg.selectAll('.domain').attr('stroke', '#DCDCDC');
 
         // Gene sequences
         layers.forEach((layer, layerIndex) => {
@@ -136,8 +137,7 @@ export const GeneList = ({ geneList, currentChromosomeSequence, minDimension, se
                 //     setGeneName(d.symbol);
                 // })
                 .on("mouseover", (event, d) => {
-                    d3.select(event.target)
-                        .style("stroke-width", 1);
+                    d3.select(event.target).style("stroke-width", 1);
 
                     const tooltip = d3.select(tooltipRef.current);
                     tooltip.style("opacity", 0.8)
@@ -151,25 +151,96 @@ export const GeneList = ({ geneList, currentChromosomeSequence, minDimension, se
                         .style("top", `${event.pageY - 20}px`);
                 })
                 .on("mouseout", (event) => {
-                    d3.select(event.target)
-                        .style("stroke-width", 0.2);
+                    d3.select(event.target).style("stroke-width", 0.2);
                     const tooltip = d3.select(tooltipRef.current);
-                    tooltip.style("opacity", 0)
-                        .style("visibility", "hidden");
+                    tooltip.style("opacity", 0).style("visibility", "hidden");
                 });
         });
-    }, [geneList, currentChromosomeSequence, geneName]);
+
+        // Epigenetic tracks
+        Object.keys(epigeneticTrackData).forEach((key, keyIndex) => {
+            const maxValue = Math.max(...epigeneticTrackData[key].map(obj => obj.signal_value));
+
+            // get the range of the current histogram
+            const startRange = xScaleLinear(currentChromosomeSequence.start);
+            const endRange = xScaleLinear(currentChromosomeSequence.end);
+
+            let previousEndX = startRange;
+
+            const yScale = d3.scaleLinear().domain([0, maxValue]).range([layerHeight - 1, 0]);
+
+            const yAxis = d3.axisLeft(yScale).tickValues([0, maxValue]).tickFormat(d3.format(".1f"));
+
+            svg.append("g")
+                .attr("transform", `translate(${startRange}, ${margin.top + 20 + geneListHeight + 4 + keyIndex * (layerHeight + 10) - layerHeight})`)
+                .call(yAxis)
+                .call(g => g.selectAll(".domain")
+                    .style("stroke", "#999")
+                    .style("stroke-width", "1px")
+                )
+                .call(g => g.selectAll("line").remove())
+                .call(g => g.selectAll("text")
+                    .attr("x", -8)
+                    .style("font-size", "8px")
+                    .style("fill", "#333")
+                    .style('text-anchor', 'end')
+                );
+
+            epigeneticTrackData[key].forEach((track, trackIndex) => {
+                const { start_value, end_value, peak, signal_value } = track;
+
+                const startX = xScaleLinear(start_value);
+                const endX = xScaleLinear(end_value);
+                const peakX = xScaleLinear(start_value + peak);
+
+                const clampedStartX = Math.max(startX, startRange);
+                const clampedEndX = Math.min(endX, endRange);
+
+                const signalScale = d3.scaleLinear().domain([0, maxValue]).range([0.5, layerHeight - 4]);
+                const yPos = margin.top + 20 + geneListHeight + 4 + keyIndex * (layerHeight + 10);
+
+                if (clampedStartX > previousEndX) {
+                    svg.append("rect")
+                        .attr("x", previousEndX)
+                        .attr("y", yPos - signalScale(0))
+                        .attr("width", clampedStartX - previousEndX)
+                        .attr("height", signalScale(0))
+                        .attr("fill", "#333");
+                }
+
+                svg.append("rect")
+                    .attr("x", clampedStartX)
+                    .attr("y", yPos - signalScale(signal_value))
+                    .attr("width", clampedEndX - clampedStartX)
+                    .attr("height", signalScale(signal_value))
+                    .attr("fill", "#FF6347");
+
+                previousEndX = clampedEndX;
+            });
+
+            // if the previous end is less than the end of the range, draw the remaining missing area
+            if (previousEndX < endRange) {
+                const missingSignalHeight = 0.5;
+                svg.append("rect")
+                    .attr("x", previousEndX)
+                    .attr("y", margin.top + 20 + geneListHeight + 4 + keyIndex * (layerHeight + 10) - 0.5)
+                    .attr("width", endRange - previousEndX)
+                    .attr("height", missingSignalHeight)
+                    .attr("fill", "#333");
+            }
+        });
+    }, [geneList, currentChromosomeSequence, geneName, epigeneticTrackData]);
 
     return (
         <div
             ref={containerRef}
             style={{
-                width: '100%',
-                height: '28%',
+                width: "100%",
+                height: "28%",
                 borderRight: "1px solid #eaeaea",
                 borderTop: "1px solid #eaeaea",
                 boxSizing: "border-box",
-                overflowY: scrollEnabled ? 'auto' : 'hidden',
+                overflowY: scrollEnabled ? "auto" : "hidden",
                 overflowX: "hidden",
             }}
         >
@@ -179,7 +250,7 @@ export const GeneList = ({ geneList, currentChromosomeSequence, minDimension, se
                 style={{
                     position: "absolute",
                     background: "white",
-                    padding: '5px 12px',
+                    padding: "5px 12px",
                     border: "1px solid #d9d9d9",
                     borderRadius: 5,
                     opacity: 0,
