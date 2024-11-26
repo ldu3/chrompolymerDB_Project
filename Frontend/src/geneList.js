@@ -165,9 +165,9 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                     .attr("stroke", "#333")
                     .attr("stroke-width", 0.2)
                     .style("transition", "all 0.3s ease")
-                    // .on("click", (event, d) => {
-                    //     setGeneName(d.symbol);
-                    // })
+                    .on("click", (event, d) => {
+                        setGeneName(d.symbol);
+                    })
                     .on("mouseover", (event, d) => {
                         d3.select(event.target).style("stroke-width", 1);
 
