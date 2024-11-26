@@ -1,18 +1,19 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
-export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromosomeSequence, setCurrentChromosomeSequence, geneName, setGeneName, epigeneticTrackData }) => {
-    const svgRef = useRef();
-    const containerRef = useRef();
-    const [scrollEnabled, setScrollEnabled] = useState(false);
+export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromosomeSequence, geneName, setGeneName, epigeneticTrackData }) => {
+    const svgRef = useRef(null);
+    const containerRef = useRef(null);
 
     const tooltipRef = useRef();
     const initialHeightRef = useRef(null);
 
     useEffect(() => {
         const margin = { top: 20, right: 5, bottom: 5, left: 5 };
-        let width = minCanvasDimension;
-        let height = containerRef.current.offsetHeight;
+        let canvasWidth = minCanvasDimension;
+
+        let parentWidth = containerRef.current.offsetWidth;
+        let parentHeight = containerRef.current.offsetHeight;
 
         const svg = d3.select(svgRef.current);
         svg.selectAll("*").remove();
@@ -40,12 +41,12 @@ export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromoso
 
         const xAxisScale = d3.scaleBand()
             .domain(axisValues)
-            .range([0, width - margin.right])
+            .range([0, canvasWidth - margin.right])
             .padding(0.1);
 
         const xScaleLinear = d3.scaleLinear()
             .domain([adjustedStart, adjustedEnd])
-            .range([margin.left, width - margin.right]);
+            .range([margin.left, canvasWidth - margin.right]);
 
         // Calculate height based on the number of layers
         const layerHeight = 20;
@@ -70,21 +71,14 @@ export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromoso
 
         // Store the initial height once
         if (initialHeightRef.current === null) {
-            initialHeightRef.current = height;
+            initialHeightRef.current = parentHeight;
         }
 
         const geneListHeight = (layers.length - 1) * layerHeight + (layerHeight - 4) + margin.top;
         const epigeneticTrackHeight = Object.keys(epigeneticTrackData).length * (layerHeight + 10) + (Object.keys(epigeneticTrackData).length - 1) * 4;
-        // Check if scrolling is needed based on total height
         const totalHeight = geneListHeight + epigeneticTrackHeight + 20;
 
-        console.log(totalHeight, initialHeightRef.current);
-        if (totalHeight > initialHeightRef.current) {
-            setScrollEnabled(true);
-            height = totalHeight;
-        } else {
-            setScrollEnabled(false);
-        }
+        parentHeight = totalHeight;
 
         // Calculate the range of the current chromosome sequence
         const range = currentChromosomeSequence.end - currentChromosomeSequence.start;
@@ -105,12 +99,12 @@ export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromoso
         const axis = d3.axisBottom(xAxisScale)
             .tickValues(axisValues.filter((_, i) => i % tickCount === 0))
             .tickFormat(() => "")
-            .tickSize(-height);
+            .tickSize(-parentHeight);
 
-        svg.attr("width", width).attr("height", height);
+        svg.attr("width", parentWidth).attr("height", parentHeight);
 
         svg.append('g')
-            .attr('transform', `translate(0, ${height})`)
+            .attr('transform', `translate(${(parentWidth - canvasWidth) / 2}, ${parentHeight})`)
             .call(axis)
             .selectAll("line")
             .attr("stroke", "#DCDCDC");
@@ -124,6 +118,7 @@ export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromoso
                 .data(layer)
                 .enter()
                 .append("rect")
+                .attr('transform', `translate(${(parentWidth - canvasWidth) / 2}, 0)`)
                 .attr("x", (d) => xScaleLinear(d.displayStart))
                 .attr("y", margin.top + layerIndex * layerHeight)
                 .attr("width", (d) => xScaleLinear(d.displayEnd) - xScaleLinear(d.displayStart))
@@ -132,9 +127,6 @@ export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromoso
                 .attr("stroke", "#333")
                 .attr("stroke-width", 0.2)
                 .style("transition", "all 0.3s ease")
-                // .on("click", (event, d) => {
-                //     setGeneName(d.symbol);
-                // })
                 .on("mouseover", (event, d) => {
                     d3.select(event.target).style("stroke-width", 1);
 
@@ -171,7 +163,7 @@ export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromoso
             const yAxis = d3.axisLeft(yScale).tickValues([0, maxValue]).tickFormat(d3.format(".1f"));
 
             svg.append("g")
-                .attr("transform", `translate(${startRange}, ${margin.top + 20 + geneListHeight + 4 + keyIndex * (layerHeight + 10) - layerHeight})`)
+                .attr("transform", `translate(${(parentWidth - canvasWidth) / 2}, ${margin.top + 20 + geneListHeight + 4 + keyIndex * (layerHeight + 10) - layerHeight})`)
                 .call(yAxis)
                 .call(g => g.selectAll(".domain")
                     .style("stroke", "#999")
@@ -200,6 +192,7 @@ export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromoso
 
                 if (clampedStartX > previousEndX) {
                     svg.append("rect")
+                        .attr('transform', `translate(${(parentWidth - canvasWidth) / 2}, 0)`)
                         .attr("x", previousEndX)
                         .attr("y", yPos - signalScale(0))
                         .attr("width", clampedStartX - previousEndX)
@@ -208,6 +201,7 @@ export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromoso
                 }
 
                 svg.append("rect")
+                    .attr('transform', `translate(${(parentWidth - canvasWidth) / 2}, 0)`)
                     .attr("x", clampedStartX)
                     .attr("y", yPos - signalScale(signal_value))
                     .attr("width", clampedEndX - clampedStartX)
@@ -221,6 +215,7 @@ export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromoso
             if (previousEndX < endRange) {
                 const missingSignalHeight = 0.5;
                 svg.append("rect")
+                    .attr('transform', `translate(${(parentWidth - canvasWidth) / 2}, 0)`)
                     .attr("x", previousEndX)
                     .attr("y", margin.top + 20 + geneListHeight + 4 + keyIndex * (layerHeight + 10) - 0.5)
                     .attr("width", endRange - previousEndX)
@@ -233,8 +228,10 @@ export const TriangleGeneList = ({ geneList, minCanvasDimension, currentChromoso
     return (
         <div
             ref={containerRef}
-            width="100%"
-            height="100%"
+            style={{
+                width: "100%",
+                height: "100%"
+            }}
         >
             <svg ref={svgRef}></svg>
             <div

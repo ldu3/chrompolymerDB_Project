@@ -4,7 +4,7 @@ import { Button } from 'antd';
 import { DownloadOutlined } from "@ant-design/icons";
 import { TriangleGeneList } from './triangleGeneList.js';
 
-export const HeatmapTriangle = ({ geneName, currentChromosomeSequence, setGeneName, geneList, setCurrentChromosomeSequence, totalChromosomeSequences, selectedChromosomeSequence, chromosomeData, epigeneticTrackData }) => {
+export const HeatmapTriangle = ({ geneName, currentChromosomeSequence, geneList, totalChromosomeSequences, selectedChromosomeSequence, chromosomeData, epigeneticTrackData }) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const axisSvgRef = useRef(null);
@@ -126,7 +126,7 @@ export const HeatmapTriangle = ({ geneName, currentChromosomeSequence, setGeneNa
         });
 
         const axisSvg = d3.select(axisSvgRef.current)
-            .attr('width', canvas.width)
+            .attr('width', parentWidth)
 
         axisSvg.selectAll('*').remove();
 
@@ -147,7 +147,7 @@ export const HeatmapTriangle = ({ geneName, currentChromosomeSequence, setGeneNa
 
         // X-axis
         axisSvg.append('g')
-            .attr('transform', `translate(${0}, ${margin.top})`)
+            .attr('transform', `translate(${(parentWidth - canvas.width) / 2}, ${margin.top})`)
             .call(d3.axisBottom(transformedXScale)
                 .tickValues(axisValues.filter((_, i) => i % tickCount === 0))
                 .tickFormat(d => {
@@ -195,8 +195,6 @@ export const HeatmapTriangle = ({ geneName, currentChromosomeSequence, setGeneNa
                     currentChromosomeSequence={currentChromosomeSequence}
                     minCanvasDimension={minCanvasDimension}
                     geneName={geneName}
-                    setCurrentChromosomeSequence={setCurrentChromosomeSequence}
-                    setGeneName={setGeneName}
                 />
             )}
         </div>

@@ -325,9 +325,6 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                         chromosomeData={chromosomeData}
                         currentChromosomeSequence={currentChromosomeSequence}
                         geneName={geneName}
-                        minDimension={minDimension}
-                        setCurrentChromosomeSequence={setCurrentChromosomeSequence}
-                        setGeneName={setGeneName}
                         epigeneticTrackData={epigeneticTrackData}
                     />
                 </Modal>
