@@ -117,14 +117,15 @@ def initialize_tables():
             "etID serial PRIMARY KEY,"
             "chrID VARCHAR(50) NOT NULL,"
             "cell_line VARCHAR(50) NOT NULL,"
+            "epigenetic VARCHAR(50) NOT NULL,"
             "start_value BIGINT NOT NULL DEFAULT 0,"
             "end_value BIGINT NOT NULL DEFAULT 0,"
             "name VARCHAR(50) NOT NULL,"
-            "score INT NOT NULL DEFAULT 0"
-            "strand VARCHAR(1) NOT NULL"
-            "signal_value FLOAT NOT NULL DEFAULT 0.0"
-            "p_value FLOAT NOT NULL DEFAULT 0.0"
-            "q_value FLOAT NOT NULL DEFAULT 0.0"
+            "score INT NOT NULL DEFAULT 0,"
+            "strand VARCHAR(1) NOT NULL,"
+            "signal_value FLOAT NOT NULL DEFAULT 0.0,"
+            "p_value FLOAT NOT NULL DEFAULT 0.0,"
+            "q_value FLOAT NOT NULL DEFAULT 0.0,"
             "peak BIGINT NOT NULL DEFAULT 0"
             ");"
         )
@@ -271,12 +272,12 @@ def process_epigenitic_track_data(cur):
             df["cell_line"] = cell_line
             df["epigenetic"] = epigenetic
             
-            df = df[["chrID", "cell_line", "start_value", "end_value", "name", "score", "strand", "signalValue", "pValue", "qValue", "peak"]]
+            df = df[["chrID", "cell_line", "epigenetic", "start_value", "end_value", "name", "score", "strand", "signalValue", "pValue", "qValue", "peak"]]
 
             query = """
 
-            INSERT INTO epigenitic_track (chrID, cell_line, start_value, end_value, name, score, strand, signal_value, p_value, q_value, peak)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            INSERT INTO epigenitic_track (chrID, cell_line, epigenetic, start_value, end_value, name, score, strand, signal_value, p_value, q_value, peak)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
             """
 
             data_to_insert = df.to_records(index=False).tolist()
