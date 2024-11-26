@@ -33,6 +33,7 @@ export const TriangleGeneList = ({ cellLineName, chromosomeName, geneList, minCa
 
     useEffect(() => {
         async function fetchDataAndRender() {
+            console.log(cellLineName, chromosomeName, currentChromosomeSequence);
             const epigeneticTrackData = await fetchepigeneticTrackData();
 
             if (!epigeneticTrackData) {

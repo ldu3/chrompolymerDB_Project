@@ -4,11 +4,14 @@ import { Button } from 'antd';
 import { DownloadOutlined } from "@ant-design/icons";
 import { TriangleGeneList } from './triangleGeneList.js';
 
-export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, currentChromosomeSequence, geneList, totalChromosomeSequences, selectedChromosomeSequence, chromosomeData, epigeneticTrackData }) => {
+export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, currentChromosomeSequence, geneList, totalChromosomeSequences, chromosomeData, epigeneticTrackData }) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const axisSvgRef = useRef(null);
+    const brushSvgRef = useRef(null);
+
     const [minCanvasDimension, setMinCanvasDimension] = useState(0);
+    const [triangleCurrentChromosomeSequence, setTriangleCurrentChromosomeSequence] = useState(currentChromosomeSequence);
 
     const downloadImage = () => {
         const canvas = canvasRef.current;
@@ -68,7 +71,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
         context.translate(canvas.width / 2, -canvas.height * 2);
         context.rotate((Math.PI / 180) * 45);
 
-        const { start, end } = selectedChromosomeSequence;
+        const { start, end } = triangleCurrentChromosomeSequence;
         const step = 5000;
         const adjustedStart = Math.floor(start / step) * step;
         const adjustedEnd = Math.ceil(end / step) * step;
@@ -125,13 +128,38 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
             });
         });
 
+        const brushSvg = d3.select(brushSvgRef.current)
+            .attr('width', canvas.width + margin.left + margin.right)
+            .attr('height', canvas.height + margin.top + margin.bottom);
+
+        brushSvg.selectAll('*').remove();
+
+        brushSvg.append('g')
+            .attr('class', 'brush')
+            .call(d3.brushX()
+                .extent([[margin.left, margin.top], [canvas.width + margin.left, height + margin.top]])
+                .on('end', ({ selection }) => {
+                    if (!selection) {
+                        setTriangleCurrentChromosomeSequence(currentChromosomeSequence);
+                        return;
+                    }
+
+                    const [x0, x1] = selection;
+                    const brushedX = axisValues.filter(val => {
+                        const pos = margin.left + xScale(val) + xScale.bandwidth() / 2;
+                        return pos >= x0 && pos <= x1;
+                    });
+                    setTriangleCurrentChromosomeSequence({ start: brushedX[0], end: brushedX[brushedX.length - 1] });
+                })
+            );
+
         const axisSvg = d3.select(axisSvgRef.current)
             .attr('width', parentWidth)
 
         axisSvg.selectAll('*').remove();
 
         // Calculate the range of the current chromosome sequence
-        const range = selectedChromosomeSequence.end - selectedChromosomeSequence.start;
+        const range = triangleCurrentChromosomeSequence.end - triangleCurrentChromosomeSequence.start;
 
         // Dynamically determine the tick count based on the range
         let tickCount;
@@ -187,6 +215,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
                 />
             </div>
             <canvas ref={canvasRef} />
+            <svg ref={brushSvgRef} style={{ position: 'absolute', zIndex: 2, pointerEvents: 'all' }} />
             <svg ref={axisSvgRef} style={{ height: '50px', flexShrink: 0 }} />
             {minCanvasDimension > 0 && (
                 <TriangleGeneList
@@ -194,7 +223,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
                     chromosomeName={chromosomeName}
                     geneList={geneList}
                     epigeneticTrackData={epigeneticTrackData}
-                    currentChromosomeSequence={currentChromosomeSequence}
+                    currentChromosomeSequence={triangleCurrentChromosomeSequence}
                     minCanvasDimension={minCanvasDimension}
                     geneName={geneName}
                 />

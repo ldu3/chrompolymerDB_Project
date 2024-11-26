@@ -226,7 +226,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 .extent([[margin.left, margin.top], [width + margin.left, height + margin.top]])
                 .on('end', ({ selection }) => {
                     if (!selection) {
-                        setCurrentChromosomeSequence(null);
+                        setCurrentChromosomeSequence(selectedChromosomeSequence);
                         return;
                     }
 
@@ -323,7 +323,6 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                         cellLineName={cellLineName}
                         chromosomeName={chromosomeName}
                         totalChromosomeSequences={totalChromosomeSequences}
-                        selectedChromosomeSequence={selectedChromosomeSequence}
                         chromosomeData={chromosomeData}
                         currentChromosomeSequence={currentChromosomeSequence}
                         geneName={geneName}
