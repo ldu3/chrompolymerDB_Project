@@ -209,6 +209,14 @@ export const TriangleGeneList = ({ cellLineName, chromosomeName, geneList, minCa
                         .style('text-anchor', 'end')
                     );
 
+                svg.append("text")
+                    .attr("x", (parentWidth) / 2)
+                    .attr("y", margin.top + 20 + geneListHeight + 4 + keyIndex * (layerHeight + 10) - layerHeight)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "10px")
+                    .text(epigeneticTrackData[key][0].epigenetic)
+                    .style("fill", "#4169E1");
+
                 epigeneticTrackData[key].forEach((track, trackIndex) => {
                     const { start_value, end_value, peak, signal_value } = track;
 
@@ -255,6 +263,15 @@ export const TriangleGeneList = ({ cellLineName, chromosomeName, geneList, minCa
                         .attr("fill", "#333");
                 }
             });
+
+            svg.append("text")
+                .attr("x", parentWidth / 2)
+                .attr("y", margin.top - 8)
+                .attr("text-anchor", "middle")
+                .style("font-size", "12px")
+                .text("Gene List")
+                .style('font-weight', 'bold')
+                .style("fill", "black");
         }
 
         fetchDataAndRender();

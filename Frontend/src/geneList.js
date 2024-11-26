@@ -196,7 +196,7 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                 // get the range of the current histogram
                 const startRange = xScaleLinear(currentChromosomeSequence.start);
                 const endRange = xScaleLinear(currentChromosomeSequence.end);
-                console.log(epigeneticTrackData[key][0].epigenetic);
+
                 let previousEndX = startRange;
 
                 const yScale = d3.scaleLinear().domain([0, maxValue]).range([layerHeight - 1, 0]);
