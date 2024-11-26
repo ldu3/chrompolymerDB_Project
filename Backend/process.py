@@ -505,16 +505,16 @@ def gene_list(chromosome_name, sequences):
     return gene_list
 
 """
-Return the epigenitic track data in the given cell_line, chromosome_name and sequence
+Return the epigenetic track data in the given cell_line, chromosome_name and sequence
 """
-def epigenitic_track_data(cell_line, chromosome_name, sequences):
+def epigenetic_track_data(cell_line, chromosome_name, sequences):
     conn = get_db_connection()
     cur = conn.cursor()
 
     cur.execute(
         """
         SELECT *
-        FROM epigenitic_track
+        FROM epigenetic_track
         WHERE chrID = %s
         AND cell_line = %s
         AND start_value >= %s
@@ -523,7 +523,23 @@ def epigenitic_track_data(cell_line, chromosome_name, sequences):
         (chromosome_name, cell_line, sequences["start"], sequences["end"]),
     )
 
-    epigenitic_track_data = cur.fetchall()
+    # Fetch all the data from the query
+    epigenetic_track_data = cur.fetchall()
+
+    # Close the database connection
     conn.close()
 
-    return epigenitic_track_data
+    # Initialize a dictionary to store the aggregated data by epigenetic key
+    aggregated_data = {}
+
+    # Loop through the fetched rows and aggregate by epigenetic key
+    for row in epigenetic_track_data:
+        # Assuming 'epigenetic' is one of the columns in the row
+        epigenetic_key = row['epigenetic']  # Replace with the actual column name
+        if epigenetic_key not in aggregated_data:
+            aggregated_data[epigenetic_key] = []
+        
+        # Append the current row or necessary data to the list under the epigenetic key
+        aggregated_data[epigenetic_key].append(row)
+
+    return aggregated_data

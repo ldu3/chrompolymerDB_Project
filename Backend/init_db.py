@@ -110,10 +110,10 @@ def initialize_tables():
         print("non_random_hic table already exists, skipping creation.")
         return
 
-    if not table_exists(cur, "epigenitic_track"):
-        print("Creating epigenitic_track table...")
+    if not table_exists(cur, "epigenetic_track"):
+        print("Creating epigenetic_track table...")
         cur.execute(
-            "CREATE TABLE IF NOT EXISTS epigenitic_track ("
+            "CREATE TABLE IF NOT EXISTS epigenetic_track ("
             "etID serial PRIMARY KEY,"
             "chrID VARCHAR(50) NOT NULL,"
             "cell_line VARCHAR(50) NOT NULL,"
@@ -130,9 +130,9 @@ def initialize_tables():
             ");"
         )
         conn.commit()
-        print("epigenitic_track table created successfully.")
+        print("epigenetic_track table created successfully.")
     else:
-        print("epigenitic_track table already exists, skipping creation.")
+        print("epigenetic_track table already exists, skipping creation.")
         return
 
     if not table_exists(cur, "sequence"):
@@ -254,9 +254,9 @@ def process_non_random_hic_data(chromosome_dir):
             )
 
 
-def process_epigenitic_track_data(cur):
-    """Process and insert epigenitic track data from all bed.gz files in the specified folder."""
-    folder_path = os.path.join(ROOT_DIR, "epigenitic_tracks")
+def process_epigenetic_track_data(cur):
+    """Process and insert epigenetic track data from all bed.gz files in the specified folder."""
+    folder_path = os.path.join(ROOT_DIR, "epigenetic_tracks")
     for filename in os.listdir(folder_path):
         # check if the file is a bed.gz file
         if filename.endswith(".bed.gz"):
@@ -276,7 +276,7 @@ def process_epigenitic_track_data(cur):
 
             query = """
 
-            INSERT INTO epigenitic_track (chrID, cell_line, epigenetic, start_value, end_value, name, score, strand, signal_value, p_value, q_value, peak)
+            INSERT INTO epigenetic_track (chrID, cell_line, epigenetic, start_value, end_value, name, score, strand, signal_value, p_value, q_value, peak)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
             """
 
@@ -337,11 +337,11 @@ def insert_data():
         process_sequence_data(cur)
         print("Sequence data inserted successfully.")
 
-    # Insert epigenitic track data only if the table is empty
-    if not data_exists(cur, "epigenitic_track"):
-        print("Inserting epigenitic track data...")
-        process_epigenitic_track_data(cur)
-        print("Epigenitic track data inserted successfully.")
+    # Insert epigenetic track data only if the table is empty
+    if not data_exists(cur, "epigenetic_track"):
+        print("Inserting epigenetic track data...")
+        process_epigenetic_track_data(cur)
+        print("epigenetic track data inserted successfully.")
 
     # Commit changes and close connection
     conn.commit()
