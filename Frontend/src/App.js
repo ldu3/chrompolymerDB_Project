@@ -13,6 +13,7 @@ function App() {
   const [geneNameList, setGeneNameList] = useState([]);
   const [cellLineList, setCellLineList] = useState([]);
   const [geneList, setGeneList] = useState([]);
+  const [epigeniticTrackData, setEpigeniticTrackData] = useState([]);
   const [chromosList, setChromosList] = useState([]);
   const [cellLineName, setCellLineName] = useState(null);
   const [geneName, setGeneName] = useState(null);
@@ -212,6 +213,22 @@ function App() {
     }
   };
 
+  const fetchEpigeniticTrackData = () => {
+    if (cellLineName && chromosomeName && selectedChromosomeSequence) {
+      fetch("/getEpigeniticTrackData", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence })
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log(data);
+          setEpigeniticTrackData(data);
+        });
+    }
+  }
   const fetchGeneNameBySearch = (value) => {
     fetch("/geneListSearch", {
       method: 'POST',
@@ -414,6 +431,7 @@ function App() {
       fetchChromosomeData();
       fetchValidChromosomeValidIbpData();
       fetchGeneList();
+      fetchEpigeniticTrackData();
     }
   };
 
@@ -509,6 +527,7 @@ function App() {
               warning={warning}
               setChromosome3DExampleData={setChromosome3DExampleData}
               geneList={geneList}
+              epigeniticTrackData={epigeniticTrackData}
               cellLineName={cellLineName}
               chromosomeName={chromosomeName}
               chromosomeData={chromosomeData}

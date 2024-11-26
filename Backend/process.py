@@ -503,3 +503,27 @@ def gene_list(chromosome_name, sequences):
     conn.close()
 
     return gene_list
+
+"""
+Return the epigenitic track data in the given cell_line, chromosome_name and sequence
+"""
+def epigenitic_track_data(cell_line, chromosome_name, sequences):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT *
+        FROM epigenitic_track
+        WHERE chrID = %s
+        AND cell_line = %s
+        AND start_value >= %s
+        AND end_value <= %s
+    """,
+        (chromosome_name, cell_line, sequences["start"], sequences["end"]),
+    )
+
+    epigenitic_track_data = cur.fetchall()
+    conn.close()
+
+    return epigenitic_track_data
