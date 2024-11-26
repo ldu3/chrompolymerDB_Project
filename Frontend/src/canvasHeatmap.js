@@ -5,7 +5,7 @@ import { GeneList } from './geneList.js';
 import { HeatmapTriangle } from './heatmapTriangle.js';
 import * as d3 from 'd3';
 
-export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList, setSelectedChromosomeSequence, chromosome3DExampleID, setChromosome3DLoading, setGeneName, geneName, geneSize, setChromosome3DExampleData, setComparisonCellLine3DLoading, setComparisonCellLine3DData, epigeneticTrackData }) => {
+export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selectedChromosomeSequence, totalChromosomeSequences, geneList, setSelectedChromosomeSequence, chromosome3DExampleID, setChromosome3DLoading, setGeneName, geneName, geneSize, setChromosome3DExampleData, setComparisonCellLine3DLoading, setComparisonCellLine3DData }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const brushSvgRef = useRef(null);
@@ -320,12 +320,13 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                 <Modal open={halfHeatMapModalVisible} onOk={() => setHalfHeatMapModalVisible(false)} onCancel={() => setHalfHeatMapModalVisible(false)} footer={null} width={"60vw"} styles={{ body: { overflowY: 'auto', maxHeight: '80vh' } }} >
                     <HeatmapTriangle
                         geneList={geneList}
+                        cellLineName={cellLineName}
+                        chromosomeName={chromosomeName}
                         totalChromosomeSequences={totalChromosomeSequences}
                         selectedChromosomeSequence={selectedChromosomeSequence}
                         chromosomeData={chromosomeData}
                         currentChromosomeSequence={currentChromosomeSequence}
                         geneName={geneName}
-                        epigeneticTrackData={epigeneticTrackData}
                     />
                 </Modal>
                 <canvas ref={canvasRef} style={{ position: 'absolute', zIndex: 0 }} />
@@ -335,7 +336,8 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
             {minDimension > 0 && (
                 <GeneList
                     geneList={geneList}
-                    epigeneticTrackData={epigeneticTrackData}
+                    cellLineName={cellLineName}
+                    chromosomeName={chromosomeName}
                     currentChromosomeSequence={currentChromosomeSequence}
                     minDimension={minDimension}
                     geneName={geneName}

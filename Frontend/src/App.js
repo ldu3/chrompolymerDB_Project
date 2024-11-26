@@ -213,21 +213,6 @@ function App() {
     }
   };
 
-  const fetchepigeneticTrackData = () => {
-    if (cellLineName && chromosomeName && selectedChromosomeSequence) {
-      fetch("/getepigeneticTrackData", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ cell_line: cellLineName, chromosome_name: chromosomeName, sequences: selectedChromosomeSequence })
-      })
-        .then(res => res.json())
-        .then(data => {
-          setepigeneticTrackData(data);
-        });
-    }
-  }
   const fetchGeneNameBySearch = (value) => {
     fetch("/geneListSearch", {
       method: 'POST',
@@ -430,7 +415,6 @@ function App() {
       fetchChromosomeData();
       fetchValidChromosomeValidIbpData();
       fetchGeneList();
-      fetchepigeneticTrackData();
     }
   };
 
@@ -526,7 +510,7 @@ function App() {
               warning={warning}
               setChromosome3DExampleData={setChromosome3DExampleData}
               geneList={geneList}
-              epigeneticTrackData={epigeneticTrackData}
+              // epigeneticTrackData={epigeneticTrackData}
               cellLineName={cellLineName}
               chromosomeName={chromosomeName}
               chromosomeData={chromosomeData}

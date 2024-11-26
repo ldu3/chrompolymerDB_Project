@@ -4,7 +4,7 @@ import { Button } from 'antd';
 import { DownloadOutlined } from "@ant-design/icons";
 import { TriangleGeneList } from './triangleGeneList.js';
 
-export const HeatmapTriangle = ({ geneName, currentChromosomeSequence, geneList, totalChromosomeSequences, selectedChromosomeSequence, chromosomeData, epigeneticTrackData }) => {
+export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, currentChromosomeSequence, geneList, totalChromosomeSequences, selectedChromosomeSequence, chromosomeData, epigeneticTrackData }) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const axisSvgRef = useRef(null);
@@ -190,6 +190,8 @@ export const HeatmapTriangle = ({ geneName, currentChromosomeSequence, geneList,
             <svg ref={axisSvgRef} style={{ height: '50px', flexShrink: 0 }} />
             {minCanvasDimension > 0 && (
                 <TriangleGeneList
+                    cellLineName={cellLineName}
+                    chromosomeName={chromosomeName}
                     geneList={geneList}
                     epigeneticTrackData={epigeneticTrackData}
                     currentChromosomeSequence={currentChromosomeSequence}
