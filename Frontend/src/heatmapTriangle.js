@@ -4,7 +4,7 @@ import { Button, Switch } from 'antd';
 import { DownloadOutlined } from "@ant-design/icons";
 import { TriangleGeneList } from './triangleGeneList.js';
 
-export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, currentChromosomeSequence, geneList, totalChromosomeSequences, chromosomeData, epigeneticTrackData }) => {
+export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, currentChromosomeSequence, geneList, totalChromosomeSequences, chromosomeData }) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const axisSvgRef = useRef(null);
@@ -50,6 +50,11 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
 
         svgImage.src = svgURL;
     };
+
+    const switchChange = () => {
+        setFullTriangleVisible(!fullTriangleVisible);
+        setBrushedTriangleRange({ start: 0, end: 0 });
+    }
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -285,7 +290,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
                     checkedChildren="Partial"
                     unCheckedChildren="Full"
                     checked={fullTriangleVisible}
-                    onChange={() => setFullTriangleVisible(!fullTriangleVisible)}
+                    onChange={switchChange}
                 />
                 <Button
                     style={{
