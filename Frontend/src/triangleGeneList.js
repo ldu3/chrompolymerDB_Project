@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
-export const TriangleGeneList = ({ cellLineName, chromosomeName, geneList, minCanvasDimension, currentChromosomeSequence, geneName, setGeneName, epigeneticTrackData }) => {
+export const TriangleGeneList = ({ cellLineName, chromosomeName, geneList, minCanvasDimension, currentChromosomeSequence, geneName, brushedTriangleRange }) => {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
 
@@ -33,7 +33,6 @@ export const TriangleGeneList = ({ cellLineName, chromosomeName, geneList, minCa
 
     useEffect(() => {
         async function fetchDataAndRender() {
-            console.log(cellLineName, chromosomeName, currentChromosomeSequence);
             const epigeneticTrackData = await fetchepigeneticTrackData();
 
             if (!epigeneticTrackData) {
@@ -41,7 +40,7 @@ export const TriangleGeneList = ({ cellLineName, chromosomeName, geneList, minCa
                 return;
             }
 
-            const margin = { top: 20, right: 5, bottom: 5, left: 5 };
+            const margin = { top: 20, right: 5, bottom: 5, left: 2 };
             let canvasWidth = minCanvasDimension;
 
             let parentWidth = containerRef.current.offsetWidth;
@@ -73,12 +72,12 @@ export const TriangleGeneList = ({ cellLineName, chromosomeName, geneList, minCa
 
             const xAxisScale = d3.scaleBand()
                 .domain(axisValues)
-                .range([0, canvasWidth - margin.right])
+                .range([0, canvasWidth])
                 .padding(0.1);
 
             const xScaleLinear = d3.scaleLinear()
                 .domain([adjustedStart, adjustedEnd])
-                .range([margin.left, canvasWidth - margin.right]);
+                .range([margin.left, canvasWidth]);
 
             // Calculate height based on the number of layers
             const layerHeight = 20;
@@ -180,6 +179,37 @@ export const TriangleGeneList = ({ cellLineName, chromosomeName, geneList, minCa
                     });
             });
 
+            // Add brushed triangle range with two lines
+            if (brushedTriangleRange.start && brushedTriangleRange.end) {
+                const { start, end } = brushedTriangleRange;
+                const startX = xAxisScale(start);
+                const endX =  xAxisScale(end);
+
+                svg.selectAll('.brushed-triangle-range').remove();
+
+                svg.append("line")
+                    .attr('class', 'brushed-triangle-range')
+                    .attr('transform', `translate(${(parentWidth - canvasWidth) / 2}, 0)`)
+                    .attr("x1", startX)
+                    .attr("y1", 0)
+                    .attr("x2", startX)
+                    .attr("y2", parentHeight)
+                    .attr("stroke", "#C0C0C0")
+                    .attr("stroke-width", 3);
+
+                svg.append("line")
+                    .attr('class', 'brushed-triangle-range')
+                    .attr('transform', `translate(${(parentWidth - canvasWidth) / 2}, 0)`)
+                    .attr("x1", endX)
+                    .attr("y1", 0)
+                    .attr("x2", endX)
+                    .attr("y2", parentHeight)
+                    .attr("stroke", "#C0C0C0")
+                    .attr("stroke-width", 3);
+            } else {
+                svg.selectAll('.brushed-triangle-range').remove();
+            }
+
             // Epigenetic tracks
             Object.keys(epigeneticTrackData).forEach((key, keyIndex) => {
                 const maxValue = Math.max(...epigeneticTrackData[key].map(obj => obj.signal_value));
@@ -275,7 +305,7 @@ export const TriangleGeneList = ({ cellLineName, chromosomeName, geneList, minCa
         }
 
         fetchDataAndRender();
-    }, [geneList, currentChromosomeSequence, geneName, cellLineName, chromosomeName]);
+    }, [geneList, currentChromosomeSequence, geneName, cellLineName, chromosomeName, brushedTriangleRange]);
 
     return (
         <div

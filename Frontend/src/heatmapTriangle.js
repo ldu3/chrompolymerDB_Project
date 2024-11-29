@@ -12,6 +12,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
 
     const [minCanvasDimension, setMinCanvasDimension] = useState(0);
     const [triangleCurrentChromosomeSequence, setTriangleCurrentChromosomeSequence] = useState(currentChromosomeSequence);
+    const [brushedTriangleRange, setBrushedTriangleRange] = useState({ start: 0, end: 0 });
     const [fullTriangleVisible, setFullTriangleVisible] = useState(false);
 
     const downloadImage = () => {
@@ -94,12 +95,27 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
 
         const transformedXScale = d3.scaleBand()
             .domain(axisValues)
-            .range([0, canvas.width - margin.right])
+            .range([0, canvas.width])
             .padding(0.1);
 
         const colorScale = d3.scaleSequential(
             t => d3.interpolateReds(t * 0.8 + 0.2)
         ).domain([0, d3.max(chromosomeData, d => d.fq)]);
+
+        const invertBand = (scale, value) => {
+            const range = scale.range();
+            const step = scale.step();
+            const domain = scale.domain();
+
+            const correctedValue = value - step / 2;
+            const index = Math.ceil((correctedValue - range[0]) / step);
+
+            if (index < 0 || index >= domain.length) {
+                return undefined;
+            }
+
+            return domain[index];
+        };
 
         const fqMap = new Map();
         chromosomeData.forEach(d => {
@@ -124,7 +140,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
                 const width = xScale.bandwidth();
                 const height = yScale.bandwidth();
 
-                if(!fullTriangleVisible) {
+                if (!fullTriangleVisible) {
                     context.fillStyle = !hasData(ibp, jbp) ? 'white' : (fdr > 0.05 || (fdr === -1 && fq === -1)) ? 'white' : colorScale(fq);
                 } else {
                     context.fillStyle = !hasData(ibp, jbp) ? 'white' : (jbp <= ibp) ? 'white' : colorScale(fq);
@@ -133,30 +149,84 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
             });
         });
 
+        const updateAxisWithBrushRange = (start, end) => {
+            const startX = transformedXScale(start);
+            const endX = transformedXScale(end);
+
+            axisSvg.selectAll('.range-line').remove();
+
+            axisSvg.append("line")
+                .attr('class', 'range-line')
+                .attr('transform', `translate(${(parentWidth - canvas.width) / 2}, ${margin.top})`)
+                .attr("x1", startX)
+                .attr("y1", 0)
+                .attr("x2", startX)
+                .attr("y2", 50)
+                .attr("stroke", "#C0C0C0")
+                .attr("stroke-width", 3);
+
+            axisSvg.append("line")
+                .attr('class', 'range-line')
+                .attr('transform', `translate(${(parentWidth - canvas.width) / 2}, ${margin.top})`)
+                .attr("x1", endX)
+                .attr("y1", 0)
+                .attr("x2", endX)
+                .attr("y2", 50)
+                .attr("stroke", "#C0C0C0")
+                .attr("stroke-width", 3);
+        };
+
         const brushSvg = d3.select(brushSvgRef.current)
-            .attr('width', canvas.width + margin.left + margin.right)
-            .attr('height', canvas.height + margin.top + margin.bottom);
+            .attr('width', canvas.width)
+            .attr('height', canvas.height);
 
         brushSvg.selectAll('*').remove();
 
-        brushSvg.append('g')
-            .attr('class', 'brush')
-            .call(d3.brushX()
-                .extent([[margin.left, margin.top], [canvas.width + margin.left, height + margin.top]])
-                .on('end', ({ selection }) => {
-                    if (!selection) {
-                        setTriangleCurrentChromosomeSequence(currentChromosomeSequence);
-                        return;
-                    }
+        const clickableArea = [
+            [canvas.width / 2, margin.top],
+            [0, canvas.height - margin.bottom],
+            [canvas.width, canvas.height - margin.bottom],
+        ];
 
-                    const [x0, x1] = selection;
-                    const brushedX = axisValues.filter(val => {
-                        const pos = margin.left + xScale(val) + xScale.bandwidth() / 2;
-                        return pos >= x0 && pos <= x1;
-                    });
-                    setTriangleCurrentChromosomeSequence({ start: brushedX[0], end: brushedX[brushedX.length - 1] });
-                })
-            );
+        // Limit the clickable area to the triangle
+        brushSvg.append('polygon')
+            .attr('points', clickableArea.map(d => d.join(',')).join(' '))
+            .attr('fill', 'transparent')
+
+        // Draw a brushed triangle area on click
+        brushSvg.on('click', (e) => {
+            const [mouseX, mouseY] = d3.pointer(e);
+
+            brushSvg.selectAll('.triangle').remove();
+
+            if (d3.polygonContains(clickableArea, [mouseX, mouseY])) {
+                const length = canvas.height - margin.top - mouseY;
+
+                const pointBottomLeft = [Math.max(mouseX - length, 0), canvas.height - margin.bottom];
+                const pointBottomRight = [Math.min(mouseX + length, canvas.width), canvas.height - margin.bottom];
+
+                const trianglePoints = [
+                    [mouseX, mouseY],
+                    pointBottomLeft,
+                    pointBottomRight,
+                ];
+
+                const brushedTriangleRangeStart = invertBand(transformedXScale, mouseX - length);
+                const brushedTriangleRangeEnd = invertBand(transformedXScale, mouseX + length);
+
+                brushSvg.append('polygon')
+                    .attr('class', 'triangle')
+                    .attr('points', trianglePoints.map(d => d.join(',')).join(' '))
+                    .attr('fill', '#808080')
+                    .attr('opacity', 0.5)
+
+                updateAxisWithBrushRange(brushedTriangleRangeStart, brushedTriangleRangeEnd);
+                setBrushedTriangleRange({ start: brushedTriangleRangeStart, end: brushedTriangleRangeEnd });
+            } else {
+                setBrushedTriangleRange({ start: 0, end: 0 });
+                axisSvg.selectAll('.range-line').remove();
+            }
+        });
 
         const axisSvg = d3.select(axisSvgRef.current)
             .attr('width', parentWidth)
@@ -211,10 +281,10 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
                 alignItems: 'center',
                 gap: '10px',
             }}>
-                <Switch 
-                    checkedChildren="Partial" 
-                    unCheckedChildren="Full" 
-                    checked={fullTriangleVisible} 
+                <Switch
+                    checkedChildren="Partial"
+                    unCheckedChildren="Full"
+                    checked={fullTriangleVisible}
                     onChange={() => setFullTriangleVisible(!fullTriangleVisible)}
                 />
                 <Button
@@ -231,10 +301,10 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
             <svg ref={axisSvgRef} style={{ height: '50px', flexShrink: 0 }} />
             {minCanvasDimension > 0 && (
                 <TriangleGeneList
+                    brushedTriangleRange={brushedTriangleRange}
                     cellLineName={cellLineName}
                     chromosomeName={chromosomeName}
                     geneList={geneList}
-                    epigeneticTrackData={epigeneticTrackData}
                     currentChromosomeSequence={triangleCurrentChromosomeSequence}
                     minCanvasDimension={minCanvasDimension}
                     geneName={geneName}
