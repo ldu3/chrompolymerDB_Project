@@ -510,7 +510,6 @@ function App() {
               warning={warning}
               setChromosome3DExampleData={setChromosome3DExampleData}
               geneList={geneList}
-              // epigeneticTrackData={epigeneticTrackData}
               cellLineName={cellLineName}
               chromosomeName={chromosomeName}
               chromosomeData={chromosomeData}
@@ -524,6 +523,7 @@ function App() {
               setComparisonCellLine3DData={setComparisonCellLine3DData}
               setComparisonCellLine3DLoading={setComparisonCellLine3DLoading}
               setGeneName={setGeneName}
+              setGeneSize={setGeneSize}
             />
           ) : (
             <Empty

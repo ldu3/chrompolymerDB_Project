@@ -1,12 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
-export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromosomeSequence, minDimension, geneName, setGeneName }) => {
+export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromosomeSequence, minDimension, geneName, setGeneName, setGeneSize }) => {
     const svgRef = useRef();
     const containerRef = useRef();
     const [scrollEnabled, setScrollEnabled] = useState(false);
     const tooltipRef = useRef();
     const initialHeightRef = useRef(null);
+
+    const fetchChromosomeSizeByGeneName = (value) => {
+        fetch("/getChromosSizeByGeneName", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ gene_name: value })
+        })
+            .then(res => res.json())
+            .then(data => {
+                setGeneSize({ start: data.start_location, end: data.end_location });
+            })
+    }
 
     async function fetchepigeneticTrackData() {
         if (cellLineName && chromosomeName && currentChromosomeSequence) {
@@ -167,6 +181,7 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                     .style("transition", "all 0.3s ease")
                     .on("click", (event, d) => {
                         setGeneName(d.symbol);
+                        fetchChromosomeSizeByGeneName(d.symbol);
                     })
                     .on("mouseover", (event, d) => {
                         d3.select(event.target).style("stroke-width", 1);
@@ -175,9 +190,10 @@ export const GeneList = ({ cellLineName, chromosomeName, geneList, currentChromo
                         tooltip.style("opacity", 0.8)
                             .style("visibility", "visible")
                             .html(`
-                            <strong>Gene Symbol:</strong> ${d.symbol || d.gene_name}<br>
-                            <strong>Start:</strong> ${d.displayStart}<br>
-                            <strong>End:</strong> ${d.displayEnd}
+                                <strong>Gene Symbol:</strong> ${d.symbol || d.gene_name}<br>
+                                <strong>Chromosome:</strong> Chr ${d.chromosome}<br>
+                                <strong>Start:</strong> ${d.displayStart}<br>
+                                <strong>End:</strong> ${d.displayEnd}
                             `)
                             .style("left", `${event.pageX + 10}px`)
                             .style("top", `${event.pageY - 20}px`);
