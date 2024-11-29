@@ -323,7 +323,7 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                         cellLineName={cellLineName}
                         chromosomeName={chromosomeName}
                         totalChromosomeSequences={totalChromosomeSequences}
-                        chromosomeData={chromosomeData}
+                        currentChromosomeData={currentChromosomeData}
                         currentChromosomeSequence={currentChromosomeSequence}
                         geneName={geneName}
                     />

@@ -4,16 +4,16 @@ import { Button, Switch } from 'antd';
 import { DownloadOutlined } from "@ant-design/icons";
 import { TriangleGeneList } from './triangleGeneList.js';
 
-export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, currentChromosomeSequence, geneList, totalChromosomeSequences, chromosomeData }) => {
+export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, currentChromosomeSequence, geneList, totalChromosomeSequences, currentChromosomeData }) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const axisSvgRef = useRef(null);
     const brushSvgRef = useRef(null);
 
     const [minCanvasDimension, setMinCanvasDimension] = useState(0);
-    const [triangleCurrentChromosomeSequence, setTriangleCurrentChromosomeSequence] = useState(currentChromosomeSequence);
     const [brushedTriangleRange, setBrushedTriangleRange] = useState({ start: 0, end: 0 });
     const [fullTriangleVisible, setFullTriangleVisible] = useState(false);
+    const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
     const downloadImage = () => {
         const canvas = canvasRef.current;
@@ -54,15 +54,34 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
     const switchChange = () => {
         setFullTriangleVisible(!fullTriangleVisible);
         setBrushedTriangleRange({ start: 0, end: 0 });
-    }
+    };
 
     useEffect(() => {
+        const observer = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                const { width, height } = entry.contentRect;
+                setContainerSize({ width, height });
+            }
+        });
+
+        if (containerRef.current) {
+            observer.observe(containerRef.current);
+        }
+
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!containerSize.width && !containerSize.height) return;
+
         const canvas = canvasRef.current;
         const context = canvas.getContext('2d');
 
         const margin = { top: 5, right: 5, bottom: 5, left: 5 };
-        const parentWidth = containerRef.current.offsetWidth;
-        const parentHeight = containerRef.current.offsetHeight;
+        const parentWidth = containerSize.width;
+        const parentHeight = containerSize.height;
 
         const width = (Math.min(parentWidth, parentHeight) - margin.left - margin.right);
         const height = (Math.min(parentWidth, parentHeight) - margin.top - margin.bottom);
@@ -78,7 +97,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
         context.translate(canvas.width / 2, -canvas.height * 2);
         context.rotate((Math.PI / 180) * 45);
 
-        const { start, end } = triangleCurrentChromosomeSequence;
+        const { start, end } = currentChromosomeSequence;
         const step = 5000;
         const adjustedStart = Math.floor(start / step) * step;
         const adjustedEnd = Math.ceil(end / step) * step;
@@ -105,7 +124,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
 
         const colorScale = d3.scaleSequential(
             t => d3.interpolateReds(t * 0.8 + 0.2)
-        ).domain([0, d3.max(chromosomeData, d => d.fq)]);
+        ).domain([0, d3.max(currentChromosomeData, d => d.fq)]);
 
         const invertBand = (scale, value) => {
             const range = scale.range();
@@ -123,7 +142,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
         };
 
         const fqMap = new Map();
-        chromosomeData.forEach(d => {
+        currentChromosomeData.forEach(d => {
             fqMap.set(`X:${d.ibp}, Y:${d.jbp}`, { fq: d.fq, fdr: d.fdr });
         });
 
@@ -239,7 +258,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
         axisSvg.selectAll('*').remove();
 
         // Calculate the range of the current chromosome sequence
-        const range = triangleCurrentChromosomeSequence.end - triangleCurrentChromosomeSequence.start;
+        const range = currentChromosomeSequence.end - currentChromosomeSequence.start;
 
         // Dynamically determine the tick count based on the range
         let tickCount;
@@ -272,8 +291,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
             .attr("transform", "rotate(45)")
             .attr("dx", "1em")
             .attr("dy", "0em");
-
-    }, [chromosomeData, fullTriangleVisible]);
+    }, [currentChromosomeData, fullTriangleVisible, currentChromosomeSequence, containerSize]);
 
     return (
         <div ref={containerRef} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', width: '100%', height: '100%' }}>
@@ -310,7 +328,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
                     cellLineName={cellLineName}
                     chromosomeName={chromosomeName}
                     geneList={geneList}
-                    currentChromosomeSequence={triangleCurrentChromosomeSequence}
+                    currentChromosomeSequence={currentChromosomeSequence}
                     minCanvasDimension={minCanvasDimension}
                     geneName={geneName}
                 />
