@@ -289,7 +289,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
                 <Switch
                     checkedChildren="Partial"
                     unCheckedChildren="Full"
-                    checked={fullTriangleVisible}
+                    checked={!fullTriangleVisible}
                     onChange={switchChange}
                 />
                 <Button
