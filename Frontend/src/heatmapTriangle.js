@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
-import { Button } from 'antd';
+import { Button, Switch } from 'antd';
 import { DownloadOutlined } from "@ant-design/icons";
 import { TriangleGeneList } from './triangleGeneList.js';
 
@@ -12,6 +12,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
 
     const [minCanvasDimension, setMinCanvasDimension] = useState(0);
     const [triangleCurrentChromosomeSequence, setTriangleCurrentChromosomeSequence] = useState(currentChromosomeSequence);
+    const [fullTriangleVisible, setFullTriangleVisible] = useState(false);
 
     const downloadImage = () => {
         const canvas = canvasRef.current;
@@ -116,14 +117,18 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
 
         axisValues.forEach(ibp => {
             axisValues.forEach(jbp => {
-                const { fq } = fqMap.get(`X:${ibp}, Y:${jbp}`) || { fq: -1, fdr: -1 };
+                const { fq, fdr } = fqMap.get(`X:${ibp}, Y:${jbp}`) || { fq: -1, fdr: -1 };
 
                 const x = margin.left + xScale(jbp);
                 const y = margin.top + yScale(ibp);
                 const width = xScale.bandwidth();
                 const height = yScale.bandwidth();
 
-                context.fillStyle = !hasData(ibp, jbp) ? 'white' : (jbp <= ibp) ? 'white' : colorScale(fq);
+                if(!fullTriangleVisible) {
+                    context.fillStyle = !hasData(ibp, jbp) ? 'white' : (fdr > 0.05 || (fdr === -1 && fq === -1)) ? 'white' : colorScale(fq);
+                } else {
+                    context.fillStyle = !hasData(ibp, jbp) ? 'white' : (jbp <= ibp) ? 'white' : colorScale(fq);
+                }
                 context.fillRect(x, y, width, height);
             });
         });
@@ -193,7 +198,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
             .attr("dx", "1em")
             .attr("dy", "0em");
 
-    }, [chromosomeData]);
+    }, [chromosomeData, fullTriangleVisible]);
 
     return (
         <div ref={containerRef} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', width: '100%', height: '100%' }}>
@@ -203,8 +208,15 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
                 right: 20,
                 zIndex: 10,
                 display: 'flex',
+                alignItems: 'center',
                 gap: '10px',
             }}>
+                <Switch 
+                    checkedChildren="Partial" 
+                    unCheckedChildren="Full" 
+                    checked={fullTriangleVisible} 
+                    onChange={() => setFullTriangleVisible(!fullTriangleVisible)}
+                />
                 <Button
                     style={{
                         fontSize: 15,
