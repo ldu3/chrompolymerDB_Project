@@ -2,12 +2,12 @@ import React, { useMemo, useState, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei';
-import { Button, ColorPicker } from 'antd';
+import { Button, ColorPicker, Switch } from 'antd';
 import { DownloadOutlined, ReloadOutlined, ClearOutlined } from "@ant-design/icons";
 import { Chromosome3DDistance } from './Chromosome3DDistance';
 import "./Styles/Chromosome3D.css";
 
-export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpData, selectedChromosomeSequence }) => {
+export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpData, selectedChromosomeSequence, geneSize }) => {
     const scaleFactor = 0.15;
     const canvasRef = useRef();
     const controlsRef = useRef();
@@ -17,23 +17,40 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
     const [selectedIndex, setSelectedIndex] = useState(null);
     const [selectedSphereList, setSelectedSphereList] = useState({});
     const [showChromosome3DDistance, setShowChromosome3DDistance] = useState(false);
+    const [geneBeadSeq, setGeneBeadSeq] = useState([]);
+    const [isFullGeneVisible, setIsFullGeneVisible] = useState(true);
 
     const step = 5000;
     const newStart = Math.ceil(selectedChromosomeSequence.start / step) * step;
-    const processedChromosomeData = useMemo(() => {
 
+    useMemo(() => {
+        if (geneSize.start > 0 && geneSize.end > 0) {
+            const geneStart = Math.floor(geneSize.start / step) * step;
+            const geneEnd = Math.ceil(geneSize.end / step) * step;
+            const result = [];
+            for (let i = geneStart; i <= geneEnd; i += step) {
+                result.push(i);
+            }
+            setGeneBeadSeq(result);
+        }
+    }, [geneSize]);
+
+    console.log('validChromosomeValidIbpData: ', validChromosomeValidIbpData, geneSize);
+    const processedChromosomeData = useMemo(() => {
         return chromosome3DExampleData.map((data, index) => {
             const marker = newStart + index * step;
             const isValid = validChromosomeValidIbpData.includes(marker);
+            const isGeneBead = geneBeadSeq.includes(marker);
 
             return {
                 ...data,
                 marker,
-                isValid
+                isValid,
+                isGeneBead
             };
         });
-    }, [chromosome3DExampleData, validChromosomeValidIbpData]);
-
+    }, [chromosome3DExampleData, validChromosomeValidIbpData, geneBeadSeq]);
+    console.log('processedChromosomeData: ', processedChromosomeData);
     const coordinates = useMemo(() => {
         return processedChromosomeData.map((data) => {
             const x = data.x * scaleFactor;
@@ -43,17 +60,17 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
         });
     }, [processedChromosomeData]);
 
-    const blendColors = (color1, color2) =>{
+    const blendColors = (color1, color2) => {
         const color1Obj = new THREE.Color(color1);
         const color2Obj = new THREE.Color(color2);
-    
+
         const blendedColor = new THREE.Color();
         blendedColor.r = (color1Obj.r + color2Obj.r) / 2;
         blendedColor.g = (color1Obj.g + color2Obj.g) / 2;
         blendedColor.b = (color1Obj.b + color2Obj.b) / 2;
-    
+
         return blendedColor;
-    } 
+    }
 
     const download = () => {
         if (rendererRef.current && rendererRef.current.gl) {
@@ -150,8 +167,19 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
                 right: 10,
                 zIndex: 10,
                 display: 'flex',
+                alignItems: 'center',
                 gap: '10px',
             }}>
+                <Switch
+                    checkedChildren="All Genes"
+                    unCheckedChildren="First Gene"
+                    disabled={geneBeadSeq.length === 0}
+                    checked={isFullGeneVisible}
+                    style={{
+                        backgroundColor: isFullGeneVisible ? '#DAA520' : '#262626'
+                    }}
+                    onChange={() => setIsFullGeneVisible(!isFullGeneVisible)}
+                />
                 <ColorPicker
                     value={selectedSphereList[selectedIndex]?.color || '#ffffff'}
                     disabled={selectedIndex === null}
@@ -225,26 +253,41 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
                         const isFirst = index === 0;
                         const isLast = index === coordinates.length - 1;
                         const isValid = processedChromosomeData[index].isValid;
+                        const isGeneBead = processedChromosomeData[index].isGeneBead;
+                        const isGeneStart = geneBeadSeq[0] === processedChromosomeData[index].marker;
+
+                        // Gene beads shows control
+                        const shouldRender =
+                            geneBeadSeq.length > 0 && isFullGeneVisible
+                                ? isGeneBead
+                                : isGeneStart;
+
+                        const blendIfInvalid = (baseColor) => blendColors(baseColor, '#FFFFFF');
 
                         // first bead: green, last bead: blue
                         const originalColor = isFirst ? '#00FF00' : isLast ? '#0000FF' : null;
 
-                        // For valid markers, use the color defined by the user or the default
-                        const validColor = selectedSphereList[index]?.color ||
-                            (hoveredIndex === index || selectedIndex === index
-                                ? '#F7E7CE'
-                                : isFirst || isLast
-                                    ? originalColor
-                                    : '#FB607F');
-
-                        // For invalid markers at the start or end, blend with white
-                        const currentColor = isValid
-                            ? validColor
+                        const geneBeadColor = isValid
+                            ? '#FFD700' // gold
                             : isFirst
-                                ? blendColors('#00FF00', '#FFFFFF')  // Blend green and white
+                                ? blendIfInvalid('#00FF00') // mix green and white
                                 : isLast
-                                    ? blendColors('#0000FF', '#FFFFFF')  // Blend blue and white
-                                    : '#FFFFFF';  // Invalid color for non-first/last markers
+                                    ? blendIfInvalid('#0000FF') // mix blue and white
+                                    : blendIfInvalid('#FFD700'); // mix gold and white
+
+                        const currentColor = shouldRender
+                            ? geneBeadColor
+                            : isValid
+                                ? (isFirst
+                                    ? '#00FF00' // valid start bead green
+                                    : isLast
+                                        ? '#0000FF' // valid end bead blue
+                                        : '#669bbc') // deafult bead color
+                                : isFirst
+                                    ? blendIfInvalid('#00FF00') // invalid start bead mix green and white
+                                    : isLast
+                                        ? blendIfInvalid('#0000FF') // invalid end bead mix blue and white
+                                        : '#FFFFFF';  // default invalid bead color
 
                         return (
                             <group
