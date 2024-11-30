@@ -35,7 +35,6 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
         }
     }, [geneSize]);
 
-    console.log('validChromosomeValidIbpData: ', validChromosomeValidIbpData, geneSize);
     const processedChromosomeData = useMemo(() => {
         return chromosome3DExampleData.map((data, index) => {
             const marker = newStart + index * step;
@@ -50,7 +49,7 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
             };
         });
     }, [chromosome3DExampleData, validChromosomeValidIbpData, geneBeadSeq]);
-    console.log('processedChromosomeData: ', processedChromosomeData);
+
     const coordinates = useMemo(() => {
         return processedChromosomeData.map((data) => {
             const x = data.x * scaleFactor;
