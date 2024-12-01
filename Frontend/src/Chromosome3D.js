@@ -274,14 +274,17 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
                                     ? blendIfInvalid('#0000FF') // mix blue and white
                                     : blendIfInvalid('#FFD700'); // mix gold and white
 
+                        const validColor = selectedSphereList[index]?.color ||
+                            (hoveredIndex === index || selectedIndex === index
+                                ? '#F7E7CE'
+                                : isFirst || isLast
+                                    ? originalColor
+                                    : '#669bbc');
+
                         const currentColor = shouldRender
                             ? geneBeadColor
                             : isValid
-                                ? (isFirst
-                                    ? '#00FF00' // valid start bead green
-                                    : isLast
-                                        ? '#0000FF' // valid end bead blue
-                                        : '#669bbc') // deafult bead color
+                                ? validColor
                                 : isFirst
                                     ? blendIfInvalid('#00FF00') // invalid start bead mix green and white
                                     : isLast
