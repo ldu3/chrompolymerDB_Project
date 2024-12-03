@@ -221,7 +221,7 @@ export const ChromosomeBar = ({ chromosomeSize, selectedChromosomeSequence, setS
     }, [totalChromosomeSequences, selectedChromosomeSequence, chromosomeSize]);
 
     return (
-        <div ref={parentRef} style={{ width: '100%', position: 'relative' }}>
+        <div id="chromosome-bar" ref={parentRef} style={{ width: '100%', position: 'relative' }}>
             <svg ref={svgRef}></svg>
             <div
                 className={`tooltip ${tooltip.visible ? 'visible' : ''}`}

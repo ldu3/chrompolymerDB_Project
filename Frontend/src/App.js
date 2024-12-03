@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Select, Input, Button, message, Empty, Spin, Tabs, Switch } from 'antd';
+import { Select, Input, Button, message, Empty, Spin, Tabs, Switch, Tooltip, Tour } from 'antd';
 import './App.css';
 // import { Heatmap } from './heatmap.js';
 import { Heatmap } from './canvasHeatmap.js';
 import { ChromosomeBar } from './chromosomeBar.js';
 import { Chromosome3D } from './Chromosome3D.js';
-import { PlusOutlined, MinusOutlined } from "@ant-design/icons";
+import { PlusOutlined, MinusOutlined, InfoCircleOutlined } from "@ant-design/icons";
 
 
 function App() {
@@ -37,6 +37,51 @@ function App() {
   const [comparisonCellLine3DData, setComparisonCellLine3DData] = useState([]);
   const [comparisonCellLine3DSampleID, setComparisonCellLine3DSampleID] = useState(0);
   const [comparisonCellLine3DLoading, setComparisonCellLine3DLoading] = useState(false);
+
+
+  // Tour visibility state
+  const [isTourOpen, setIsTourOpen] = useState(true);
+
+  // Define Tour steps
+  const steps = [
+    {
+      title: "Toggle Mode",
+      description: "Switch between Cell Line and Gene fields using this toggle.",
+      target: () => document.querySelector(".switchWrapper"),
+    },
+        {
+      title: "Tooltip Icon",
+      description: "Hover over this icon for more information about the toggle switch.",
+      target: () => document.querySelector("#info-tooltip"), // Target the tooltip icon
+      placement: "right", // Adjust placement if needed
+    },
+    {
+      title: "Cell Line Selector",
+      description: "Select a cell line using this dropdown.",
+      target: () => document.querySelector(".controlGroupText:first-of-type + .ant-select"),
+    },
+    {
+      title: "Chromosome Selector",
+      description: "Choose the chromosome you want to analyze.",
+      target: () => document.querySelector(".controlGroupText:nth-of-type(2) + .ant-select"),
+    },
+    {
+      title: "Sequences Input",
+      description: "Specify the sequence range using the start and end inputs.",
+      target: () => document.querySelector(".controlGroupText:nth-of-type(3) + .ant-input"),
+    },
+    {
+      title: "Check Button",
+      description: "Click this button to fetch the selected data.",
+      target: () => document.querySelector("#submit-button"),
+    },
+    {
+      title: "Chromosome Bar",
+      description: "This bar visualizes and allows you to select specific sequences on the chromosome.",
+      target: () => document.querySelector("#chromosome-bar"), // Targeting ChromosomeBar
+      placement: "bottom", 
+    },
+  ];
 
   useEffect(() => {
     if (!isCellLineMode) {
@@ -418,19 +463,52 @@ function App() {
     }
   };
 
+
   return (
     <div className="App">
       {contextHolder}
-      {/* header part */}
+
+      {/* Tour Component */}
+      <Tour 
+        open={isTourOpen} 
+        onClose={() => setIsTourOpen(false)} 
+        steps={steps} 
+      />
+
+      {/* Header Section */}
       <div className="controlHeader">
         <div className="controlGroup">
-          <div className='switchWrapper'>
-            <Switch checkedChildren="Cell Line" unCheckedChildren="Gene" checked={isCellLineMode} onChange={modeChange} size='small' style={{
-              width: "100%",
-              marginLeft: 18,
-              backgroundColor: isCellLineMode ? '#74C365' : '#ED9121'
-            }} />
+          <div
+            className="switchWrapper"
+            style={{ display: 'flex', alignItems: 'center', gap: '5px', marginLeft: '10px' }}
+          >
+            <Switch
+              checkedChildren="Cell Line"
+              unCheckedChildren="Gene"
+              checked={isCellLineMode}
+              onChange={modeChange}
+              size="small"
+              style={{
+                backgroundColor: isCellLineMode ? '#74C365' : '#ED9121',
+              }}
+            />
+            <Tooltip
+              title="Toggle to switch between Cell Line and Gene fields."
+              placement="top"
+              overlayInnerStyle={{
+                backgroundColor: 'white',
+                color: 'black',
+                border: '1px solid #ddd',
+                boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              <InfoCircleOutlined
+              id="info-tooltip"
+                style={{ fontSize: '16px', color: '#999', cursor: 'pointer' }}
+              />
+            </Tooltip>
           </div>
+
           {isCellLineMode ? (
             <>
               <span className="controlGroupText">Cell Line:</span>
@@ -439,7 +517,7 @@ function App() {
                 size="small"
                 style={{
                   width: "18%",
-                  marginRight: 20
+                  marginRight: 20,
                 }}
                 onChange={cellLineChange}
                 options={cellLineList}
@@ -450,15 +528,27 @@ function App() {
                 size="small"
                 style={{
                   width: "10%",
-                  marginRight: 20
+                  marginRight: 20,
                 }}
                 onChange={chromosomeChange}
                 options={chromosList}
               />
               <span className="controlGroupText">Sequences:</span>
-              <Input size="small" style={{ width: "10%", marginRight: 10 }} placeholder="Start" onChange={(e) => chromosomeSequenceChange('start', e.target.value)} value={selectedChromosomeSequence.start} />
+              <Input
+                size="small"
+                style={{ width: "10%", marginRight: 10 }}
+                placeholder="Start"
+                onChange={(e) => chromosomeSequenceChange('start', e.target.value)}
+                value={selectedChromosomeSequence.start}
+              />
               <span className="controlGroupText">~</span>
-              <Input size="small" style={{ width: "10%", marginRight: 20 }} placeholder="End" onChange={(e) => chromosomeSequenceChange('end', e.target.value)} value={selectedChromosomeSequence.end} />
+              <Input
+                size="small"
+                style={{ width: "10%", marginRight: 20 }}
+                placeholder="End"
+                onChange={(e) => chromosomeSequenceChange('end', e.target.value)}
+                value={selectedChromosomeSequence.end}
+              />
             </>
           ) : (
             <>
@@ -468,7 +558,7 @@ function App() {
                 size="small"
                 style={{
                   width: "18%",
-                  marginRight: 20
+                  marginRight: 20,
                 }}
                 onChange={cellLineChange}
                 options={cellLineList}
@@ -480,7 +570,7 @@ function App() {
                 size="small"
                 style={{
                   width: "10%",
-                  marginRight: 20
+                  marginRight: 20,
                 }}
                 onChange={geneNameChange}
                 onSearch={geneNameSearch}
@@ -488,7 +578,7 @@ function App() {
               />
             </>
           )}
-          <Button size="small" color="primary" variant="outlined" onClick={submit}>Check</Button>
+          <Button   id="submit-button" size="small" color="primary" variant="outlined" onClick={submit}>Check</Button>
         </div>
         <ChromosomeBar
           warning={warning}
