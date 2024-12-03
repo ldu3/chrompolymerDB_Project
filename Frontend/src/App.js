@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Select, Input, Button, message, Empty, Spin, Tabs, Switch } from 'antd';
+import { Select, Input, Button, message, Empty, Spin, Tabs, Switch, Tooltip } from 'antd';
 import './App.css';
 // import { Heatmap } from './heatmap.js';
 import { Heatmap } from './canvasHeatmap.js';
@@ -456,9 +456,9 @@ function App() {
                 options={chromosList}
               />
               <span className="controlGroupText">Sequences:</span>
-              <Input size="small" style={{ width: "10%", marginRight: 10 }} placeholder="Start" onChange={(e) => chromosomeSequenceChange('start', e.target.value)} value={selectedChromosomeSequence.start} />
+              <Input size="small" style={{ width: "8%", marginRight: 10 }} placeholder="Start" onChange={(e) => chromosomeSequenceChange('start', e.target.value)} value={selectedChromosomeSequence.start} />
               <span className="controlGroupText">~</span>
-              <Input size="small" style={{ width: "10%", marginRight: 20 }} placeholder="End" onChange={(e) => chromosomeSequenceChange('end', e.target.value)} value={selectedChromosomeSequence.end} />
+              <Input size="small" style={{ width: "8%", marginRight: 20 }} placeholder="End" onChange={(e) => chromosomeSequenceChange('end', e.target.value)} value={selectedChromosomeSequence.end} />
             </>
           ) : (
             <>
@@ -488,8 +488,53 @@ function App() {
               />
             </>
           )}
-          <Button size="small" color="primary" variant="outlined" onClick={submit}>Check</Button>
+	<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+	  <Tooltip title="View non-random chromosomal interactions as heatmap">
+            <Button size="small" color="primary" variant="outlined" onClick={submit}>Show Heatmap</Button>
+	  </Tooltip>
+  	<div style={{
+   		 border: "1px solid #ccc",
+   		 padding: "3px 8px",
+  		 marginLeft: "20px",
+   		 display: "inline-block",
+ 	   	 fontSize: "9px",
+    		 lineHeight: "1.0",
+  		 borderRadius: "5px",
+   		 verticalAlign: "top", // Align with the button
+ 	 }}>
+ 	 <div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+      	<div style={{
+       		 width: "7px",
+    		 height: "7px",
+     		 backgroundColor: "#74C365",
+      		 marginRight: "6px",
+        	 border: "1px solid #000"
+     	 }}></div>
+      	<span>Available regions</span>
+    	</div>
+    	<div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+      	<div style={{
+        	width: "7px",
+ 	        height: "7px",
+        	backgroundColor: "#FFD700",
+    	        marginRight: "6px",
+        	border: "1px solid #000"
+      	}}></div>
+        <span>Selected region</span>
         </div>
+        <div style={{ display: "flex", alignItems: "center" }}>
+           <div style={{
+              	 width: "7px",
+        	 height: "7px",
+        	 backgroundColor: "#FFFFFF",
+        	 marginRight: "6px",
+          	 border: "1px solid #000"
+      	}}></div>
+       <span>Unavailable regions</span>
+    	</div>
+        </div>
+     </div>
+    </div>
         <ChromosomeBar
           warning={warning}
           selectedChromosomeSequence={selectedChromosomeSequence}
@@ -546,6 +591,7 @@ function App() {
                   style={{ width: '100%', height: '100%' }}
                   onChange={originalSampleChange}
                   tabBarExtraContent={
+	  	    <Tooltip title="Add a second cell line for comparison">
                     <Button
                       style={{
                         fontSize: 15,
@@ -555,7 +601,7 @@ function App() {
                       size="small"
                       icon={<PlusOutlined />}
                       onClick={handleAddChromosome3D}
-                    />
+                    /></Tooltip>
                   }
                   items={new Array(3).fill(null).map((_, i) => {
                     const id = i;
@@ -596,6 +642,7 @@ function App() {
                           onChange={comparisonCellLineChange}
                           options={comparisonCellLineList}
                         />
+			<Tooltip title="Collapse the second cell line window">
                         <Button
                           style={{
                             fontSize: 15,
@@ -604,7 +651,7 @@ function App() {
                           size="small"
                           icon={<MinusOutlined />}
                           onClick={handleRemoveChromosome3D}
-                        />
+                        /></Tooltip>
                       </div>
                     }
                     items={new Array(3).fill(null).map((_, i) => {

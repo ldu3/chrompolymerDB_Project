@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
-import { Button, Switch } from 'antd';
+import { Button, Tooltip, Switch } from 'antd';
 import { DownloadOutlined } from "@ant-design/icons";
 import { TriangleGeneList } from './triangleGeneList.js';
 
@@ -310,6 +310,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
                     checked={!fullTriangleVisible}
                     onChange={switchChange}
                 />
+		<Tooltip title="Download non-random interaction data"> 
                 <Button
                     style={{
                         fontSize: 15,
@@ -317,7 +318,7 @@ export const HeatmapTriangle = ({ cellLineName, chromosomeName, geneName, curren
                     }}
                     icon={<DownloadOutlined />}
                     onClick={downloadImage}
-                />
+                /></Tooltip>
             </div>
             <canvas ref={canvasRef} />
             <svg ref={brushSvgRef} style={{ position: 'absolute', zIndex: 2, pointerEvents: 'all' }} />

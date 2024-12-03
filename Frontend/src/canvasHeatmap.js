@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Input, Modal } from "antd";
-import { DownloadOutlined, ReloadOutlined, FullscreenOutlined } from "@ant-design/icons";
+import { Button, Input, Modal, Tooltip } from "antd";
+import { DownloadOutlined, RollbackOutlined, FullscreenOutlined } from "@ant-design/icons";
 import { GeneList } from './geneList.js';
 import { HeatmapTriangle } from './heatmapTriangle.js';
 import * as d3 from 'd3';
@@ -285,15 +285,18 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                         <span>{currentChromosomeSequence.end}</span>
                     </div>
                     <div style={{ display: 'flex', gap: '5px' }}>
+			<Tooltip title="Restore the original heatmap">
                         <Button
                             size='small'
                             style={{
                                 fontSize: 12,
                                 cursor: "pointer",
                             }}
-                            icon={<ReloadOutlined />}
+                            icon={<RollbackOutlined />}
                             onClick={() => setCurrentChromosomeSequence(selectedChromosomeSequence)}
                         />
+			</Tooltip>
+			<Tooltip title="Expand the heatmap view">
                         <Button
                             size='small'
                             style={{
@@ -303,6 +306,8 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                             icon={<FullscreenOutlined />}
                             onClick={openHalfHeatMapModal}
                         />
+			</Tooltip>
+			<Tooltip title="Download non-random interaction data">
                         <Button
                             size='small'
                             style={{
@@ -311,10 +316,11 @@ export const Heatmap = ({ cellLineName, chromosomeName, chromosomeData, selected
                             }}
                             icon={<DownloadOutlined />}
                             onClick={download}
-                        />
+                        /></Tooltip>
+			<Tooltip title="Generate 3D chromosome structure based on non-random interactions in view">
                         <Button size='small' color="primary" variant="outlined" onClick={generate3DChromosome} style={{ marginRight: 5, fontSize: 12 }}>
-                            Generate 3D
-                        </Button>
+                            Generate 3D chromosome
+                        </Button></Tooltip>
                     </div>
                 </div>
                 <Modal open={halfHeatMapModalVisible} onOk={() => setHalfHeatMapModalVisible(false)} onCancel={() => setHalfHeatMapModalVisible(false)} footer={null} width={"60vw"} styles={{ body: { overflowY: 'auto', maxHeight: '80vh' } }} >

@@ -1,9 +1,9 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { Button } from 'antd';
+import { Button, Tooltip } from 'antd';
 import { Text, OrbitControls } from '@react-three/drei';
-import { ReloadOutlined, MinusOutlined, DownloadOutlined } from "@ant-design/icons";
+import { RollbackOutlined, CaretUpOutlined, DownloadOutlined } from "@ant-design/icons";
 
 export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDistance }) => {
     const controlsRef = useRef();
@@ -131,14 +131,16 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                     display: 'flex',
                     gap: '10px',
                 }}>
+		    <Tooltip title="Restore the original view">
                     <Button
                         style={{
                             fontSize: 15,
                             cursor: "pointer",
                         }}
-                        icon={<ReloadOutlined />}
+                        icon={<RollbackOutlined />}
                         onClick={resetView}
-                    />
+                    /></Tooltip>
+		    <Tooltip title="Download the selected beads and their distance">	
                     <Button
                         style={{
                             fontSize: 15,
@@ -146,15 +148,16 @@ export const Chromosome3DDistance = ({ selectedSphereList, setShowChromosome3DDi
                         }}
                         icon={<DownloadOutlined />}
                         onClick={download}
-                    />
+                    /></Tooltip>
+		    <Tooltip title="Collapse the distance window">
                     <Button
                         style={{
                             fontSize: 15,
                             cursor: "pointer",
                         }}
-                        icon={<MinusOutlined />}
+                        icon={<CaretUpOutlined />}
                         onClick={() => setShowChromosome3DDistance(false)}
-                    />
+                    /></Tooltip>
                 </div>
 
                 <Canvas

@@ -2,8 +2,8 @@ import React, { useMemo, useState, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei';
-import { Button, ColorPicker, Switch } from 'antd';
-import { DownloadOutlined, ReloadOutlined, ClearOutlined } from "@ant-design/icons";
+import { Button, Tooltip, ColorPicker, Switch } from 'antd';
+import { DownloadOutlined, RollbackOutlined, ClearOutlined } from "@ant-design/icons";
 import { Chromosome3DDistance } from './Chromosome3DDistance';
 import "./Styles/Chromosome3D.css";
 
@@ -179,11 +179,13 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
                     }}
                     onChange={() => setIsFullGeneVisible(!isFullGeneVisible)}
                 />
+		<Tooltip title="Change the color of selected bead">
                 <ColorPicker
                     value={selectedSphereList[selectedIndex]?.color || '#ffffff'}
                     disabled={selectedIndex === null}
                     onChange={handleColorChange}
-                />
+                /></Tooltip>
+		<Tooltip title="Clear the bead selections">
                 <Button
                     style={{
                         fontSize: 15,
@@ -191,15 +193,17 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
                     }}
                     icon={<ClearOutlined />}
                     onClick={resetSelectedBead}
-                />
+                /></Tooltip>
+		<Tooltip title="Restore the original view">
                 <Button
                     style={{
                         fontSize: 15,
                         cursor: "pointer",
                     }}
-                    icon={<ReloadOutlined />}
+                    icon={<RollbackOutlined />}
                     onClick={resetView}
-                />
+                /></Tooltip>
+		<Tooltip title="Download the 3D chromosome data">
                 <Button
                     style={{
                         fontSize: 15,
@@ -207,14 +211,14 @@ export const Chromosome3D = ({ chromosome3DExampleData, validChromosomeValidIbpD
                     }}
                     icon={<DownloadOutlined />}
                     onClick={download}
-                />
+                /></Tooltip>
+		<Tooltip title="Generate pairwise distances for selected beads">
                 <Button
                     className={`custom-button ${Object.keys(selectedSphereList).length < 2 ? 'disabled' : ''}`}
                     disabled={Object.keys(selectedSphereList).length < 2}
-                    onClick={() => setShowChromosome3DDistance(true)}
-                >
+                    onClick={() => setShowChromosome3DDistance(true)}>
                     Generate Distance
-                </Button>
+                </Button></Tooltip>
             </div>
 
             <div style={{ height: showChromosome3DDistance ? '65%' : '100%', transition: 'height 0.3s ease' }}>
