@@ -77,7 +77,12 @@ function App() {
     },
     {
       title: "Chromosome Bar",
-      description: "This bar visualizes and allows you to select specific sequences on the chromosome.",
+      cover: (
+        <img
+          src="/ChromosomeBarTourPic.png"
+        />
+      ),
+      description: (<>This bar visualizes and allows you to select specific sequences on the chromosome.The <span style={{ color: 'green', fontWeight: 'bold' }}>green color</span> shows the valid data, the <span style={{ color: '#999', fontWeight: 'bold'}}>blank area</span> represents the missing data, and the <span style={{ color: 'orange', fontWeight: 'bold'}}>orange color</span> shows your current valid data range with your selected sequences.</>),
       target: () => document.querySelector("#chromosome-bar"), // Targeting ChromosomeBar
       placement: "bottom", 
     },
@@ -578,7 +583,7 @@ function App() {
               />
             </>
           )}
-          <Button   id="submit-button" size="small" color="primary" variant="outlined" onClick={submit}>Check</Button>
+          <Button id="submit-button" size="small" color="primary" variant="outlined" onClick={submit}>Check</Button>
         </div>
         <ChromosomeBar
           warning={warning}
