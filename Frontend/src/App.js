@@ -49,7 +49,7 @@ function App() {
       description: "Switch between Cell Line and Gene fields using this toggle.",
       target: () => document.querySelector(".switchWrapper"),
     },
-        {
+    {
       title: "Tooltip Icon",
       description: "Hover over this icon for more information about the toggle switch.",
       target: () => document.querySelector("#info-tooltip"), // Target the tooltip icon
@@ -82,9 +82,9 @@ function App() {
           src="/ChromosomeBarTourPic.png"
         />
       ),
-      description: (<>This bar visualizes and allows you to select specific sequences on the chromosome.The <span style={{ color: 'green', fontWeight: 'bold' }}>green color</span> shows the valid data, the <span style={{ color: '#999', fontWeight: 'bold'}}>blank area</span> represents the missing data, and the <span style={{ color: 'orange', fontWeight: 'bold'}}>orange color</span> shows your current valid data range with your selected sequences.</>),
+      description: (<>This bar visualizes and allows you to select specific sequences on the chromosome.The <span style={{ color: 'green', fontWeight: 'bold' }}>green color</span> shows the valid data, the <span style={{ color: '#999', fontWeight: 'bold' }}>blank area</span> represents the missing data, and the <span style={{ color: 'orange', fontWeight: 'bold' }}>orange color</span> shows your current valid data range with your selected sequences.</>),
       target: () => document.querySelector("#chromosome-bar"), // Targeting ChromosomeBar
-      placement: "bottom", 
+      placement: "bottom",
     },
   ];
 
@@ -474,10 +474,10 @@ function App() {
       {contextHolder}
 
       {/* Tour Component */}
-      <Tour 
-        open={isTourOpen} 
-        onClose={() => setIsTourOpen(false)} 
-        steps={steps} 
+      <Tour
+        open={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        steps={steps}
       />
 
       {/* Header Section */}
@@ -485,7 +485,7 @@ function App() {
         <div className="controlGroup">
           <div
             className="switchWrapper"
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', marginLeft: '10px' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '5px', marginLeft: '20px' }}
           >
             <Switch
               checkedChildren="Cell Line"
@@ -508,7 +508,7 @@ function App() {
               }}
             >
               <InfoCircleOutlined
-              id="info-tooltip"
+                id="info-tooltip"
                 style={{ fontSize: '16px', color: '#999', cursor: 'pointer' }}
               />
             </Tooltip>
@@ -571,53 +571,53 @@ function App() {
               />
             </>
           )}
-	<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-	  <Tooltip title="View non-random chromosomal interactions as heatmap">
-            <Button size="small" color="primary" variant="outlined" onClick={submit}>Show Heatmap</Button>
-	  </Tooltip>
-  	<div style={{
-   		 border: "1px solid #ccc",
-   		 padding: "3px 8px",
-  		 marginLeft: "20px",
-   		 display: "inline-block",
- 	   	 fontSize: "9px",
-    		 lineHeight: "1.0",
-  		 borderRadius: "5px",
-   		 verticalAlign: "top", // Align with the button
- 	 }}>
- 	 <div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
-      	<div style={{
-       		 width: "7px",
-    		 height: "7px",
-     		 backgroundColor: "#74C365",
-      		 marginRight: "6px",
-        	 border: "1px solid #000"
-     	 }}></div>
-      	<span>Available regions</span>
-    	</div>
-    	<div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
-      	<div style={{
-        	width: "7px",
- 	        height: "7px",
-        	backgroundColor: "#FFD700",
-    	        marginRight: "6px",
-        	border: "1px solid #000"
-      	}}></div>
-        <span>Selected region</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <Tooltip title="View non-random chromosomal interactions as heatmap">
+              <Button id="submit-button" size="small" color="primary" variant="outlined" onClick={submit}>Show Heatmap</Button>
+            </Tooltip>
+            <div style={{
+              border: "1px solid #ccc",
+              padding: "3px 8px",
+              marginLeft: "20px",
+              display: "inline-block",
+              fontSize: "9px",
+              lineHeight: "1.0",
+              borderRadius: "5px",
+              verticalAlign: "top", // Align with the button
+            }}>
+              <div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+                <div style={{
+                  width: "7px",
+                  height: "7px",
+                  backgroundColor: "#74C365",
+                  marginRight: "6px",
+                  border: "1px solid #000"
+                }}></div>
+                <span>Available regions</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+                <div style={{
+                  width: "7px",
+                  height: "7px",
+                  backgroundColor: "#FFD700",
+                  marginRight: "6px",
+                  border: "1px solid #000"
+                }}></div>
+                <span>Selected region</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <div style={{
+                  width: "7px",
+                  height: "7px",
+                  backgroundColor: "#FFFFFF",
+                  marginRight: "6px",
+                  border: "1px solid #000"
+                }}></div>
+                <span>Unavailable regions</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center" }}>
-           <div style={{
-              	 width: "7px",
-        	 height: "7px",
-        	 backgroundColor: "#FFFFFF",
-        	 marginRight: "6px",
-          	 border: "1px solid #000"
-      	}}></div>
-       <span>Unavailable regions</span>
-    	</div>
-        </div>
-     </div>
-    </div>
         <ChromosomeBar
           warning={warning}
           selectedChromosomeSequence={selectedChromosomeSequence}
@@ -674,17 +674,17 @@ function App() {
                   style={{ width: '100%', height: '100%' }}
                   onChange={originalSampleChange}
                   tabBarExtraContent={
-	  	    <Tooltip title="Add a second cell line for comparison">
-                    <Button
-                      style={{
-                        fontSize: 15,
-                        cursor: "pointer",
-                        marginRight: 5,
-                      }}
-                      size="small"
-                      icon={<PlusOutlined />}
-                      onClick={handleAddChromosome3D}
-                    /></Tooltip>
+                    <Tooltip title="Add a second cell line for comparison">
+                      <Button
+                        style={{
+                          fontSize: 15,
+                          cursor: "pointer",
+                          marginRight: 5,
+                        }}
+                        size="small"
+                        icon={<PlusOutlined />}
+                        onClick={handleAddChromosome3D}
+                      /></Tooltip>
                   }
                   items={new Array(3).fill(null).map((_, i) => {
                     const id = i;
@@ -725,16 +725,16 @@ function App() {
                           onChange={comparisonCellLineChange}
                           options={comparisonCellLineList}
                         />
-			<Tooltip title="Collapse the second cell line window">
-                        <Button
-                          style={{
-                            fontSize: 15,
-                            cursor: 'pointer',
-                          }}
-                          size="small"
-                          icon={<MinusOutlined />}
-                          onClick={handleRemoveChromosome3D}
-                        /></Tooltip>
+                        <Tooltip title="Collapse the second cell line window">
+                          <Button
+                            style={{
+                              fontSize: 15,
+                              cursor: 'pointer',
+                            }}
+                            size="small"
+                            icon={<MinusOutlined />}
+                            onClick={handleRemoveChromosome3D}
+                          /></Tooltip>
                       </div>
                     }
                     items={new Array(3).fill(null).map((_, i) => {
