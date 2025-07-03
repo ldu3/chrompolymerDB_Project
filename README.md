@@ -1,4 +1,4 @@
-# CS522 Project
+# ChromPolyDB Project
 A Web Server for High-Resolution Ensemble Models of 3D Single-Cell Chromatin Conformations
 
 # INSTRUCTION
